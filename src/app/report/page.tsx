@@ -24,7 +24,7 @@ export default function SampleReportPage() {
         </div>
         <h1 className="text-4xl md:text-5xl font-black text-slate-900 uppercase">Какво получавате след оглед?</h1>
         <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-          Подробен цифров доклад със снимков материал, компютърна диагностика и експертно заключение от Мартин Филев.
+          Подробен цифров доклад със снимков материал, компютърна диагностика и експертно заключение от наш специалист.
         </p>
       </div>
 
@@ -49,7 +49,7 @@ export default function SampleReportPage() {
 
         <div className="md:col-span-2 p-8 space-y-6">
           <h3 className="text-xl font-black text-slate-900 uppercase flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-emerald-600" /> Резюме от експерта
+            <ClipboardList className="w-5 h-5 text-emerald-600" /> Резюме от проверката
           </h3>
           <p className="text-slate-600 leading-relaxed font-medium">
             Автомобилът е в добро общо състояние. Открити са следи от пребоядисване на преден десен калник и броня (козметичен ремонт). 
@@ -66,7 +66,6 @@ export default function SampleReportPage() {
 
       {/* DETAILED SECTIONS */}
       <div className="grid md:grid-cols-2 gap-8">
-        {/* EXTERIOR */}
         <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-black text-slate-900 uppercase">Екстериор и Боя</h3>
@@ -80,7 +79,6 @@ export default function SampleReportPage() {
           </ul>
         </div>
 
-        {/* DIAGNOSTICS */}
         <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-black text-slate-900 uppercase">Диагностика и Електроника</h3>
@@ -95,14 +93,14 @@ export default function SampleReportPage() {
         </div>
       </div>
 
-      {/* PHOTO PROOF SECTION (Inspiration from Lemon Squad) */}
+      {/* PHOTO PROOF SECTION */}
       <div className="space-y-6">
         <h3 className="text-2xl font-black text-slate-900 uppercase flex items-center gap-2">
           <Camera className="w-6 h-6 text-slate-400" /> Визуални доказателства
         </h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="aspect-square bg-slate-200 rounded-3xl overflow-hidden relative group cursor-pointer border-4 border-white shadow-md">
+            <div key={i} className="aspect-square bg-slate-200 rounded-3xl overflow-hidden relative group border-4 border-white shadow-md">
               <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <span className="text-white font-bold text-xs">ВИЖ СНИМКАТА</span>
               </div>
@@ -117,11 +115,11 @@ export default function SampleReportPage() {
         </p>
       </div>
 
-      {/* CALL TO ACTION */}
+      {/* CALL TO ACTION - КОРЕГИРАН ТЕКСТ */}
       <div className="bg-emerald-600 rounded-[3rem] p-10 text-center text-white space-y-6 shadow-2xl shadow-emerald-200">
         <h2 className="text-3xl font-black uppercase">Искате такъв доклад за Вашата бъдеща кола?</h2>
         <p className="text-emerald-100 max-w-xl mx-auto font-medium">
-          Не купувайте "котка в чувал". Мартин Филев ще извърши пълна проверка и ще Ви даде спокойствие при покупката.
+          Не купувайте "котка в чувал". Ще извършим пълна проверка и ще Ви дадем спокойствие при покупката.
         </p>
         <div className="pt-4">
           <Link href="/book" className="bg-white text-emerald-700 px-10 py-5 rounded-2xl font-black text-lg shadow-xl hover:bg-slate-900 hover:text-white transition-all inline-flex items-center gap-2">

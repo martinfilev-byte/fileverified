@@ -72,7 +72,7 @@ export default function RootLayout({
                 
                 {/* НОВ ЛИНК КЪМ ДОКЛАДА */}
                 <Link href="/report" className="flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-emerald-700">
-                  <FileText className="w-4 h-4" /> Доклад
+                  <FileText className="w-4 h-4" /> Примерен доклад
                 </Link>
 
                 <Link href="/diagnostics" className="text-sm font-medium text-slate-700 hover:text-slate-900">Диагностика</Link>
