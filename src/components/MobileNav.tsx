@@ -40,7 +40,7 @@ export default function MobileNav() {
       {/* Плътен фон за застраховка */}
       <div 
         className="absolute inset-0 bg-white"
-        style={{ opacity: 0.96, backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
+        style={{ opacity: 0.90, backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
       />
       
       <div className="relative flex flex-col h-full w-full shadow-2xl">
