@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import Script from "next/script"
+import { Facebook } from "lucide-react" // Добавяме иконата тук
 import "./globals.css"
 import MobileNav from "@/components/MobileNav"
 
@@ -28,6 +29,8 @@ export default function RootLayout({
 }: {
   children: React.ReactNode
 }) {
+  const fbLink = "https://www.facebook.com/profile.php?id=61585477671669";
+
   return (
     <html lang="bg">
       <head>
@@ -61,41 +64,23 @@ export default function RootLayout({
               </Link>
 
               {/* Desktop nav */}
-              <nav className="hidden items-center gap-8 md:flex">
-                <Link
-                  href="/"
-                  className="text-sm font-medium text-slate-700 hover:text-slate-900"
-                >
-                  Начало
-                </Link>
+              <nav className="hidden items-center gap-6 md:flex">
+                <Link href="/" className="text-sm font-medium text-slate-700 hover:text-slate-900">Начало</Link>
+                <Link href="/services" className="text-sm font-medium text-slate-700 hover:text-slate-900">Проверка</Link>
+                <Link href="/diagnostics" className="text-sm font-medium text-slate-700 hover:text-slate-900">Диагностика</Link>
+                <Link href="/tpms" className="text-sm font-medium text-slate-700 hover:text-slate-900">TPMS</Link>
+                <Link href="/faq" className="text-sm font-medium text-slate-700 hover:text-slate-900">FAQ</Link>
 
-                <Link
-                  href="/services"
-                  className="text-sm font-medium text-slate-700 hover:text-slate-900"
+                {/* FACEBOOK ICON IN HEADER */}
+                <a 
+                  href={fbLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="ml-2 text-slate-400 hover:text-[#1877F2] transition-colors"
+                  aria-label="Facebook Page"
                 >
-                  Проверка
-                </Link>
-
-                <Link
-                  href="/diagnostics"
-                  className="text-sm font-medium text-slate-700 hover:text-slate-900"
-                >
-                  Диагностика
-                </Link>
-
-                <Link
-                  href="/tpms"
-                  className="text-sm font-medium text-slate-700 hover:text-slate-900"
-                >
-                  TPMS
-                </Link>
-
-                <Link
-                  href="/faq"
-                  className="text-sm font-medium text-slate-700 hover:text-slate-900"
-                >
-                  FAQ
-                </Link>
+                  <Facebook className="h-5 w-5 fill-current" />
+                </a>
 
                 <Link
                   href="/book"
@@ -139,59 +124,29 @@ export default function RootLayout({
                   Независима проверка на автомобил преди покупка. Реално
                   състояние, без изненади.
                 </p>
+                {/* FACEBOOK IN FOOTER */}
+                <div className="pt-2">
+                  <a 
+                    href={fbLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 text-sm font-semibold text-[#1877F2] hover:underline"
+                  >
+                    <Facebook className="h-5 w-5 fill-current" />
+                    Последвайте ни във Facebook
+                  </a>
+                </div>
               </div>
 
               <div>
                 <div className="font-semibold text-slate-900">Навигация</div>
                 <ul className="mt-3 space-y-2 text-sm">
-                  <li>
-                    <Link
-                      href="/"
-                      className="text-slate-600 hover:text-slate-900"
-                    >
-                      Начало
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/services"
-                      className="text-slate-600 hover:text-slate-900"
-                    >
-                      Проверка
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/diagnostics"
-                      className="text-slate-600 hover:text-slate-900"
-                    >
-                      Диагностика
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/tpms"
-                      className="text-slate-600 hover:text-slate-900"
-                    >
-                      TPMS
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/faq"
-                      className="text-slate-600 hover:text-slate-900"
-                    >
-                      FAQ
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      href="/book"
-                      className="text-slate-600 hover:text-slate-900"
-                    >
-                      Запази оглед
-                    </Link>
-                  </li>
+                  <li><Link href="/" className="text-slate-600 hover:text-slate-900">Начало</Link></li>
+                  <li><Link href="/services" className="text-slate-600 hover:text-slate-900">Проверка</Link></li>
+                  <li><Link href="/diagnostics" className="text-slate-600 hover:text-slate-900">Диагностика</Link></li>
+                  <li><Link href="/tpms" className="text-slate-600 hover:text-slate-900">TPMS</Link></li>
+                  <li><Link href="/faq" className="text-slate-600 hover:text-slate-900">FAQ</Link></li>
+                  <li><Link href="/book" className="text-slate-600 hover:text-slate-900 font-bold text-emerald-600">Запази оглед</Link></li>
                 </ul>
               </div>
 
@@ -199,7 +154,7 @@ export default function RootLayout({
                 <div className="font-semibold text-slate-900">Контакт</div>
                 <ul className="mt-3 space-y-2 text-sm text-slate-600">
                   <li>📍 София</li>
-                  <li>📞 След заявка</li>
+                  <li>📞 0888 57 00 37</li>
                   <li>✉️ info@fileverified.eu</li>
                 </ul>
               </div>
