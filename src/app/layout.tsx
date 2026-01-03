@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
+import Script from "next/script"
 import "./globals.css"
 import MobileNav from "@/components/MobileNav"
 
@@ -29,6 +30,22 @@ export default function RootLayout({
 }) {
   return (
     <html lang="bg">
+      <head>
+        {/* Google tag (gtag.js) */}
+        <Script 
+          async 
+          src="https://www.googletagmanager.com/gtag/js?id=G-JTLYG6PTXR" 
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-JTLYG6PTXR');
+          `}
+        </Script>
+      </head>
       <body className="bg-slate-50 text-slate-900 antialiased">
         {/* HEADER */}
         <header className="sticky top-0 z-50 border-b bg-white/90 backdrop-blur">
