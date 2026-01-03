@@ -3,50 +3,67 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { Menu, X } from "lucide-react" // Използваме икони за по-професионален вид
 
 export default function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
   const pathname = usePathname()
 
   useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
+
+  useEffect(() => {
     setIsOpen(false)
   }, [pathname])
 
   return (
-    <>
-      {/* Хамбургер бутон - стои в хедъра */}
+    <div className="md:hidden">
+      {/* Бутонът, който винаги е видим в хедъра */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="relative z-[70] md:hidden p-2 text-slate-600"
-        aria-label="Toggle menu"
+        onClick={() => setIsOpen(true)}
+        className="p-2 text-slate-600"
+        aria-label="Open menu"
       >
-        <div className="flex flex-col gap-1.5 w-6">
-          <span className={`h-0.5 w-full bg-slate-900 transition-all ${isOpen ? "rotate-45 translate-y-2" : ""}`} />
-          <span className={`h-0.5 w-full bg-slate-900 transition-all ${isOpen ? "opacity-0" : ""}`} />
-          <span className={`h-0.5 w-full bg-slate-900 transition-all ${isOpen ? "-rotate-45 -translate-y-2" : ""}`} />
-        </div>
+        <Menu className="h-6 w-6" />
       </button>
 
-      {/* Менюто - разпъва се върху целия екран */}
+      {/* Самото меню, което изскача над всичко */}
       <div
-        className={`fixed inset-0 z-[60] bg-white transition-all duration-300 ease-in-out md:hidden ${
-          isOpen ? "translate-x-0 opacity-100 visible" : "translate-x-full opacity-0 invisible"
+        className={`fixed inset-0 z-[100] bg-white transition-transform duration-300 ease-in-out ${
+          isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
-        <nav className="flex flex-col items-center justify-center h-full gap-8 text-xl font-semibold text-slate-900">
-          <Link href="/" className="hover:text-emerald-600">Начало</Link>
-          <Link href="/services" className="hover:text-emerald-600">Проверка</Link>
-          <Link href="/diagnostics" className="hover:text-emerald-600">Диагностика</Link>
-          <Link href="/tpms" className="hover:text-emerald-600">TPMS</Link>
-          <Link href="/faq" className="hover:text-emerald-600">FAQ</Link>
-          <Link 
-            href="/book" 
-            className="mt-4 rounded-xl bg-emerald-600 px-8 py-3 text-white shadow-lg active:scale-95 transition-transform"
-          >
-            Запази оглед
-          </Link>
-        </nav>
+        <div className="flex flex-col h-full p-6">
+          <div className="flex justify-end">
+            <button
+              onClick={() => setIsOpen(false)}
+              className="p-2 text-slate-600"
+              aria-label="Close menu"
+            >
+              <X className="h-8 w-8" />
+            </button>
+          </div>
+
+          <nav className="flex flex-col items-center justify-center flex-1 gap-8 text-2xl font-bold text-slate-900">
+            <Link href="/" className="hover:text-emerald-600 transition-colors">Начало</Link>
+            <Link href="/services" className="hover:text-emerald-600 transition-colors">Проверка</Link>
+            <Link href="/diagnostics" className="hover:text-emerald-600 transition-colors">Диагностика</Link>
+            <Link href="/tpms" className="hover:text-emerald-600 transition-colors">TPMS</Link>
+            <Link href="/faq" className="hover:text-emerald-600 transition-colors">FAQ</Link>
+            <Link 
+              href="/book" 
+              className="mt-4 w-full text-center rounded-2xl bg-emerald-600 py-4 text-white shadow-xl"
+            >
+              Запази оглед
+            </Link>
+          </nav>
+        </div>
       </div>
-    </>
+    </div>
   )
 }
