@@ -4,11 +4,11 @@ import React from "react"
 import { useParams } from "next/navigation"
 import { 
   CheckCircle2, XCircle, Camera, Download, Car, Info, FileText,
-  Clock, MapPin, Calendar, Gauge, Phone, AlertTriangle, ShieldCheck,
-  Disc, Activity, Search
+  Clock, MapPin, Calendar, Gauge, Phone, ShieldCheck,
+  Disc, Activity, Settings, Zap
 } from "lucide-react"
 
-export default function LKWProfessionalReport() {
+export default function UltraDetailedReport() {
   const params = useParams()
   const reportId = params.id
 
@@ -21,136 +21,167 @@ export default function LKWProfessionalReport() {
     mileage: "142,500 км",
     engine: "3.0L Diesel / 265hp",
     nasLink: "https://your-nas-link.com/share/XYZ",
-    inspectionScore: "7.8",
+    inspectionScore: "8.2",
   }
 
   return (
-    <div className="bg-[#f8fafc] min-h-screen pb-20 font-sans text-slate-900">
-      {/* HEADER STRIP */}
-      <div className="bg-[#0f172a] text-white sticky top-16 z-40 shadow-xl">
+    <div className="bg-[#f1f5f9] min-h-screen pb-20 font-sans text-slate-900">
+      {/* ФИКСИРАН ХЕДЪР */}
+      <div className="bg-slate-900 text-white sticky top-16 z-40 shadow-2xl border-b border-emerald-500/30">
         <div className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap justify-between items-center gap-4">
           <div className="flex items-center gap-4">
-            <div className="bg-emerald-500 p-2 rounded">
+            <div className="bg-emerald-600 p-2 rounded shadow-lg">
               <ShieldCheck className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-black uppercase tracking-tight">Technical Inspection Report</h1>
-              <p className="text-[10px] text-emerald-400 uppercase font-black tracking-[0.2em]">ID: {reportId || "02213"}</p>
+              <h1 className="text-xl font-black uppercase tracking-tight italic">Технически Доклад за Инспекция</h1>
+              <p className="text-[10px] text-emerald-400 uppercase font-black tracking-widest">Протокол №: {reportId || "02213"}</p>
             </div>
           </div>
           <div className="flex gap-2">
-            <a href={data.nasLink} target="_blank" rel="noopener noreferrer" className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-lg font-black text-xs flex items-center gap-2 transition-all uppercase shadow-lg shadow-emerald-900/20">
-              <Camera className="w-4 h-4" /> Gallery & Video
+            <a href={data.nasLink} target="_blank" rel="noopener noreferrer" className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-2.5 rounded-lg font-black text-xs flex items-center gap-2 transition-all uppercase">
+              <Camera className="w-4 h-4" /> Галерия и Видео
             </a>
             <button onClick={() => window.print()} className="bg-slate-700 hover:bg-slate-600 text-white px-4 py-2.5 rounded-lg text-xs font-black transition-all uppercase flex items-center gap-2">
-              <Download className="w-4 h-4" /> Export PDF
+              <Download className="w-4 h-4" /> Експорт PDF
             </button>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 mt-8 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 mt-8 space-y-10">
         
-        {/* SECTION 1: VEHICLE CORE DATA */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="md:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="bg-slate-50 px-6 py-4 border-b flex items-center justify-between">
-              <h2 className="font-black uppercase text-sm flex items-center gap-2 italic"><Car className="w-4 h-4 text-emerald-600" /> Vehicle Specification</h2>
-              <span className="text-[10px] font-bold text-slate-400 bg-slate-200 px-2 py-0.5 rounded">OFFICIAL DATA</span>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-4">
-              <DataTile label="Brand" value={data.make} />
-              <DataTile label="Model" value={data.model} />
-              <DataTile label="Year" value={data.year} />
-              <DataTile label="Mileage" value={data.mileage} />
-              <DataTile label="VIN Number" value={data.vin} colSpan="sm:col-span-2" />
-              <DataTile label="Plate" value={data.licensePlate} />
-              <DataTile label="Engine" value={data.engine} />
-            </div>
+        {/* ОСНОВНИ ДАННИ */}
+        <div className="grid md:grid-cols-4 gap-4">
+          <div className="md:col-span-3 bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden grid grid-cols-2 md:grid-cols-4">
+            <DataTile label="Марка" value={data.make} />
+            <DataTile label="Модел" value={data.model} />
+            <DataTile label="Година" value={data.year} />
+            <DataTile label="Пробег" value={data.mileage} />
+            <DataTile label="VIN Номер" value={data.vin} colSpan="col-span-2" />
+            <DataTile label="Рег. Номер" value={data.licensePlate} />
+            <DataTile label="Двигател" value={data.engine} />
           </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 flex flex-col items-center justify-center text-center relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-emerald-500 text-white text-[10px] font-black px-4 py-1 rounded-bl-xl uppercase italic">Final Verdict</div>
-            <p className="text-[10px] font-black uppercase text-slate-400 mb-2">Condition Score</p>
-            <div className="text-7xl font-black text-slate-900 mb-2 leading-none">{data.inspectionScore}<span className="text-2xl text-slate-300">/10</span></div>
-            <div className="text-emerald-600 font-black text-sm uppercase tracking-widest italic">Highly Recommended</div>
+          <div className="bg-white rounded-xl shadow-sm border-t-4 border-emerald-500 p-6 text-center">
+            <p className="text-[10px] font-black uppercase text-slate-400 mb-1">Крайна Оценка</p>
+            <div className="text-6xl font-black text-slate-900 leading-none">{data.inspectionScore}</div>
+            <p className="text-emerald-600 font-black text-[10px] uppercase tracking-widest mt-2 italic">Препоръчан</p>
           </div>
         </div>
 
-        {/* SECTION 2: BRAKES & TIRES (LKW STYLE) */}
+        {/* ДВИГАТЕЛ И ТРАНСМИСИЯ */}
+        <Section title="Двигател и Задвижване">
+          <div className="grid md:grid-cols-2 gap-x-8 gap-y-1">
+            <ReportRow label="Масло в двигателя" status="Чисто" ok />
+            <ReportRow label="Течове на масло" status="Не се наблюдават" ok />
+            <ReportRow label="Охладителна течност" status="Ниво и цвят - ОК" ok />
+            <ReportRow label="Турбокомпресор" status="Нормално налягане" ok />
+            <ReportRow label="Скоростна кутия" status="Суха / Без течове" ok />
+            <ReportRow label="Съединител" status="Работи нормално" ok />
+            <ReportRow label="Грешки в компютъра" status="Няма активни" ok />
+            <ReportRow label="Тест при движение" status="Преминат успешно" ok />
+          </div>
+        </Section>
+
+        {/* ИНСПЕКЦИЯ НА ИНТЕРИОР / КАБИНА */}
+        <Section title="Инспекция на Купе и Интериор">
+          <div className="grid md:grid-cols-2 gap-x-8 gap-y-1">
+            <ReportRow label="Климатична система" status="Работи отлично" ok />
+            <ReportRow label="Ел. стъкла (предни/задни)" status="Работят" ok />
+            <ReportRow label="Ел. огледала" status="Ляво - повреда" error />
+            <ReportRow label="Тапицерия / Салон" status="Запазена" ok />
+            <ReportRow label="Вентилация и Парно" status="Работи" ok />
+            <ReportRow label="Шибидах / Панорама" status="Не работи" error />
+            <ReportRow label="Мултимедия и Радио" status="Работи" ok />
+            <ReportRow label="Интериорно осветление" status="Всички лампи светят" ok />
+          </div>
+        </Section>
+
+        {/* ШАСИ И ХОДОВА ЧАСТ */}
+        <Section title="Шаси и Окачване">
+          <div className="grid md:grid-cols-2 gap-x-8 gap-y-1">
+            <ReportRow label="Предно окачване" status="Без луфтове" ok />
+            <ReportRow label="Задно окачване" status="Здрави тампони" ok />
+            <ReportRow label="Спирачни дискове" status="30% износване" ok />
+            <ReportRow label="Спирачни накладки" status="Нови (предни)" ok />
+            <ReportRow label="Корозия по шасито" status="Повърхностна - ОК" ok />
+            <ReportRow label="Хидравлични маркучи" status="Здрави" ok />
+            <ReportRow label="Амортисьори" status="Сухи и функционални" ok />
+            <ReportRow label="Рейка / Накрайници" status="Без забележки" ok />
+          </div>
+        </Section>
+
+        {/* ГУМИ И КОНСУМАТИВИ */}
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="bg-slate-50 px-6 py-4 border-b flex items-center gap-2">
-            <Disc className="w-4 h-4 text-emerald-600" />
-            <h2 className="font-black uppercase text-sm italic">Wheels, Tires & Braking System</h2>
+          <div className="bg-slate-900 px-6 py-3 border-b border-emerald-500">
+            <h2 className="font-black uppercase text-sm italic text-white flex items-center gap-2">
+              <Disc className="w-4 h-4 text-emerald-400" /> Гуми и Джанти
+            </h2>
           </div>
-          <div className="p-6 grid md:grid-cols-2 gap-8">
-            <table className="w-full text-xs">
+          <div className="p-6 overflow-x-auto">
+            <table className="w-full text-xs font-bold uppercase tracking-tight text-center">
               <thead>
-                <tr className="text-slate-400 uppercase font-black border-b"><th className="pb-2 text-left">Tires Position</th><th className="pb-2">Brand/DOT</th><th className="pb-2 text-right">Depth (mm)</th></tr>
+                <tr className="bg-slate-50 text-slate-500 border-b">
+                  <th className="py-4">Позиция</th>
+                  <th>Марка и DOT</th>
+                  <th>Грайфер (мм)</th>
+                  <th>Статус</th>
+                </tr>
               </thead>
-              <tbody className="font-bold divide-y divide-slate-50">
-                <TireRow pos="Front Left" brand="Michelin / 2023" depth="6.5 mm" />
-                <TireRow pos="Front Right" brand="Michelin / 2023" depth="6.4 mm" />
-                <TireRow pos="Rear Left" brand="Michelin / 2023" depth="5.8 mm" />
-                <TireRow pos="Rear Right" brand="Michelin / 2023" depth="5.8 mm" />
-              </tbody>
-            </table>
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="text-slate-400 uppercase font-black border-b"><th className="pb-2 text-left">Brakes</th><th className="pb-2">Condition</th><th className="pb-2 text-right">Wear %</th></tr>
-              </thead>
-              <tbody className="font-bold divide-y divide-slate-50">
-                <TireRow pos="Front Discs" brand="Original BMW" depth="20%" />
-                <TireRow pos="Front Pads" brand="ATE Ceramic" depth="15%" />
-                <TireRow pos="Rear Discs" brand="Original BMW" depth="30%" />
-                <TireRow pos="Rear Pads" brand="ATE Ceramic" depth="25%" />
+              <tbody className="divide-y divide-slate-100">
+                <TireRow pos="Предна Лява" brand="Michelin / 2023" depth="6.2 мм" />
+                <TireRow pos="Предна Дясна" brand="Michelin / 2023" depth="6.2 мм" />
+                <TireRow pos="Задна Лява" brand="Michelin / 2023" depth="5.5 мм" />
+                <TireRow pos="Задна Дясна" brand="Michelin / 2023" depth="5.5 мм" />
               </tbody>
             </table>
           </div>
         </div>
 
-        {/* SECTION 3: FULL CHECKLIST */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <ChecklistGroup title="Engine & Drivetrain">
-            <CheckItem label="Engine Oil Level & Quality" status="ok" />
-            <CheckItem label="Coolant System / Leaks" status="ok" />
-            <CheckItem label="Transmission Shifting" status="ok" />
-            <CheckItem label="Turbocharger Operation" status="ok" />
-            <CheckItem label="Exhaust System" status="ok" />
-          </ChecklistGroup>
+        {/* СПЕЦИФИКАЦИЯ / ЕКСТРИ (КАТО НА СНИМКАТА) */}
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-slate-900 px-6 py-3 border-b border-emerald-500">
+            <h2 className="font-black uppercase text-sm italic text-white flex items-center gap-2">
+              <Settings className="w-4 h-4 text-emerald-400" /> Спецификация и Оборудване
+            </h2>
+          </div>
+          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            <SpecList>
+              <SpecItem label="ABS / ESP" value="ДА" />
+              <SpecItem label="Круиз Контрол" value="ДА" />
+              <SpecItem label="Адаптивно Окачване" value="НЕ" />
+              <SpecItem label="Парктроник" value="ДА" />
+            </SpecList>
+            <SpecList>
+              <SpecItem label="Кожен Салон" value="ДА" />
+              <SpecItem label="Навигация" value="ДА" />
+              <SpecItem label="Подгрев на седалки" value="ДА" />
+              <SpecItem label="LED Фарове" value="ДА" />
+            </SpecList>
+            <SpecList>
+              <SpecItem label="Камера за заден ход" value="ДА" />
+              <SpecItem label="Мъртва зона" value="НЕ" />
+              <SpecItem label="Ел. Багажник" value="ДА" />
+              <SpecItem label="Панорамен покрив" value="ДА" />
+            </SpecList>
+          </div>
+        </div>
 
-          <ChecklistGroup title="Bodywork & Paint">
-            <CheckItem label="Paint Thickness Test" status="warn" desc="Hood repainted (210μm)" />
-            <CheckItem label="Chassis / Frame Integrity" status="ok" />
-            <CheckItem label="Glass / Mirrors Condition" status="ok" />
-            <CheckItem label="Door Seals & Alignment" status="ok" />
-            <CheckItem label="Underbody Rust Check" status="ok" />
-          </ChecklistGroup>
-
-          <ChecklistGroup title="Electronics & Interior">
-            <CheckItem label="OBD II Diagnostic Scan" status="ok" />
-            <CheckItem label="Air Conditioning System" status="ok" />
-            <CheckItem label="Dashboard Warning Lights" status="ok" />
-            <CheckItem label="Seat & Upholstery Wear" status="ok" />
-            <CheckItem label="Navigation / Infotainment" status="ok" />
-          </ChecklistGroup>
-
-          <div className="bg-slate-900 rounded-xl p-8 text-white flex flex-col justify-between">
+        {/* ФУТЪР НА ДОКЛАДА */}
+        <div className="flex flex-col md:flex-row justify-between items-center gap-6 bg-white p-8 rounded-xl border-b-8 border-emerald-500 shadow-lg">
+          <div className="flex items-center gap-4">
+            <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center font-black text-white text-2xl shadow-inner">MF</div>
             <div>
-              <h3 className="text-emerald-400 font-black uppercase text-xs mb-4 flex items-center gap-2">
-                <Search className="w-4 h-4" /> Expert Summary
-              </h3>
-              <p className="text-slate-300 italic text-sm leading-relaxed">
-                "The vehicle is in very good mechanical condition. Computer diagnostics showed no active faults. The repainted hood is due to stone chips, not a structural accident. All service records are verified."
-              </p>
+              <p className="text-[10px] font-black uppercase text-slate-400">Инспектор</p>
+              <p className="font-black text-lg">Мартин Филев</p>
+              <p className="text-xs text-emerald-600 font-bold uppercase tracking-widest">FileVerified.eu</p>
             </div>
-            <div className="mt-8 pt-6 border-t border-white/10 flex items-center gap-4">
-              <div className="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center font-black text-xl">MF</div>
-              <div>
-                <p className="text-[10px] font-black uppercase text-slate-500">Inspector</p>
-                <p className="font-bold text-sm">Martin Filev (FileVerified)</p>
-              </div>
-            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-[10px] font-black uppercase text-slate-400 mb-2 tracking-widest text-center md:text-right">Въпроси?</p>
+            <a href="tel:0888570037" className="flex items-center gap-3 text-slate-900 font-black text-2xl hover:text-emerald-600 transition-colors">
+              <Phone className="w-6 h-6 text-emerald-500 fill-current" /> 0888 57 00 37
+            </a>
           </div>
         </div>
       </div>
@@ -158,50 +189,67 @@ export default function LKWProfessionalReport() {
   )
 }
 
-/* HELPER COMPONENTS */
+/* МАЛКИ КОМПОНЕНТИ ЗА ПОДРЕДБА */
+
+function Section({ title, children }: { title: string, children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+      <div className="bg-slate-900 px-6 py-3 border-b border-emerald-500">
+        <h2 className="font-black uppercase text-sm italic text-white">{title}</h2>
+      </div>
+      <div className="p-6">{children}</div>
+    </div>
+  )
+}
+
+function ReportRow({ label, status, ok = false, error = false }: { label: string, status: string, ok?: boolean, error?: boolean }) {
+  return (
+    <div className="flex items-center justify-between py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors px-2">
+      <div className="space-y-0.5">
+        <p className="text-[11px] font-black uppercase text-slate-400 tracking-tighter">{label}</p>
+        <p className="text-xs font-black text-slate-700 uppercase">{status}</p>
+      </div>
+      <div className="flex items-center gap-4">
+        <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded ${ok ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`}>
+          {ok ? 'Изправно' : 'Дефект'}
+        </span>
+        {ok ? <CheckCircle2 className="w-5 h-5 text-emerald-500" /> : <XCircle className="w-5 h-5 text-red-500" />}
+      </div>
+    </div>
+  )
+}
 
 function DataTile({ label, value, colSpan = "" }: { label: string, value: string, colSpan?: string }) {
   return (
-    <div className={`p-6 border-r border-b border-slate-100 last:border-r-0 ${colSpan}`}>
-      <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest mb-1">{label}</p>
-      <p className="text-xs font-black text-slate-800 uppercase leading-none">{value}</p>
-    </div>
-  )
-}
-
-function ChecklistGroup({ title, children }: { title: string, children: React.ReactNode }) {
-  return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-      <div className="bg-slate-50 px-6 py-4 border-b">
-        <h3 className="font-black uppercase text-xs text-slate-500 italic">{title}</h3>
-      </div>
-      <div className="divide-y divide-slate-50">{children}</div>
-    </div>
-  )
-}
-
-function CheckItem({ label, status, desc }: { label: string, status: 'ok' | 'warn' | 'error', desc?: string }) {
-  return (
-    <div className="px-6 py-4 flex items-center justify-between group hover:bg-slate-50 transition-colors">
-      <div>
-        <p className="text-xs font-bold text-slate-700 uppercase tracking-tight">{label}</p>
-        {desc && <p className="text-[10px] text-amber-600 font-bold italic mt-0.5 uppercase">{desc}</p>}
-      </div>
-      {status === 'ok' ? (
-        <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-      ) : (
-        <AlertTriangle className="w-5 h-5 text-amber-500" />
-      )}
+    <div className={`p-4 border-r border-b border-slate-100 last:border-r-0 ${colSpan}`}>
+      <p className="text-[9px] font-black uppercase text-slate-400 mb-1">{label}</p>
+      <p className="text-xs font-black text-slate-900 uppercase leading-none">{value}</p>
     </div>
   )
 }
 
 function TireRow({ pos, brand, depth }: { pos: string, brand: string, depth: string }) {
   return (
-    <tr>
-      <td className="py-3 text-slate-500 uppercase tracking-tighter">{pos}</td>
-      <td className="py-3 text-center">{brand}</td>
-      <td className="py-3 text-right text-emerald-600 font-black">{depth}</td>
+    <tr className="hover:bg-slate-50 transition-colors">
+      <td className="py-4 text-slate-400 text-[10px] font-black text-left pl-4">{pos}</td>
+      <td className="py-4 text-slate-900 font-black text-sm">{brand}</td>
+      <td className="py-4 text-emerald-600 font-black text-sm italic">{depth}</td>
+      <td className="py-4"><CheckCircle2 className="w-5 h-5 text-emerald-500 mx-auto" /></td>
     </tr>
+  )
+}
+
+function SpecList({ children }: { children: React.ReactNode }) {
+  return <div className="space-y-1.5">{children}</div>
+}
+
+function SpecItem({ label, value }: { label: string, value: string }) {
+  return (
+    <div className="flex items-center justify-between p-2 bg-slate-50 rounded border border-slate-100">
+      <span className="text-[10px] font-black uppercase text-slate-500">{label}</span>
+      <span className={`text-[10px] font-black px-2 py-0.5 rounded ${value === 'ДА' ? 'bg-slate-800 text-white' : 'bg-slate-200 text-slate-400'}`}>
+        {value === 'ДА' ? '✓' : '-'}
+      </span>
+    </div>
   )
 }
