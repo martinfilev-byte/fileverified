@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import Script from "next/script"
-import { Facebook, Mail, Phone, MessageCircle } from "lucide-react" // Нови икони
+import { Facebook, Phone, MessageCircle } from "lucide-react"
 import "./globals.css"
 import MobileNav from "@/components/MobileNav"
 
@@ -10,10 +10,17 @@ export const metadata: Metadata = {
   description:
     "Независима проверка на автомобил преди покупка. Вижте реалното състояние, спестете си изненадите.",
   keywords: ["проверка на кола", "оглед на автомобил София", "диагностика на кола", "автоексперт", "реални километри"],
+  metadataBase: new URL("https://fileverified.eu"),
   icons: {
-    icon: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png" },
+    ],
   },
+  manifest: "/site.webmanifest",
   openGraph: {
     title: "FileVerified - Независим оглед на автомобили",
     description: "Независима проверка на автомобил преди покупка. Вижте реалното състояние, спестете си изненадите.",

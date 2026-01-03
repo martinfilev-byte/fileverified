@@ -1,13 +1,26 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Инициализираме Resend само ако ключът е наличен. 
+// Това предотвратява грешката по време на 'npm run build'.
+const resend = process.env.RESEND_API_KEY 
+  ? new Resend(process.env.RESEND_API_KEY) 
+  : null;
 
 export async function POST(req: Request) {
+  // Ако Resend не е инициализиран (няма ключ), връщаме грешка само при заявка.
+  if (!resend) {
+    console.error("Missing RESEND_API_KEY in environment variables.");
+    return NextResponse.json(
+      { error: 'Email service configuration missing' }, 
+      { status: 500 }
+    );
+  }
+
   try {
     const body = await req.json();
     
-    // Извличаме всички полета от новата форма
+    // Извличаме полетата от формата
     const { 
       fullName, 
       phone, 
@@ -61,6 +74,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(data);
   } catch (error) {
+    console.error("Internal Server Error:", error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
