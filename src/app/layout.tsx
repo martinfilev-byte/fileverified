@@ -4,12 +4,21 @@ import "./globals.css"
 import MobileNav from "@/components/MobileNav"
 
 export const metadata: Metadata = {
-  title: "FileVerified — Проверка на автомобил преди покупка",
+  title: "Проверка на автомобил преди покупка в София | FileVerified",
   description:
-    "Независима проверка на автомобил преди покупка в София. Реално състояние, без изненади.",
+    "Независима професионална проверка и диагностика на употребявани автомобили в София. Вижте реалното състояние със Златния Стандарт на FileVerified.",
+  keywords: ["проверка на кола", "оглед на автомобил София", "диагностика на кола", "автоексперт", "реални километри"],
   icons: {
     icon: "/favicon.ico",
     apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "FileVerified - Независим оглед на автомобили",
+    description: "Професионална проверка на автомобили в София. Спестете си изненадите и купете с увереност.",
+    url: "https://fileverified.eu",
+    siteName: "FileVerified",
+    locale: "bg_BG",
+    type: "website",
   },
 }
 
