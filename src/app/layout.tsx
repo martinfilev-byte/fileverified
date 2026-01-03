@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import Script from "next/script"
-import { Facebook, Phone, MessageCircle } from "lucide-react"
+import { Facebook, Phone, MessageCircle, FileText } from "lucide-react"
 import "./globals.css"
 import MobileNav from "@/components/MobileNav"
 
@@ -69,8 +69,13 @@ export default function RootLayout({
               <nav className="hidden items-center gap-6 md:flex">
                 <Link href="/" className="text-sm font-medium text-slate-700 hover:text-slate-900">Начало</Link>
                 <Link href="/services" className="text-sm font-medium text-slate-700 hover:text-slate-900">Проверка</Link>
+                
+                {/* НОВ ЛИНК КЪМ ДОКЛАДА */}
+                <Link href="/report" className="flex items-center gap-1 text-sm font-bold text-emerald-600 hover:text-emerald-700">
+                  <FileText className="w-4 h-4" /> Доклад
+                </Link>
+
                 <Link href="/diagnostics" className="text-sm font-medium text-slate-700 hover:text-slate-900">Диагностика</Link>
-                <Link href="/tpms" className="text-sm font-medium text-slate-700 hover:text-slate-900">TPMS</Link>
                 <Link href="/faq" className="text-sm font-medium text-slate-700 hover:text-slate-900">FAQ</Link>
 
                 <a href={fbLink} target="_blank" rel="noopener noreferrer" className="ml-2 text-slate-400 hover:text-[#1877F2] transition-colors">
@@ -88,8 +93,8 @@ export default function RootLayout({
         </header>
 
         <div className="border-b border-amber-200 bg-amber-50">
-          <div className="mx-auto max-w-7xl px-6 py-2 text-sm text-amber-800">
-            ℹ️ Сайтът е в процес на разработка. Възможни са промени и временни неточности.
+          <div className="mx-auto max-w-7xl px-6 py-2 text-sm text-amber-800 flex items-center gap-2">
+            <span className="animate-pulse">ℹ️</span> Сайтът е в процес на разработка. Възможни са промени.
           </div>
         </div>
 
@@ -120,21 +125,22 @@ export default function RootLayout({
               </div>
 
               <div>
-                <div className="font-semibold text-slate-900">Навигация</div>
-                <ul className="mt-3 space-y-2 text-sm">
+                <div className="font-semibold text-slate-900 uppercase text-xs tracking-widest mb-4">Навигация</div>
+                <ul className="space-y-2 text-sm">
                   <li><Link href="/" className="text-slate-600 hover:text-slate-900">Начало</Link></li>
-                  <li><Link href="/services" className="text-slate-600 hover:text-slate-900">Проверка</Link></li>
+                  <li><Link href="/services" className="text-slate-600 hover:text-slate-900">Проверка на кола</Link></li>
+                  <li><Link href="/report" className="text-emerald-600 font-bold hover:underline">Примерен доклад</Link></li>
                   <li><Link href="/diagnostics" className="text-slate-600 hover:text-slate-900">Диагностика</Link></li>
-                  <li><Link href="/book" className="text-emerald-600 font-bold hover:underline">Запази оглед</Link></li>
+                  <li><Link href="/book" className="text-slate-900 font-bold hover:text-emerald-600 transition-colors uppercase tracking-tighter">Запази оглед</Link></li>
                 </ul>
               </div>
 
               <div>
-                <div className="font-semibold text-slate-900">Контакт</div>
-                <ul className="mt-3 space-y-3 text-sm text-slate-600">
-                  <li className="flex items-center gap-2">📍 София</li>
+                <div className="font-semibold text-slate-900 uppercase text-xs tracking-widest mb-4">Контакт</div>
+                <ul className="space-y-3 text-sm text-slate-600">
+                  <li className="flex items-center gap-2">📍 гр. София</li>
                   <li>
-                    <a href="tel:0888570037" className="flex items-center gap-2 hover:text-emerald-600 transition-colors font-medium">
+                    <a href="tel:0888570037" className="flex items-center gap-2 hover:text-emerald-600 transition-colors font-bold text-slate-900">
                       📞 0888 57 00 37
                     </a>
                   </li>
@@ -147,8 +153,9 @@ export default function RootLayout({
               </div>
             </div>
 
-            <div className="mt-10 border-t pt-6 text-xs text-slate-500">
-              © {new Date().getFullYear()} FileVerified.eu · Всички права запазени
+            <div className="mt-10 border-t pt-6 text-[10px] text-slate-400 flex justify-between items-center uppercase tracking-widest">
+              <span>© {new Date().getFullYear()} FileVerified.eu</span>
+              <span className="font-black text-slate-300">Independent Car Inspection</span>
             </div>
           </div>
         </footer>
