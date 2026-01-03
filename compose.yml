@@ -7,5 +7,6 @@ services:
     environment:
       - ADMIN_PASSWORD=Brumb@r1303
       - DB_PATH=/data/app.db
+      - RESEND_API_KEY=re_2knLum1N_BgBB1yPSG5rQVazSSpkTwFMb  # Добави твоя ключ тук
     volumes:
       - ./data:/data
