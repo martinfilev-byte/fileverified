@@ -42,18 +42,35 @@ export default function RootLayout({
                 >
                   Начало
                 </Link>
+
                 <Link
                   href="/services"
                   className="text-sm font-medium text-slate-700 hover:text-slate-900"
                 >
-                  Услуги
+                  Проверка
                 </Link>
+
+                <Link
+                  href="/diagnostics"
+                  className="text-sm font-medium text-slate-700 hover:text-slate-900"
+                >
+                  Диагностика
+                </Link>
+
+                <Link
+                  href="/tpms"
+                  className="text-sm font-medium text-slate-700 hover:text-slate-900"
+                >
+                  TPMS
+                </Link>
+
                 <Link
                   href="/faq"
                   className="text-sm font-medium text-slate-700 hover:text-slate-900"
                 >
                   FAQ
                 </Link>
+
                 <Link
                   href="/book"
                   className="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition"
@@ -62,7 +79,7 @@ export default function RootLayout({
                 </Link>
               </nav>
 
-              {/* Mobile menu button + drawer */}
+              {/* Mobile menu */}
               <MobileNav />
             </div>
           </div>
@@ -114,7 +131,23 @@ export default function RootLayout({
                       href="/services"
                       className="text-slate-600 hover:text-slate-900"
                     >
-                      Услуги
+                      Проверка
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/diagnostics"
+                      className="text-slate-600 hover:text-slate-900"
+                    >
+                      Диагностика
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/tpms"
+                      className="text-slate-600 hover:text-slate-900"
+                    >
+                      TPMS
                     </Link>
                   </li>
                   <li>
@@ -147,8 +180,7 @@ export default function RootLayout({
             </div>
 
             <div className="mt-10 border-t pt-6 text-xs text-slate-500">
-              © {new Date().getFullYear()} FileVerified.eu · Всички права
-              запазени
+              © {new Date().getFullYear()} FileVerified.eu · Всички права запазени
             </div>
           </div>
         </footer>

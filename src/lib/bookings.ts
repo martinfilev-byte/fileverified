@@ -7,7 +7,7 @@ export type Booking = {
   id: string
   createdAt: string
   status: BookingStatus
-  pkg: "basic" | "full" | "premium"
+  pkg: "Standard" | "Premium" | "PremiumEV"
   pkgName: string
   date: string
   time: string

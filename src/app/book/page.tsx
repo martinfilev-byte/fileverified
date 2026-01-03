@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react"
 
-type PackageId = "basic" | "full" | "premium"
+type PackageId = "Standard" | "Premium" | "PremiumEV"
 
 const PACKAGES: Array<{
   id: PackageId
@@ -13,24 +13,24 @@ const PACKAGES: Array<{
   highlight?: boolean
 }> = [
   {
-    id: "basic",
-    name: "Basic",
-    price: "149 лв",
+    id: "Standard",
+    name: "Standard",
+    price: "100 Euro",
     duration: "60–75 мин",
     short: "Базова проверка + диагностика",
   },
   {
-    id: "full",
-    name: "Full",
-    price: "249 лв",
+    id: "Premium",
+    name: "Premium",
+    price: "250 Euro",
     duration: "90–120 мин",
     short: "Най-добрият баланс (препоръчано)",
     highlight: true,
   },
   {
-    id: "premium",
-    name: "Premium",
-    price: "349 лв",
+    id: "PremiumEV",
+    name: "PremiumEV",
+    price: "300 Euro",
     duration: "120–150 мин",
     short: "Максимално подробно + доклад",
   },
@@ -39,7 +39,7 @@ const PACKAGES: Array<{
 const TIME_SLOTS = ["09:00", "11:00", "13:00", "15:00", "17:00"]
 
 export default function BookPage() {
-  const [selected, setSelected] = useState<PackageId>("full")
+  const [selected, setSelected] = useState<PackageId>("Premium")
   const selectedPackage = useMemo(
     () => PACKAGES.find((p) => p.id === selected)!,
     [selected]
@@ -63,52 +63,23 @@ export default function BookPage() {
     setForm((prev) => ({ ...prev, [key]: value }))
   }
 
-  async function onSubmit(e: React.FormEvent) {
+  // Online booking temporarily disabled (no backend/storage yet)
+  const bookingEnabled = false
+
+  function onSubmit(e: React.FormEvent) {
     e.preventDefault()
 
-    if (!form.date || !form.time) {
-      alert("Моля, изберете дата и час за оглед.")
-      return
-    }
-
-    const payload = {
-      pkg: selectedPackage.id,
-      pkgName: selectedPackage.name,
-      ...form,
-    }
-
-    const res = await fetch("/api/bookings", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-
-    if (!res.ok) {
-      alert("Грешка при изпращане. Моля, опитайте отново.")
-      return
-    }
-
-    alert("Заявката е изпратена! Ще се свържем с вас за потвърждение.")
-
-    setForm({
-      fullName: "",
-      phone: "",
-      email: "",
-      makeModel: "",
-      year: "",
-      vin: "",
-      mileage: "",
-      location: "",
-      notes: "",
-      date: "",
-      time: "",
-    })
-    setSelected("full")
+    // Keep UX clean: no errors, no fake submission
+    alert("Онлайн запазването ще бъде активно съвсем скоро.")
   }
 
   return (
     <section className="space-y-10">
       <div className="space-y-3">
+        <div className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
+          ℹ️ Онлайн запазването е временно изключено
+        </div>
+
         <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
           Запази оглед
         </h1>
@@ -287,10 +258,22 @@ export default function BookPage() {
 
           <button
             type="submit"
-            className="w-full rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-700 transition"
+            disabled={!bookingEnabled}
+            aria-disabled={!bookingEnabled}
+            title="Онлайн запазването ще бъде активно съвсем скоро."
+            className={[
+              "w-full rounded-xl px-6 py-3 font-semibold text-white transition",
+              bookingEnabled
+                ? "bg-emerald-600 hover:bg-emerald-700"
+                : "bg-slate-300 cursor-not-allowed",
+            ].join(" ")}
           >
             Изпрати заявка
           </button>
+
+          <div className="text-sm text-slate-600">
+            Онлайн запазването ще бъде активно съвсем скоро.
+          </div>
         </form>
 
         {/* Обобщение */}
@@ -315,7 +298,8 @@ export default function BookPage() {
           </div>
 
           <div className="text-xs text-slate-600">
-            Ако избраният слот е зает, ще предложим най-близка алтернатива.
+            Онлайн запазването ще бъде добавено скоро. Засега потвърждението е
+            ръчно (по телефон).
           </div>
         </aside>
       </div>

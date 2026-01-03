@@ -10,14 +10,12 @@ export default function HomePage() {
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
             Независима проверка на автомобил преди покупка.
             <span className="block text-emerald-700">
-              Реално състояние, без изненади.
+              Вижте реалното състояние, спестете си изненадите.
             </span>
           </h1>
 
           <p className="text-lg text-slate-600 max-w-xl">
-            Професионален оглед на място в София — диагностика, проверка на боя,
-            реално техническо състояние и ясна препоръка, без интерес от
-            продажбата.
+           Купете следващия си автомобил с увереност. Ние проверяваме всичко вместо вас – от софтуерни грешки до дебелината на боята. Даваме ви обективната истина за всяка кола в София, за да сте сигурни, че инвестирате в качество, а не в ремонти.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -50,20 +48,20 @@ export default function HomePage() {
       </div>
 
       {/* TRUST */}
-      <div className="grid gap-6 md:grid-cols-3">
-        <TrustCard
-          title="Независим оглед"
-          text="Нямаме интерес от продажбата на автомобила. Получаваш обективна и честна оценка."
-        />
-        <TrustCard
-          title="Реални факти"
-          text="Проверка на състояние, диагностика и следи от ремонти — без догадки."
-        />
-        <TrustCard
-          title="Ясна препоръка"
-          text="В края знаеш дали автомобилът си струва или е по-добре да го пропуснеш."
-        />
-      </div>
+<div className="grid gap-6 md:grid-cols-3">
+  <TrustCard
+    title="Независим оглед"
+    text="Ние не сме автокъща и не продаваме коли. Нашата цел е да ви дадем 100% обективна и честна оценка за състоянието на избрания от вас автомобил."
+  />
+  <TrustCard
+    title="Реални факти"
+    text="Използваме професионални дебеломери за боя и диагностични уреди. Откриваме пребоядисвани детайли, активни грешки и следи от тежки ремонти."
+  />
+  <TrustCard
+    title="Ясна препоръка"
+    text="В края на огледа получавате детайлен отчет. Ще разберете дали колата си заслужава инвестицията или е по-добре да продължите търсенето."
+  />
+</div>
 
       {/* HOW IT WORKS */}
       <div className="space-y-10">
@@ -116,8 +114,8 @@ export default function HomePage() {
 
 function TrustCard({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-2xl border bg-white p-6 shadow-sm">
-      <div className="text-lg font-semibold text-slate-900">{title}</div>
+    <div className="rounded-2xl border border-black bg-white p-6 shadow-sm">
+      <div className="text-lg font-bold text-[#059669]">{title}</div>
       <p className="mt-2 text-slate-600">{text}</p>
     </div>
   )

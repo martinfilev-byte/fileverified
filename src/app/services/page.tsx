@@ -1,7 +1,7 @@
 const PACKAGES = [
   {
-    name: "Basic",
-    price: "159 лв",
+    name: "Standard",
+    price: "100 Euro",
     duration: "60–75 мин",
     description: "Бърза и практична проверка за базова сигурност.",
     features: [
@@ -9,35 +9,35 @@ const PACKAGES = [
       "Визуален оглед (двигател/окачване/течове)",
       "Кратко обобщение: плюсове/минуси",
     ],
-    cta: "Запази Basic",
+    cta: "Запази Standard",
     highlight: false,
   },
   {
-    name: "Full",
-    price: "299 лв",
+    name: "Premium",
+    price: "250 Euro",
     duration: "90–120 мин",
     description: "Най-избираният пакет — най-добър баланс цена/покритие.",
     features: [
-      "Всичко от Basic",
+      "Всичко от Standard",
       "Проверка на боя (дебелина) и панели",
-      "Проверка на гуми/джанти/спирачки (визуално)",
+      "Проверка на гуми/джанти/спирачки и грайфер",
       "Оценка на реалното състояние и рискове",
     ],
-    cta: "Запази Full",
+    cta: "Запази Premium",
     highlight: true,
   },
   {
-    name: "Premium",
-    price: "349 лв",
+    name: "Premium EV",
+    price: "300 Euro",
     duration: "120–150 мин",
-    description: "Максимално подробен оглед + доклад за спокойствие.",
+    description: "Всичко от Premium + диагностика на батерията",
     features: [
-      "Всичко от Full",
+      "Всичко от Premium",
       "По-детайлен доклад с препоръки",
       "Приоритетна комуникация (обаждане след оглед)",
       "Снимки/забележки по ключови точки",
     ],
-    cta: "Запази Premium",
+    cta: "Запази Premium EV",
     highlight: false,
   },
 ]
@@ -48,7 +48,7 @@ export default function ServicesPage() {
       <div className="space-y-3">
         <h1 className="text-3xl md:text-4xl font-bold text-slate-900">Услуги и цени</h1>
         <p className="text-slate-600 text-lg">
-          Избери пакет според нуждите си. Ако се колебаеш — препоръчваме <span className="font-semibold">Full</span>.
+          Избери пакет според нуждите си. Ако се колебаеш — препоръчваме <span className="font-semibold">Premium</span>.
         </p>
       </div>
 
