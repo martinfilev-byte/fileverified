@@ -53,6 +53,7 @@ export default function BookPage() {
     phone: "",
     email: "",
     makeModel: "",
+    carLink: "", // НОВО ПОЛЕ
     year: "",
     vin: "",
     mileage: "",
@@ -111,7 +112,7 @@ export default function BookPage() {
 
   return (
     <section className="space-y-10 py-6 max-w-7xl mx-auto">
-      <div className="space-y-3 px-4">
+      <div className="space-y-3 px-4 text-center md:text-left">
         <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
           Запази оглед
         </h1>
@@ -159,7 +160,6 @@ export default function BookPage() {
       </div>
 
       <div className="grid gap-8 lg:grid-cols-3 px-4 pb-20">
-        {/* ФОРМА */}
         <form 
           onSubmit={onSubmit} 
           className="lg:col-span-2 rounded-[2.5rem] border border-slate-100 bg-white p-6 md:p-10 shadow-2xl shadow-slate-200/50 space-y-8"
@@ -171,13 +171,13 @@ export default function BookPage() {
             <Field label="Телефон">
               <input className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-5 py-4 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 font-medium" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="0888 123 456" required />
             </Field>
-            <Field label="Имейл (по желание)">
-              <input type="email" className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-5 py-4 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 font-medium" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="ivan@mail.com" />
-            </Field>
             <Field label="Марка и модел">
               <input className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-5 py-4 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 font-medium" value={form.makeModel} onChange={(e) => update("makeModel", e.target.value)} placeholder="VW Golf 7 GTE" required />
             </Field>
-            <Field label="Година">
+            <Field label="Линк към обява">
+              <input className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-5 py-4 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 font-medium font-bold text-emerald-600" value={form.carLink} onChange={(e) => update("carLink", e.target.value)} placeholder="Mobile.bg / Cars.bg..." required />
+            </Field>
+            <Field label="Година (по желание)">
               <input className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-5 py-4 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 font-medium" value={form.year} onChange={(e) => update("year", e.target.value)} placeholder="2018" />
             </Field>
             <Field label="VIN (по желание)">
@@ -200,8 +200,8 @@ export default function BookPage() {
             </Field>
           </div>
 
-          <Field label="Бележки или линк към обявата">
-            <textarea className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-5 py-4 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 font-medium min-h-[140px] resize-none" value={form.notes} onChange={(e) => update("notes", e.target.value)} placeholder="Сложи линк от mobile.bg тук или напиши какво те притеснява в колата..." />
+          <Field label="Допълнителни бележки">
+            <textarea className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-5 py-4 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 font-medium min-h-[120px] resize-none" value={form.notes} onChange={(e) => update("notes", e.target.value)} placeholder="Какво искате да проверим специфично?" />
           </Field>
 
           {status === 'error' && (
@@ -223,7 +223,6 @@ export default function BookPage() {
           </button>
         </form>
 
-        {/* СТРАНИЧНА ЧАСТ */}
         <aside className="space-y-6">
           <div className="rounded-[2.5rem] border border-emerald-100 bg-emerald-50/40 p-8 space-y-8 sticky top-24">
             <div className="text-sm font-black text-emerald-800 uppercase tracking-[0.2em]">Обобщение</div>
@@ -243,9 +242,6 @@ export default function BookPage() {
                 </div>
               </div>
             </div>
-            <div className="text-xs text-slate-500 font-medium leading-relaxed italic">
-              * След изпращане на заявката, Мартин ще прегледа графика и ще Ви се обади за потвърждение на посочения телефон.
-            </div>
           </div>
         </aside>
       </div>
@@ -255,9 +251,9 @@ export default function BookPage() {
 
 function Field({ label, children }: { label: string, children: React.ReactNode }) {
   return (
-    <label className="space-y-2 block">
+    <div className="space-y-2 block">
       <div className="text-sm font-black text-slate-700 ml-1 uppercase tracking-wider">{label}</div>
       {children}
-    </label>
+    </div>
   )
 }
