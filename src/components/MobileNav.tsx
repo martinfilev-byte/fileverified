@@ -1,13 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Menu, X } from "lucide-react"
 
 export default function MobileNav() {
   const [isOpen, setIsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const pathname = usePathname()
+
+  // Проверка дали сме в браузъра (клиентска част)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (isOpen) {
@@ -21,77 +28,69 @@ export default function MobileNav() {
     setIsOpen(false)
   }, [pathname])
 
+  const menuContent = (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 99999,
+        display: isOpen ? 'block' : 'none',
+      }}
+    >
+      {/* Плътен фон за застраховка */}
+      <div 
+        className="absolute inset-0 bg-white"
+        style={{ opacity: 0.96, backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
+      />
+      
+      <div className="relative flex flex-col h-full w-full shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 h-20 border-b border-slate-100">
+          <span className="font-bold text-lg text-slate-900">МЕНЮ</span>
+          <button onClick={() => setIsOpen(false)} className="p-2 bg-slate-100 rounded-full">
+            <X className="h-6 w-6 text-slate-900" />
+          </button>
+        </div>
+
+        {/* Links */}
+        <nav className="flex flex-col p-8 gap-2">
+          {[
+            { name: "НАЧАЛО", href: "/" },
+            { name: "ПРОВЕРКА", href: "/services" },
+            { name: "ДИАГНОСТИКА", href: "/diagnostics" },
+            { name: "TPMS", href: "/tpms" },
+            { name: "FAQ", href: "/faq" },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`py-5 text-xl font-bold border-b border-slate-50 ${
+                pathname === item.href ? "text-emerald-600" : "text-slate-900"
+              }`}
+            >
+              {item.name}
+            </Link>
+          ))}
+          
+          <Link 
+            href="/book" 
+            className="mt-10 w-full text-center rounded-xl bg-emerald-600 py-5 text-lg font-black text-white shadow-lg"
+          >
+            ЗАПАЗИ ОГЛЕД
+          </Link>
+        </nav>
+      </div>
+    </div>
+  )
+
   return (
     <div className="md:hidden">
-      {/* Хамбургер бутон */}
-      <button
-        onClick={() => setIsOpen(true)}
-        className="p-2 text-slate-900 focus:outline-none"
-      >
+      <button onClick={() => setIsOpen(true)} className="p-2 text-slate-900">
         <Menu className="h-6 w-6" />
       </button>
 
-      {/* ПАНЕЛ - Прозрачен с Blur */}
-      <div
-        style={{ 
-          position: 'fixed', 
-          inset: 0, 
-          zIndex: 9999, 
-          backgroundColor: 'rgba(255, 255, 255, 0.92)', // 92% плътност
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
-          visibility: isOpen ? 'visible' : 'hidden',
-          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-          transition: 'transform 0.3s ease-in-out, visibility 0.3s'
-        }}
-      >
-        <div className="flex flex-col h-full w-full">
-          {/* Header вътре в менюто */}
-          <div className="flex items-center justify-between px-6 h-20 border-b border-slate-200/50">
-            <span className="font-bold text-lg tracking-tight text-slate-900">МЕНЮ</span>
-            <button 
-              onClick={() => setIsOpen(false)} 
-              className="p-2 bg-white/80 rounded-full border border-slate-200 shadow-sm"
-            >
-              <X className="h-6 w-6 text-slate-900" />
-            </button>
-          </div>
-
-          {/* Навигация */}
-          <nav className="flex flex-col p-8 gap-1">
-            {[
-              { name: "НАЧАЛО", href: "/" },
-              { name: "ПРОВЕРКА", href: "/services" },
-              { name: "ДИАГНОСТИКА", href: "/diagnostics" },
-              { name: "TPMS", href: "/tpms" },
-              { name: "FAQ", href: "/faq" },
-            ].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`py-5 text-xl font-bold border-b border-slate-200/30 transition-colors ${
-                  pathname === item.href ? "text-emerald-600" : "text-slate-900"
-                }`}
-              >
-                {item.name}
-              </Link>
-            ))}
-            
-            <Link 
-              href="/book" 
-              className="mt-10 w-full text-center rounded-xl bg-emerald-600 py-5 text-lg font-black text-white shadow-xl active:scale-95 transition-all"
-            >
-              ЗАПАЗИ ОГЛЕД
-            </Link>
-          </nav>
-
-          <div className="mt-auto p-10 text-center">
-            <p className="text-[10px] font-semibold text-slate-400 tracking-[0.3em] uppercase">
-              Professional Auto Inspection
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Рендираме менюто директно в body, за да не се влияе от хедъра */}
+      {mounted && createPortal(menuContent, document.body)}
     </div>
   )
 }
