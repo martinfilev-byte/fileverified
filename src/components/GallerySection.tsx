@@ -9,11 +9,13 @@ import "yet-another-react-lightbox/styles.css";
 import "yet-another-react-lightbox/plugins/thumbnails.css";
 import { Maximize2 } from 'lucide-react';
 
+// Използваме твоите нови локални снимки от public/images/sample-report/
 const demoPhotos = [
-  { src: 'https://images.unsplash.com/photo-1603584173870-7f304f5ac40a?q=80&w=1200', category: 'Екстериор' },
-  { src: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1200', category: 'Екстериор' },
-  { src: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1200', category: 'Двигател' },
-  { src: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200', category: 'Интериор' },
+  { src: '/images/sample-report/1.jpg', category: 'Екстериор' },
+  { src: '/images/sample-report/2.jpg', category: 'Екстериор' },
+  { src: '/images/sample-report/3.jpg', category: 'Двигател' },
+  { src: '/images/sample-report/4.jpg', category: 'Интериор' },
+  { src: '/images/sample-report/5.jpg', category: 'Интериор' },
 ];
 
 export default function GallerySection() {
@@ -34,6 +36,7 @@ export default function GallerySection() {
 
   return (
     <div className="w-full bg-white p-6">
+      {/* Категории */}
       <div className="flex flex-wrap gap-2 mb-8 justify-center">
         {categories.map((cat) => (
           <button
@@ -50,10 +53,11 @@ export default function GallerySection() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1 shadow-2xl rounded-xl overflow-hidden border border-slate-100">
+      {/* Мрежа със снимки */}
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1 shadow-2xl rounded-xl overflow-hidden border border-slate-100 bg-slate-50">
         {filteredPhotos.map((photo, i) => (
           <button 
-            key={photo.src + i}
+            key={i}
             type="button"
             className="relative aspect-[4/3] cursor-pointer group overflow-hidden bg-slate-200 block w-full"
             onClick={() => setIndex(i)}
@@ -64,6 +68,7 @@ export default function GallerySection() {
               fill
               className="object-cover transition duration-500 group-hover:scale-110 group-hover:brightness-110"
               sizes="(max-w-768px) 50vw, 25vw"
+              priority={i < 4}
             />
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
               <Maximize2 className="text-white w-6 h-6" />
@@ -72,6 +77,7 @@ export default function GallerySection() {
         ))}
       </div>
 
+      {/* Lightbox преглед */}
       <Lightbox
         index={index}
         open={index >= 0}

@@ -1,12 +1,12 @@
 import Link from "next/link"
-// Пътят е съобразен с твоята структура: src/app -> src/components
+// Връзка към GallerySection компонента
 import GallerySection from "../components/GallerySection" 
 
 export default function HomePage() {
   return (
-    <section className="space-y-20">
+    <section className="space-y-20 pb-20">
       {/* HERO SECTION */}
-      <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+      <div className="grid gap-12 lg:grid-cols-2 lg:items-center px-6 pt-10">
         <div className="space-y-6">
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
             Независима проверка на автомобил преди покупка.
@@ -48,7 +48,7 @@ export default function HomePage() {
       </div>
 
       {/* TRUST CARDS */}
-      <div className="grid gap-6 md:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-3 px-6">
         <TrustCard
           title="Независим оглед"
           text="Ние не сме автокъща и не продаваме коли. Нашата цел е да ви дадем 100% обективна и честна оценка за състоянието на избрания от вас автомобил."
@@ -64,7 +64,7 @@ export default function HomePage() {
       </div>
 
       {/* HOW IT WORKS */}
-      <div className="space-y-10">
+      <div className="space-y-10 px-6">
         <h2 className="text-3xl font-bold text-slate-900">
           Как протича огледът
         </h2>
@@ -88,25 +88,26 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* NEW: GALLERY SECTION (Фотодоклад) */}
+      {/* GALLERY SECTION (Оптимизирана за локални снимки) */}
       <div className="space-y-8">
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-3 px-6">
           <h2 className="text-3xl font-bold text-slate-900">
             Примерен фотодоклад
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            Разгледайте как изглежда един стандартен доклад от нашата инспекция. 
-            Всеки детайл се документира прецизно.
+            Разгледайте как документираме състоянието на автомобила. Всяка от тези 5 снимки е част от реален оглед на място.
           </p>
         </div>
         
-        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
-          <GallerySection />
+        <div className="max-w-7xl mx-auto px-4 lg:px-6">
+          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl">
+            <GallerySection />
+          </div>
         </div>
       </div>
 
       {/* CTA SECTION */}
-      <div className="rounded-3xl border bg-emerald-50 p-10 text-center space-y-6">
+      <div className="mx-6 rounded-3xl border bg-emerald-50 p-10 text-center space-y-6">
         <h2 className="text-3xl font-bold text-slate-900">
           Готов ли си да провериш автомобила?
         </h2>
@@ -131,9 +132,9 @@ export default function HomePage() {
 
 function TrustCard({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-2xl border border-black bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-      <div className="text-lg font-bold text-[#059669]">{title}</div>
-      <p className="mt-2 text-slate-600">{text}</p>
+    <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div className="text-lg font-bold text-emerald-700">{title}</div>
+      <p className="mt-2 text-slate-600 text-sm leading-relaxed">{text}</p>
     </div>
   )
 }
@@ -148,14 +149,14 @@ function StepCard({
   text: string
 }) {
   return (
-    <div className="rounded-2xl border bg-white p-6 shadow-sm space-y-3 transition-all hover:border-emerald-200">
+    <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm space-y-3 transition-all hover:border-emerald-200">
       <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-white font-bold">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-white font-bold text-sm">
           {step}
         </div>
         <div className="text-lg font-semibold text-slate-900">{title}</div>
       </div>
-      <p className="text-slate-600">{text}</p>
+      <p className="text-slate-600 text-sm leading-relaxed">{text}</p>
     </div>
   )
 }
