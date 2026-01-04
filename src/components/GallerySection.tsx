@@ -10,14 +10,15 @@ import "yet-another-react-lightbox/plugins/thumbnails.css";
 import { Maximize2 } from 'lucide-react';
 
 const demoPhotos = [
-  { src: 'https://images.unsplash.com/photo-1603584173870-7f304f5ac40a?q=80&w=1200', alt: 'Инспекция 1' },
-  { src: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1200', alt: 'Инспекция 2' },
-  { src: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1200', alt: 'Инспекция 3' },
-  { src: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200', alt: 'Инспекция 4' },
+  { src: 'https://images.unsplash.com/photo-1603584173870-7f304f5ac40a?q=80&w=1200', category: 'Екстериор' },
+  { src: 'https://images.unsplash.com/photo-1494976388531-d1058494cdd8?q=80&w=1200', category: 'Екстериор' },
+  { src: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1200', category: 'Двигател' },
+  { src: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?q=80&w=1200', category: 'Интериор' },
 ];
 
 export default function GallerySection() {
   const [index, setIndex] = useState(-1);
+  const [filter, setFilter] = useState('Всички');
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -26,25 +27,46 @@ export default function GallerySection() {
 
   if (!mounted) return null;
 
+  const categories = ['Всички', 'Екстериор', 'Интериор', 'Двигател'];
+  const filteredPhotos = filter === 'Всички' 
+    ? demoPhotos 
+    : demoPhotos.filter(p => p.category === filter);
+
   return (
-    <div className="w-full bg-white p-4">
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {demoPhotos.map((photo, i) => (
+    <div className="w-full bg-white p-6">
+      <div className="flex flex-wrap gap-2 mb-8 justify-center">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setFilter(cat)}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
+              filter === cat 
+              ? 'bg-emerald-600 text-white shadow-md' 
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-1 shadow-2xl rounded-xl overflow-hidden border border-slate-100">
+        {filteredPhotos.map((photo, i) => (
           <button 
-            key={i}
+            key={photo.src + i}
             type="button"
-            className="relative aspect-[4/3] cursor-pointer group overflow-hidden rounded-xl border border-slate-200 block w-full bg-gray-100 shadow-sm"
+            className="relative aspect-[4/3] cursor-pointer group overflow-hidden bg-slate-200 block w-full"
             onClick={() => setIndex(i)}
           >
             <Image
               src={photo.src}
-              alt={photo.alt}
+              alt={photo.category}
               fill
-              className="object-cover transition duration-300 group-hover:scale-105"
+              className="object-cover transition duration-500 group-hover:scale-110 group-hover:brightness-110"
               sizes="(max-w-768px) 50vw, 25vw"
             />
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20">
-              <Maximize2 className="text-white w-8 h-8" />
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+              <Maximize2 className="text-white w-6 h-6" />
             </div>
           </button>
         ))}
@@ -54,7 +76,7 @@ export default function GallerySection() {
         index={index}
         open={index >= 0}
         close={() => setIndex(-1)}
-        slides={demoPhotos.map(p => ({ src: p.src }))}
+        slides={filteredPhotos.map(p => ({ src: p.src }))}
         plugins={[Zoom, Thumbnails]}
         portal={{ root: document.body }}
         styles={{ 

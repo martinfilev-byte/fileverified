@@ -1,13 +1,12 @@
 import Link from "next/link"
-// Тук е ключовата промяна на пътя, за да намери папката components
+// Пътят е съобразен с твоята структура: src/app -> src/components
 import GallerySection from "../components/GallerySection" 
 
 export default function HomePage() {
   return (
     <section className="space-y-20">
-      {/* HERO */}
+      {/* HERO SECTION */}
       <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
-        {/* Text */}
         <div className="space-y-6">
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
             Независима проверка на автомобил преди покупка.
@@ -37,7 +36,6 @@ export default function HomePage() {
           </div>
         </div>
 
-        {/* Image */}
         <div className="relative">
           <div className="aspect-[4/3] overflow-hidden rounded-3xl border shadow-sm">
             <img
@@ -49,7 +47,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* TRUST */}
+      {/* TRUST CARDS */}
       <div className="grid gap-6 md:grid-cols-3">
         <TrustCard
           title="Независим оглед"
@@ -90,17 +88,24 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* GALLERY SECTION */}
-      <div className="space-y-6">
-        <h2 className="text-3xl font-bold text-slate-900 px-2">
-          Примерен фотодоклад
-        </h2>
-        <div className="overflow-hidden rounded-3xl border shadow-sm bg-white">
+      {/* NEW: GALLERY SECTION (Фотодоклад) */}
+      <div className="space-y-8">
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-bold text-slate-900">
+            Примерен фотодоклад
+          </h2>
+          <p className="text-slate-600 max-w-2xl mx-auto">
+            Разгледайте как изглежда един стандартен доклад от нашата инспекция. 
+            Всеки детайл се документира прецизно.
+          </p>
+        </div>
+        
+        <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
           <GallerySection />
         </div>
       </div>
 
-      {/* CTA */}
+      {/* CTA SECTION */}
       <div className="rounded-3xl border bg-emerald-50 p-10 text-center space-y-6">
         <h2 className="text-3xl font-bold text-slate-900">
           Готов ли си да провериш автомобила?
