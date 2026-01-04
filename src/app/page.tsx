@@ -1,10 +1,8 @@
 import Link from "next/link"
-// Пътят е съобразен с твоята структура: src/app -> src/components
-import GallerySection from "../components/GallerySection" 
 
 export default function HomePage() {
   return (
-    <section className="space-y-20 pb-20">
+    <section className="space-y-20">
       {/* HERO SECTION */}
       <div className="grid gap-12 lg:grid-cols-2 lg:items-center px-6 pt-10">
         <div className="space-y-6">
@@ -16,7 +14,7 @@ export default function HomePage() {
           </h1>
 
           <p className="text-lg text-slate-600 max-w-xl">
-            Купете следващия си автомобил с увереност. Ние проверяваме всичко вместо вас – от софтуерни грешки до дебелината на боята. Даваме ви обективната истина за всяка кола в София, за да сте сигурни, че инвестирате в качество, а не в ремонти.
+            Купете следващия си автомобил с увереност. Ние проверяваме всичко вместо вас – от софтуерни грешки до дебелината на боята. Даваме ви обективната истина за всяка кола в София.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -40,7 +38,7 @@ export default function HomePage() {
           <div className="aspect-[4/3] overflow-hidden rounded-3xl border shadow-sm">
             <img
               src="/images/hero-inspection.png"
-              alt="Професионален оглед на автомобил преди покупка"
+              alt="Професионален оглед на автомобил"
               className="h-full w-full object-cover"
             />
           </div>
@@ -88,25 +86,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ГАЛЕРИЯ (Примерен фотодоклад) */}
-      <div className="space-y-8">
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl font-bold text-slate-900">
-            Примерен фотодоклад
-          </h2>
-          <p className="text-slate-600 max-w-2xl mx-auto px-6">
-            Разгледайте как изглежда един стандартен доклад от нашата инспекция. 
-            Всеки детайл се документира прецизно.
-          </p>
-        </div>
-        
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-lg">
-            <GallerySection />
-          </div>
-        </div>
-      </div>
-
       {/* CTA SECTION */}
       <div className="mx-6 rounded-3xl border bg-emerald-50 p-10 text-center space-y-6">
         <h2 className="text-3xl font-bold text-slate-900">
@@ -129,8 +108,6 @@ export default function HomePage() {
   )
 }
 
-/* --- Вградени помощни компоненти --- */
-
 function TrustCard({ title, text }: { title: string; text: string }) {
   return (
     <div className="rounded-2xl border border-black bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
@@ -140,15 +117,7 @@ function TrustCard({ title, text }: { title: string; text: string }) {
   )
 }
 
-function StepCard({
-  step,
-  title,
-  text,
-}: {
-  step: string
-  title: string
-  text: string
-}) {
+function StepCard({ step, title, text }: { step: string; title: string; text: string }) {
   return (
     <div className="rounded-2xl border bg-white p-6 shadow-sm space-y-3 transition-all hover:border-emerald-200">
       <div className="flex items-center gap-3">

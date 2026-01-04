@@ -1,146 +1,192 @@
-"use client"
-
-import React from "react"
+import Link from "next/link"
+import fs from 'fs'
+import path from 'path'
+import GallerySection from "../../components/GallerySection"
 import { 
   CheckCircle2, 
   AlertTriangle, 
-  XCircle, 
-  Camera, 
-  Cpu, 
-  Settings, 
-  ShieldCheck,
-  ClipboardList,
-  ChevronRight
+  ShieldCheck, 
+  Gauge, 
+  Car, 
+  ClipboardList, 
+  Activity, 
+  Zap, 
+  Search,
+  Eye,
+  Wrench,
+  Stethoscope
 } from "lucide-react"
-import Link from "next/link"
 
-export default function SampleReportPage() {
+export default function ReportPage() {
+  // АВТОМАТИКА: Прочитаме всички снимки от папката public/images/sample-report
+  const imageDir = path.join(process.cwd(), 'public/images/sample-report')
+  let imageFiles: string[] = []
+  
+  try {
+    if (fs.existsSync(imageDir)) {
+      imageFiles = fs.readdirSync(imageDir)
+        .filter(file => /\.(jpg|jpeg|png|webp)$/i.test(file))
+        .map(file => `/images/sample-report/${file}`)
+        .sort();
+    }
+  } catch (e) {
+    console.error("Грешка при четене на снимките:", e)
+  }
+
   return (
-    <div className="max-w-5xl mx-auto py-10 px-4 space-y-12">
-      {/* HEADER */}
-      <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 bg-emerald-100 text-emerald-700 px-4 py-2 rounded-full text-sm font-black uppercase tracking-widest">
-          <ShieldCheck className="w-4 h-4" /> ПРИМЕРЕН ДОКЛАД
-        </div>
-        <h1 className="text-4xl md:text-5xl font-black text-slate-900 uppercase">Какво получавате след оглед?</h1>
-        <p className="text-slate-500 text-lg max-w-2xl mx-auto">
-          Подробен цифров доклад със снимков материал, компютърна диагностика и експертно заключение от наш специалист.
-        </p>
-      </div>
-
-      {/* QUICK SUMMARY CARD */}
-      <div className="bg-white rounded-[2.5rem] border border-slate-100 shadow-2xl overflow-hidden grid md:grid-cols-3">
-        <div className="p-8 bg-slate-900 text-white space-y-4">
-          <div className="text-emerald-400 font-black text-xs uppercase tracking-widest">Автомобил</div>
-          <div className="text-2xl font-bold leading-tight">BMW 530d xDrive (G30)</div>
-          <div className="space-y-2 text-sm text-slate-400">
-            <p>Година: 2018</p>
-            <p>Пробег (по табло): 142,500 км</p>
-            <p>Двигател: 3.0 Diesel, 265hp</p>
+    <main className="min-h-screen bg-slate-50 pb-20">
+      {/* HEADER СЪС СТАТУС */}
+      <div className="bg-white border-b px-6 py-10 shadow-sm">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-8">
+          <div>
+            <div className="flex items-center gap-2 text-emerald-700 font-bold mb-3 tracking-wide">
+              <ShieldCheck className="w-6 h-6" />
+              <span className="text-sm uppercase tracking-widest">ИНСПЕКЦИОНЕН ДОКЛАД #20260104-GT3</span>
+            </div>
+            <h1 className="text-4xl font-extrabold text-slate-900 leading-tight">
+              Porsche 911 GT3 (992)
+            </h1>
+            <div className="flex items-center gap-4 mt-3 text-slate-500">
+              <span className="flex items-center gap-1.5 font-medium"><Search className="w-4 h-4"/> София, България</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+              <span className="font-medium underline decoration-emerald-500 underline-offset-4">VIN: WP0ZZZ99ZNS2*****</span>
+            </div>
           </div>
-          <div className="pt-4 border-t border-slate-800">
-            <div className="text-xs uppercase font-black text-slate-500 mb-2">Обща Оценка</div>
-            <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-full bg-yellow-500 animate-pulse"></div>
-              <span className="text-xl font-black text-yellow-500 italic">ДОБРА (7/10)</span>
+          
+          <div className="bg-emerald-50 border-2 border-emerald-100 rounded-3xl p-6 flex items-center gap-5">
+            <div className="bg-emerald-500 text-white p-3 rounded-2xl shadow-md">
+              <CheckCircle2 className="w-8 h-8" />
+            </div>
+            <div>
+              <div className="text-xs text-emerald-700 font-bold uppercase tracking-wider mb-1">Финален статус</div>
+              <div className="text-2xl font-black text-emerald-900 uppercase">ПРЕПОРЪЧАН</div>
             </div>
           </div>
         </div>
-
-        <div className="md:col-span-2 p-8 space-y-6">
-          <h3 className="text-xl font-black text-slate-900 uppercase flex items-center gap-2">
-            <ClipboardList className="w-5 h-5 text-emerald-600" /> Резюме от проверката
-          </h3>
-          <p className="text-slate-600 leading-relaxed font-medium">
-            Автомобилът е в добро общо състояние. Открити са следи от пребоядисване на преден десен калник и броня (козметичен ремонт). 
-            Компютърната диагностика показва стара грешка в подгревни свещи. Интериорът съответства на пробега. 
-            <span className="text-slate-900 font-bold"> Препоръка: Възможна покупка след договаряне на цената за предстоящо обслужване.</span>
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <span className="flex items-center gap-1 text-xs font-black bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg">✓ РЕАЛНИ КИЛОМЕТРИ</span>
-            <span className="flex items-center gap-1 text-xs font-black bg-yellow-50 text-yellow-700 px-3 py-1 rounded-lg">⚠ ПРЕБОЯДИСАН ДЕТАЙЛ</span>
-            <span className="flex items-center gap-1 text-xs font-black bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg">✓ ЗДРАВА ГЕОМЕТРИЯ</span>
-          </div>
-        </div>
       </div>
 
-      {/* DETAILED SECTIONS */}
-      <div className="grid md:grid-cols-2 gap-8">
-        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-slate-900 uppercase">Екстериор и Боя</h3>
-            <CheckCircle2 className="text-emerald-500" />
-          </div>
-          <ul className="space-y-4">
-            <ReportItem label="Дебелина на лака" value="110-140μm (Норма)" status="ok" />
-            <ReportItem label="Пребоядисвани детайли" value="Преден десен калник" status="warn" />
-            <ReportItem label="Геометрия (Греди/Кош)" value="Без интервенции" status="ok" />
-            <ReportItem label="Стъкла (Оригинални)" value="Всички (2018)" status="ok" />
-          </ul>
+      <div className="max-w-7xl mx-auto px-6 mt-12 space-y-12">
+        
+        {/* КЛЮЧОВИ ХАРАКТЕРИСТИКИ */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+          <InfoCard icon={<Zap className="w-5 h-5"/>} label="Мощност" value="375 kW / 510 к.с." />
+          <InfoCard icon={<Gauge className="w-5 h-5"/>} label="Пробег" value="12,450 км" />
+          <InfoCard icon={<Car className="w-5 h-5"/>} label="Година" value="05/2023" />
+          <InfoCard icon={<Activity className="w-5 h-5"/>} label="Трансмисия" value="PDK 7-speed" />
         </div>
 
-        <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm space-y-6">
-          <div className="flex items-center justify-between">
-            <h3 className="text-lg font-black text-slate-900 uppercase">Диагностика и Електроника</h3>
-            <Cpu className="text-blue-500" />
+        {/* ГАЛЕРИЯ */}
+        <div className="bg-white rounded-[2rem] border p-2 shadow-xl shadow-slate-200/50">
+          <div className="p-6 font-bold text-slate-900 border-b flex items-center justify-between">
+            <span className="flex items-center gap-2"><Eye className="w-5 h-5 text-emerald-600"/> Фотодоклад ({imageFiles.length} снимки)</span>
           </div>
-          <ul className="space-y-4">
-            <ReportItem label="Грешки в Двигател" value="Няма активни" status="ok" />
-            <ReportItem label="Грешки в Скорости" value="Няма" status="ok" />
-            <ReportItem label="DPF / Филтър твърди частици" value="8г сажди (Много добро)" status="ok" />
-            <ReportItem label="Airbag Система" value="Изправна" status="ok" />
-          </ul>
+          <GallerySection images={imageFiles} />
         </div>
-      </div>
 
-      {/* PHOTO PROOF SECTION */}
-      <div className="space-y-6">
-        <h3 className="text-2xl font-black text-slate-900 uppercase flex items-center gap-2">
-          <Camera className="w-6 h-6 text-slate-400" /> Визуални доказателства
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="aspect-square bg-slate-200 rounded-3xl overflow-hidden relative group border-4 border-white shadow-md">
-              <div className="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <span className="text-white font-bold text-xs">ВИЖ СНИМКАТА</span>
-              </div>
-              <div className="absolute bottom-3 left-3 bg-white/90 backdrop-blur px-2 py-1 rounded-md text-[10px] font-black uppercase">
-                Детайл {i}
+        {/* ДЕТАЙЛНА ПРОВЕРКА ПО СЕКЦИИ */}
+        <div className="grid lg:grid-cols-2 gap-8">
+          
+          <SectionCard title="Екстериор и Каросерия" icon={<ShieldCheck className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Структурни повреди" status="ok" />
+            <CheckItem text="Проверка на стъкла и фарове" status="ok" />
+            <CheckItem text="Дебелина на боята (всички детайли)" status="ok" info="95-110 μm" />
+            <CheckItem text="Проверка на пластмасови елементи" status="ok" />
+            <CheckItem text="Функция на врати и ключалки" status="ok" />
+            <CheckItem text="Джанти и гуми" status="warning" info="Леко охлузване предна дясна" />
+          </SectionCard>
+
+          <SectionCard title="Интериор и Електроника" icon={<ClipboardList className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Състояние на тапицерия и волан" status="ok" />
+            <CheckItem text="Мултимедия и Навигация" status="ok" />
+            <CheckItem text="Климатична система" status="ok" />
+            <CheckItem text="Ел. седалки и подгрев" status="ok" />
+            <CheckItem text="OBD II Диагностика - DME статус" status="ok" />
+            <CheckItem text="Индикация за грешки на таблото" status="ok" />
+          </SectionCard>
+
+          <SectionCard title="Двигател и Ходова част" icon={<Wrench className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Ниво и състояние на масло" status="ok" />
+            <CheckItem text="Охладителна система (Течове)" status="ok" />
+            <CheckItem text="Спирачна система (Дискове/Накладки)" status="ok" />
+            <CheckItem text="Турбокомпресор / Изпускателна система" status="ok" />
+            <CheckItem text="Окачване и амортисьори" status="ok" />
+            <CheckItem text="Скоростна кутия (Превключване)" status="ok" />
+          </SectionCard>
+
+          <SectionCard title="Резултати от тест драйв" icon={<Stethoscope className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Студен старт на двигателя" status="ok" />
+            <CheckItem text="Поведение на пътя (Вибрации)" status="ok" />
+            <CheckItem text="Ускорение и спиране" status="ok" />
+            <CheckItem text="Шум в купето при скорост" status="ok" />
+            <CheckItem text="Система за завиване (Rear steering)" status="ok" />
+          </SectionCard>
+
+        </div>
+
+        {/* ЗАКЛЮЧЕНИЕ */}
+        <div className="bg-slate-900 text-white rounded-[2.5rem] p-10 md:p-16 shadow-2xl relative overflow-hidden">
+          <div className="relative z-10 grid md:grid-cols-2 gap-10 items-center">
+            <div>
+              <h2 className="text-3xl font-bold mb-6 italic">Обобщение от инспектора</h2>
+              <p className="text-slate-300 text-lg leading-relaxed mb-6">
+                Автомобилът е в перфектно техническо и визуално състояние. Изключително рядък екземпляр с реални километри и пълна сервизна история в Porsche. Няма признаци за участия в инциденти или тежки ремонти.
+              </p>
+              <div className="flex items-center gap-4 border-t border-white/10 pt-6">
+                <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center font-bold text-xl">М</div>
+                <div>
+                  <div className="font-bold">Мартин Филев</div>
+                  <div className="text-sm text-slate-400">Главен инспектор, FileVerified</div>
+                </div>
               </div>
             </div>
-          ))}
+            <div className="space-y-4">
+               <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                  <div className="text-emerald-400 font-bold mb-2 uppercase text-xs">Защо да го купите?</div>
+                  <p className="text-sm text-slate-300">Гарантиран произход, отлично състояние на спирачките и гумите, безупречна диагностика.</p>
+               </div>
+               <Link href="/book" className="block w-full bg-emerald-500 hover:bg-emerald-400 text-white text-center py-5 rounded-2xl font-black text-xl transition-all shadow-xl shadow-emerald-500/20">
+                ЗАЯВИ ПРОВЕРКА ЗА ТВОЯ КОЛА
+              </Link>
+            </div>
+          </div>
         </div>
-        <p className="text-center text-slate-400 text-sm font-medium italic">
-          * Всеки реален доклад съдържа между 50 и 100 детайлни снимки.
-        </p>
       </div>
+    </main>
+  )
+}
 
-      {/* CALL TO ACTION - КОРЕГИРАН ТЕКСТ */}
-      <div className="bg-emerald-600 rounded-[3rem] p-10 text-center text-white space-y-6 shadow-2xl shadow-emerald-200">
-        <h2 className="text-3xl font-black uppercase">Искате такъв доклад за Вашата бъдеща кола?</h2>
-        <p className="text-emerald-100 max-w-xl mx-auto font-medium">
-          Не купувайте "котка в чувал". Ще извършим пълна проверка и ще Ви дадем спокойствие при покупката.
-        </p>
-        <div className="pt-4">
-          <Link href="/book" className="bg-white text-emerald-700 px-10 py-5 rounded-2xl font-black text-lg shadow-xl hover:bg-slate-900 hover:text-white transition-all inline-flex items-center gap-2">
-            ЗАПАЗЕТЕ ЧАС СЕГА <ChevronRight className="w-5 h-5" />
-          </Link>
-        </div>
+function SectionCard({ title, icon, children }: { title: string, icon: React.ReactNode, children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden transition-all hover:shadow-md">
+      <div className="p-6 border-b flex items-center gap-3 bg-slate-50/50">
+        {icon}
+        <h3 className="text-lg font-bold text-slate-900">{title}</h3>
       </div>
+      <div className="p-6 space-y-4">{children}</div>
     </div>
   )
 }
 
-function ReportItem({ label, value, status }: { label: string, value: string, status: 'ok' | 'warn' | 'error' }) {
+function CheckItem({ text, status, info }: { text: string, status: 'ok' | 'warning' | 'error', info?: string }) {
   return (
-    <li className="flex justify-between items-start border-b border-slate-50 pb-3">
-      <div className="space-y-1">
-        <p className="text-xs font-black text-slate-400 uppercase tracking-wider">{label}</p>
-        <p className="text-sm font-bold text-slate-700">{value}</p>
+    <div className="flex items-center justify-between border-b border-slate-50 pb-2">
+      <div className="flex items-center gap-3">
+        {status === 'ok' ? <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" /> : <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />}
+        <span className="text-slate-700 font-medium text-sm md:text-base">{text}</span>
       </div>
-      {status === 'ok' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
-      {status === 'warn' && <AlertTriangle className="w-5 h-5 text-yellow-500" />}
-      {status === 'error' && <XCircle className="w-5 h-5 text-red-500" />}
-    </li>
+      {info && <span className="text-[11px] font-bold bg-slate-100 text-slate-600 px-2 py-1 rounded uppercase tracking-tighter">{info}</span>}
+    </div>
+  )
+}
+
+function InfoCard({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) {
+  return (
+    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4">
+      <div className="text-emerald-600 bg-emerald-50 p-3 rounded-2xl">{icon}</div>
+      <div>
+        <div className="text-[10px] text-slate-400 uppercase font-black tracking-widest">{label}</div>
+        <div className="text-slate-900 font-bold text-lg">{value}</div>
+      </div>
+    </div>
   )
 }
