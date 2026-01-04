@@ -1,4 +1,6 @@
 import Link from "next/link"
+// Тук е ключовата промяна на пътя, за да намери папката components
+import GallerySection from "../components/GallerySection" 
 
 export default function HomePage() {
   return (
@@ -88,6 +90,16 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* GALLERY SECTION */}
+      <div className="space-y-6">
+        <h2 className="text-3xl font-bold text-slate-900 px-2">
+          Примерен фотодоклад
+        </h2>
+        <div className="overflow-hidden rounded-3xl border shadow-sm bg-white">
+          <GallerySection />
+        </div>
+      </div>
+
       {/* CTA */}
       <div className="rounded-3xl border bg-emerald-50 p-10 text-center space-y-6">
         <h2 className="text-3xl font-bold text-slate-900">
@@ -110,7 +122,7 @@ export default function HomePage() {
   )
 }
 
-/* --- Components --- */
+/* --- Вградени помощни компоненти --- */
 
 function TrustCard({ title, text }: { title: string; text: string }) {
   return (
