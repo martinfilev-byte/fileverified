@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+/* ДОБАВИ ТЕЗИ ДВА РЕДА ТУК */
+@import "yet-another-react-lightbox/styles.css";
+@import "yet-another-react-lightbox/plugins/thumbnails.css";
+
 :root {
   --background: #ffffff;
   --foreground: #0f172a; /* slate-900 */
@@ -17,7 +21,7 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
-/* HARD OVERRIDE: ако някъде остава тъмен фон, това го убива */
+/* Твоят съществуващ оувъррайд */
 html,
 body {
   background: #f8fafc !important; /* slate-50 */
