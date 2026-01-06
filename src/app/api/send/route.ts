@@ -37,8 +37,11 @@ export async function POST(req: Request) {
     } = body;
 
     const { data, error } = await resend.emails.send({
-      from: 'FileVerified <onboarding@resend.dev>',
+      // ИЗПОЛЗВАМЕ ТВОЯ ДОМЕЙН
+      from: 'FileVerified <info@fileverified.eu>',
       to: ['martin.filev@gmail.com'],
+      // Това ти позволява да натиснеш "Reply" в Gmail и да отговориш директно на клиента
+      replyTo: email || undefined,
       subject: `Нова заявка: ${makeModel} - ${fullName}`,
       text: `
         ДЕТАЙЛИ ЗА НОВА ЗАЯВКА (FileVerified.eu)
@@ -69,6 +72,7 @@ export async function POST(req: Request) {
     });
 
     if (error) {
+      console.error("Resend API Error:", error);
       return NextResponse.json({ error }, { status: 500 });
     }
 
