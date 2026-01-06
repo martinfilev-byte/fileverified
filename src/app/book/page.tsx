@@ -51,9 +51,9 @@ export default function BookPage() {
   const [form, setForm] = useState({
     fullName: "",
     phone: "",
-    email: "",
+    email: "", // Вече е тук
     makeModel: "",
-    carLink: "", // НОВО ПОЛЕ
+    carLink: "",
     year: "",
     vin: "",
     mileage: "",
@@ -170,6 +170,10 @@ export default function BookPage() {
             </Field>
             <Field label="Телефон">
               <input className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-5 py-4 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 font-medium" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="0888 123 456" required />
+            </Field>
+            {/* ДОБАВЕНО ПОЛЕ ЗА ИМЕЙЛ */}
+            <Field label="Имейл адрес">
+              <input type="email" className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-5 py-4 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 font-medium" value={form.email} onChange={(e) => update("email", e.target.value)} placeholder="example@mail.com" required />
             </Field>
             <Field label="Марка и модел">
               <input className="w-full rounded-2xl border border-slate-200 bg-slate-50/50 px-5 py-4 outline-none focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 focus:bg-white transition-all text-slate-900 font-medium" value={form.makeModel} onChange={(e) => update("makeModel", e.target.value)} placeholder="VW Golf 7 GTE" required />
