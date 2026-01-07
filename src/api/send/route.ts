@@ -6,9 +6,11 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    
+    // Деструктурираме всички полета, които идват от формата
     const { 
       fullName, 
-      email, 
+      email, // Трябва да е абсолютно същото име като във файла BookPage
       phone, 
       makeModel, 
       carLink, 
@@ -21,15 +23,15 @@ export async function POST(request: Request) {
       packagePrice 
     } = body;
 
-    // 1. Подготвяме мейла до теб (Мартин)
-    const adminEmailPromise = resend.emails.send({
+    // 1. МЕЙЛ ДО МАРТИН
+    const adminRes = await resend.emails.send({
       from: 'FileVerified <info@fileverified.eu>',
       to: ['martin.filev@gmail.com'],
-      replyTo: email, 
+      replyTo: email || undefined, 
       subject: `Нова резервация: ${makeModel} - ${fullName}`,
       html: `
         <div style="font-family: sans-serif; line-height: 1.5;">
-          <h2>Нова заявка за проверка на автомобил</h2>
+          <h2>Нова заявка за проверка</h2>
           <hr />
           <p><strong>Пакет:</strong> ${packageName} (${packagePrice})</p>
           <p><strong>Клиент:</strong> ${fullName}</p>
@@ -37,54 +39,45 @@ export async function POST(request: Request) {
           <p><strong>Имейл:</strong> ${email}</p>
           <br />
           <p><strong>Автомобил:</strong> ${makeModel}</p>
-          <p><strong>Година:</strong> ${year || 'Не е посочена'}</p>
-          <p><strong>VIN:</strong> ${vin || 'Не е посочен'}</p>
           <p><strong>Линк:</strong> <a href="${carLink}">${carLink}</a></p>
-          <br />
-          <p><strong>Планирано за:</strong> ${date} в ${time} часа</p>
-          <p><strong>Бележки:</strong> ${notes || 'Няма'}</p>
+          <p><strong>Дата/Час:</strong> ${date} в ${time} ч.</p>
         </div>
       `
     });
 
-    // 2. Подготвяме мейла до клиента (само ако има валиден имейл)
-    let customerEmailPromise = Promise.resolve(null);
-    
-    if (email && email.includes('@')) {
-      customerEmailPromise = resend.emails.send({
+    console.log("Admin email sent:", adminRes);
+
+    // 2. МЕЙЛ ДО КЛИЕНТА (САМО АКО ИМА МЕЙЛ)
+    // Използваме последователно изпращане (await), за да не прекъсне скрипта
+    if (email && email.trim() !== "") {
+      const customerRes = await resend.emails.send({
         from: 'FileVerified <info@fileverified.eu>',
-        to: [email],
+        to: [email.trim()],
         subject: `Вашата заявка за оглед е приета - FileVerified.eu`,
         html: `
           <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
             <h2 style="color: #059669;">Здравейте, ${fullName}!</h2>
-            <p>Благодарим Ви, че избрахте <strong>FileVerified.eu</strong> за проверка на Вашия бъдещ автомобил.</p>
-            <p>Вашата заявка за <strong>${makeModel}</strong> беше получена успешно. Мартин Филев ще се свърже с Вас на телефон <strong>${phone}</strong> за финално потвърждение на часа.</p>
+            <p>Благодарим Ви, че избрахте <strong>FileVerified.eu</strong>.</p>
+            <p>Вашата заявка за <strong>${makeModel}</strong> беше получена успешно. Мартин Филев ще се свърже с Вас на телефон <strong>${phone}</strong> за потвърждение.</p>
             
             <div style="background-color: #f3f4f6; padding: 15px; border-radius: 10px; margin: 20px 0;">
               <p style="margin: 0;"><strong>Избран пакет:</strong> ${packageName}</p>
-              <p style="margin: 0;"><strong>Планирана дата:</strong> ${date}</p>
+              <p style="margin: 0;"><strong>Планирана дата:</strong> ${date} в ${time} ч.</p>
             </div>
 
-            <p>След извършване на огледа, ще получите детайлния ни доклад директно на този имейл адрес.</p>
-            <br />
             <p>Поздрави,<br />Екипът на FileVerified.eu</p>
-            <p style="font-size: 12px; color: #666;">Това е автоматично съобщение, потвърждаващо Вашата резервация.</p>
           </div>
         `
       });
+      console.log("Customer email sent:", customerRes);
+    } else {
+      console.log("No customer email provided, skipping second email.");
     }
 
-    // ТУК Е ВАЖНАТА ПРОМЯНА: Изчакваме и двете операции да приключат реално
-    const [adminResult, customerResult] = await Promise.all([adminEmailPromise, customerEmailPromise]);
-
-    // Логваме грешките в конзолата на сървъра, ако има такива
-    if (adminResult.error) console.error("Admin Email Error:", adminResult.error);
-    if (customerResult && customerResult.error) console.error("Customer Email Error:", customerResult.error);
-
     return NextResponse.json({ success: true });
-  } catch (error) {
+
+  } catch (error: any) {
     console.error("Critical Route Error:", error);
-    return NextResponse.json({ error: 'Грешка при изпращането' }, { status: 500 });
+    return NextResponse.json({ error: error.message || 'Грешка при изпращането' }, { status: 500 });
   }
 }
