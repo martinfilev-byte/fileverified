@@ -21,11 +21,11 @@ export async function POST(request: Request) {
       packagePrice 
     } = body;
 
-    // 1. Мейл до теб (Мартин)
-    const adminEmail = resend.emails.send({
+    // 1. Подготвяме мейла до теб (Мартин)
+    const adminEmailPromise = resend.emails.send({
       from: 'FileVerified <info@fileverified.eu>',
       to: ['martin.filev@gmail.com'],
-      replyTo: email, // Позволява ти да отговориш директно на клиента
+      replyTo: email, 
       subject: `Нова резервация: ${makeModel} - ${fullName}`,
       html: `
         <div style="font-family: sans-serif; line-height: 1.5;">
@@ -47,36 +47,44 @@ export async function POST(request: Request) {
       `
     });
 
-    // 2. Уведомителен мейл до клиента
-    const customerEmail = resend.emails.send({
-      from: 'FileVerified <info@fileverified.eu>',
-      to: [email],
-      subject: `Вашата заявка за оглед е приета - FileVerified.eu`,
-      html: `
-        <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
-          <h2 style="color: #059669;">Здравейте, ${fullName}!</h2>
-          <p>Благодарим Ви, че избрахте <strong>FileVerified.eu</strong> за проверка на Вашия бъдещ автомобил.</p>
-          <p>Вашата заявка за <strong>${makeModel}</strong> беше получена успешно. Мартин Филев ще се свърже с Вас на телефон <strong>${phone}</strong> за финално потвърждение на часа.</p>
-          
-          <div style="background-color: #f3f4f6; padding: 15px; rounded: 10px; margin: 20px 0;">
-            <p style="margin: 0;"><strong>Избран пакет:</strong> ${packageName}</p>
-            <p style="margin: 0;"><strong>Планирана дата:</strong> ${date}</p>
+    // 2. Подготвяме мейла до клиента (само ако има валиден имейл)
+    let customerEmailPromise = Promise.resolve(null);
+    
+    if (email && email.includes('@')) {
+      customerEmailPromise = resend.emails.send({
+        from: 'FileVerified <info@fileverified.eu>',
+        to: [email],
+        subject: `Вашата заявка за оглед е приета - FileVerified.eu`,
+        html: `
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
+            <h2 style="color: #059669;">Здравейте, ${fullName}!</h2>
+            <p>Благодарим Ви, че избрахте <strong>FileVerified.eu</strong> за проверка на Вашия бъдещ автомобил.</p>
+            <p>Вашата заявка за <strong>${makeModel}</strong> беше получена успешно. Мартин Филев ще се свърже с Вас на телефон <strong>${phone}</strong> за финално потвърждение на часа.</p>
+            
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 10px; margin: 20px 0;">
+              <p style="margin: 0;"><strong>Избран пакет:</strong> ${packageName}</p>
+              <p style="margin: 0;"><strong>Планирана дата:</strong> ${date}</p>
+            </div>
+
+            <p>След извършване на огледа, ще получите детайлния ни доклад директно на този имейл адрес.</p>
+            <br />
+            <p>Поздрави,<br />Екипът на FileVerified.eu</p>
+            <p style="font-size: 12px; color: #666;">Това е автоматично съобщение, потвърждаващо Вашата резервация.</p>
           </div>
+        `
+      });
+    }
 
-          <p>След извършване на огледа, ще получите детайлния ни доклад директно на този имейл адрес.</p>
-          <br />
-          <p>Поздрави,<br />Екипът на FileVerified.eu</p>
-          <p style="font-size: 12px; color: #666;">Това е автоматично съобщение, потвърждаващо Вашата резервация.</p>
-        </div>
-      `
-    });
+    // ТУК Е ВАЖНАТА ПРОМЯНА: Изчакваме и двете операции да приключат реално
+    const [adminResult, customerResult] = await Promise.all([adminEmailPromise, customerEmailPromise]);
 
-    // Изчакваме изпращането и на двата мейла
-    await Promise.all([adminEmail, customerEmail]);
+    // Логваме грешките в конзолата на сървъра, ако има такива
+    if (adminResult.error) console.error("Admin Email Error:", adminResult.error);
+    if (customerResult && customerResult.error) console.error("Customer Email Error:", customerResult.error);
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Email error:", error);
+    console.error("Critical Route Error:", error);
     return NextResponse.json({ error: 'Грешка при изпращането' }, { status: 500 });
   }
 }
