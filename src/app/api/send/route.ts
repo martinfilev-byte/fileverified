@@ -1,9 +1,18 @@
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Инициализираме Resend само ако има ключ, за да не гърми при 'npm run build'
+const resend = process.env.RESEND_API_KEY 
+  ? new Resend(process.env.RESEND_API_KEY) 
+  : null;
 
 export async function POST(request: Request) {
+  // Проверка дали услугата е конфигурирана правилно при самото извикване
+  if (!resend) {
+    console.error("RESEND_API_KEY is missing");
+    return NextResponse.json({ error: 'Email service not configured' }, { status: 500 });
+  }
+
   try {
     const body = await request.json();
     
@@ -22,7 +31,7 @@ export async function POST(request: Request) {
       packagePrice 
     } = body;
 
-    // 1. ИЗПРАЩАНЕ ДО МАРТИН (Админ имейл)
+    // 1. ИЗПРАЩАНЕ ДО МАРТИН (Админ)
     const adminRes = await resend.emails.send({
       from: 'FileVerified <info@fileverified.eu>',
       to: ['martin.filev@gmail.com'],
@@ -49,9 +58,13 @@ export async function POST(request: Request) {
       `
     });
 
+    if (adminRes.error) {
+      console.error("Admin Email Error:", adminRes.error);
+    }
+
     // 2. ИЗПРАЩАНЕ ДО КЛИЕНТА (Потвърждение)
     if (email && email.trim() !== "") {
-      await resend.emails.send({
+      const customerRes = await resend.emails.send({
         from: 'FileVerified <info@fileverified.eu>',
         to: [email.trim()],
         subject: `Вашата заявка за оглед е приета - FileVerified.eu`,
@@ -81,11 +94,15 @@ export async function POST(request: Request) {
           </div>
         `
       });
+      
+      if (customerRes.error) {
+        console.error("Customer Email Error:", customerRes.error);
+      }
     }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Critical Error in Route.ts:", error);
+    console.error("Critical Route Error:", error);
     return NextResponse.json({ error: 'Грешка при изпращането' }, { status: 500 });
   }
 }
