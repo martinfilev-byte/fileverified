@@ -1,3 +1,6 @@
+"use client"
+
+import { useState } from "react"
 import Link from "next/link"
 import fs from 'fs'
 import path from 'path'
@@ -15,32 +18,21 @@ import {
   Eye,
   Wrench,
   Stethoscope,
-  Thermometer,
-  Droplets,
   Wind,
   Layers,
   Cpu,
-  Hash,
-  Fuel,
-  Palette,
-  Settings
+  Droplets,
+  ChevronDown,
+  ChevronUp,
+  CircleDot
 } from "lucide-react"
 
 export default function ReportPage() {
-  // АВТОМАТИКА: Прочитаме всички снимки от папката public/images/sample-report
-  const imageDir = path.join(process.cwd(), 'public/images/sample-report')
-  let imageFiles: string[] = []
-  
-  try {
-    if (fs.existsSync(imageDir)) {
-      imageFiles = fs.readdirSync(imageDir)
-        .filter(file => /\.(jpg|jpeg|png|webp)$/i.test(file))
-        .map(file => `/images/sample-report/${file}`)
-        .sort();
-    }
-  } catch (e) {
-    console.error("Грешка при четене на снимките:", e)
-  }
+  const imageFiles = [
+    "/images/sample-report/1.jpg",
+    "/images/sample-report/2.jpg",
+    "/images/sample-report/3.jpg"
+  ];
 
   return (
     <main className="min-h-screen bg-slate-50 pb-20">
@@ -95,7 +87,7 @@ export default function ReportPage() {
         {/* ДЕТАЙЛНА ПРОВЕРКА ПО СЕКЦИИ */}
         <div className="grid lg:grid-cols-2 gap-8">
           
-          {/* Section 1: Vehicle Info - ТУК СА ВСИЧКИ НОВИ ДАННИ */}
+          {/* СЕКЦИЯ 1: ИНФОРМАЦИЯ ЗА АВТОМОБИЛА */}
           <SectionCard title="Информация за автомобила (Vehicle Info)" icon={<Car className="w-6 h-6 text-emerald-600"/>}>
             <CheckItem text="Марка и Модел" status="ok" info="Porsche 911 GT3 (992)" />
             <CheckItem text="Година на производство" status="ok" info="2023" />
@@ -107,67 +99,79 @@ export default function ReportPage() {
             <CheckItem text="Гориво (Fuel Type)" status="ok" info="Petrol / 100 Octane" />
             <CheckItem text="Цвят на купето (Body Color)" status="ok" info="Shark Blue" />
             <CheckItem text="Интериор (Материал и цвят)" status="ok" info="Alcantara / Black" />
+            <CheckItem text="Stock Number (Референтен №)" status="ok" info="#GT3-2026-01" />
+            <CheckItem text="Брой оси" status="ok" info="2" />
           </SectionCard>
 
-          <SectionCard title="Екстериор и Каросерия (Micron Measurement)" icon={<ShieldCheck className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="Дебелина на боята (A-колони, Врати, Прагове)" status="ok" info="95-115 μm" />
-            <CheckItem text="Проверка на шаси (предна/задна част)" status="ok" />
-            <CheckItem text="Състояние на лака (Scratches/Dings/Chips)" status="ok" />
-            <CheckItem text="Структурна проверка (Кит / Ръжда)" status="ok" />
+          {/* СЕКЦИЯ 2: ЕКСТЕРИОР И БОЯ (С ПАДАЩО МЕНЮ) */}
+          <SectionCard title="Екстериор и Каросерия" icon={<ShieldCheck className="w-6 h-6 text-emerald-600"/>}>
+            <ExpandableCheckItem 
+              text="Дебелина на боята (Всички панели)" 
+              status="ok" 
+              info="95-115 μm"
+              details={[
+                { label: "Преден капак", value: "102 μm" },
+                { label: "Калник преден ляв", value: "98 μm" },
+                { label: "Калник преден десен", value: "105 μm" },
+                { label: "Врата лява (център/долу)", value: "110 / 112 μm" },
+                { label: "Врата дясна (център/долу)", value: "108 / 110 μm" },
+                { label: "A-колона (лява/дясна)", value: "95 / 97 μm" },
+                { label: "Таван", value: "100 μm" },
+                { label: "Заден калник (L/R)", value: "112 / 115 μm" },
+                { label: "Прагове (L/R)", value: "92 / 94 μm" },
+              ]}
+            />
+            <CheckItem text="Проверка на шаси и рама" status="ok" />
+            <CheckItem text="Състояние на лака (Scratches/Dents)" status="ok" />
+            <CheckItem text="Структурна проверка (Кит/Ръжда)" status="ok" />
             <CheckItem text="Геометрия на панели и фуги" status="ok" />
-            <CheckItem text="Стъкла, чистачки и система за измиване" status="ok" />
-            <CheckItem text="Светлини и фарове (замъгляване/повреда)" status="ok" />
+            <CheckItem text="Стъкла и фарове (Маркировки)" status="ok" />
           </SectionCard>
 
+          {/* СЕКЦИЯ 3: ДВИГАТЕЛ И МЕХАНИКА */}
           <SectionCard title="Двигател и Механика" icon={<Wrench className="w-6 h-6 text-emerald-600"/>}>
             <CheckItem text="Течове на течности и маслени пари" status="ok" />
-            <CheckItem text="Ниво и чистота на двиг. масло" status="ok" />
+            <CheckItem text="Ниво и състояние на масло" status="ok" />
             <CheckItem text="Спирачна течност (Тест за влага)" status="ok" info="0.5% (Perfect)" />
-            <CheckItem text="Акумулатор и алтернатор (Зареждане)" status="ok" />
-            <CheckItem text="Трансмисия и диференциал (Течове)" status="ok" />
+            <CheckItem text="Акумулатор и алтернатор" status="ok" />
             <CheckItem text="Статус регенерация DPF / Емисии" status="ok" info="Clean" />
-            <CheckItem text="Капачка за масло (липса на нагар)" status="ok" />
           </SectionCard>
 
-          <SectionCard title="Интериор и Електроника" icon={<ClipboardList className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="Износване (Седалки, Волан, Педали)" status="ok" />
-            <CheckItem text="Влага под мокета (Тест с влагомер)" status="warning" info="Има влага леко" />
-            <CheckItem text="Индикации на таблото и контролни уреди" status="ok" />
-            <CheckItem text="Мултимедия, Навигация и Свързаност" status="ok" />
-            <CheckItem text="Ел. пакети (Прозорци, Шибидах, Огледала)" status="ok" />
-            <CheckItem text="Обща чистота и наличие на миризми" status="ok" />
-          </SectionCard>
-
+          {/* СЕКЦИЯ 4: КЛИМАТИЗАЦИЯ */}
           <SectionCard title="Охлаждане и Климатизация" icon={<Wind className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="Радиатор и охлаждащ вентилатор" status="ok" />
-            <CheckItem text="Маркучи (еластичност и херметичност)" status="ok" />
+            <CheckItem text="Радиатор и вентилатор" status="ok" />
             <CheckItem text="AC Компресор и интензивност" status="ok" />
-            <CheckItem text="Изходящ въздух дюзи (Мерене с уред)" status="ok" info="4.2°C" />
+            <CheckItem text="Изходящ въздух дюзи (Мерене)" status="ok" info="4.2°C" />
             <CheckItem text="Отоплителна система (Парно)" status="ok" />
-            <CheckItem text="Управление на потоци и клапи" status="ok" />
           </SectionCard>
 
+          {/* СЕКЦИЯ 5: ГУМИ И ДЖАНТИ (НОВО ПАДАЩО МЕНЮ) */}
           <SectionCard title="Гуми, Джанти и Ходова част" icon={<Layers className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="Гуми DOT и Дълбочина (мм)" status="ok" info="6.5mm / 2023" />
+            <ExpandableCheckItem 
+              text="Гуми (Марка, DOT и Грайфер)" 
+              status="ok" 
+              info="Michelin / 2023"
+              details={[
+                { label: "Предна лява", value: "Michelin PS4S / DOT 1223 / 6.5mm" },
+                { label: "Предна дясна", value: "Michelin PS4S / DOT 1223 / 6.5mm" },
+                { label: "Задна лява", value: "Michelin PS4S / DOT 1523 / 6.2mm" },
+                { label: "Задна дясна", value: "Michelin PS4S / DOT 1523 / 6.2mm" },
+                { label: "Резервна гума / Комплект", value: "Комплект за ремонт (OK)" },
+              ]}
+            />
             <CheckItem text="Джанти (Кривини и ожулвания)" status="warning" info="Леко предна дясна" />
-            <CheckItem text="Окачване (Амортисьори, Тампони)" status="ok" />
+            <CheckItem text="Окачване и амортисьори" status="ok" />
             <CheckItem text="Спирачна помпа и маркучи" status="ok" />
             <CheckItem text="Рама и точки на закрепване" status="ok" />
           </SectionCard>
 
+          {/* СЕКЦИЯ 6: ДИАГНОСТИКА */}
           <SectionCard title="Диагностика и Пътен Тест" icon={<Cpu className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="OBD II - Проверка за грешки (DTC)" status="ok" />
+            <CheckItem text="OBD II - Проверка за грешки" status="ok" />
             <CheckItem text="Верификация на реални километри" status="ok" />
-            <CheckItem text="TPMS - Датчици налягане" status="ok" />
             <CheckItem text="Студен старт и празен ход" status="ok" />
-            <CheckItem text="Превключване на скорости (Smoothness)" status="ok" />
-            <CheckItem text="Спиране (липса на вибрации)" status="ok" />
             <CheckItem text="Управление и стабилност (Дърпане)" status="ok" />
-          </SectionCard>
-
-          <SectionCard title="Специфики за Кабриолети" icon={<Droplets className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="Цикъл на покрива (време/шум)" status="ok" info="N/A for this model" />
-            <CheckItem text="Уплътнения и херметичност" status="ok" />
+            <CheckItem text="TPMS - Датчици налягане" status="ok" />
           </SectionCard>
 
         </div>
@@ -178,7 +182,7 @@ export default function ReportPage() {
             <div>
               <h2 className="text-3xl font-bold mb-6 italic">Обобщение от инспектора</h2>
               <p className="text-slate-300 text-lg leading-relaxed mb-6">
-                Автомобилът е в перфектно техническо и визуално състояние. Изключително рядък екземпляр с реални километри и пълна сервизна история в Porsche. Няма признаци за участия в инциденти или тежки ремонти. Всички системи, включително климатичната инсталация и електронните модули, работят безупречно.
+                Автомобилът е в перфектно техническо и визуално състояние. Изключително рядък екземпляр с реални километри и пълна сервизна история в Porsche. Всички системи, включително климатичната инсталация и гумите, са в отлично здраве.
               </p>
               <div className="flex items-center gap-4 border-t border-white/10 pt-6">
                 <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center font-bold text-xl">F</div>
@@ -189,10 +193,6 @@ export default function ReportPage() {
               </div>
             </div>
             <div className="space-y-4">
-               <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
-                  <div className="text-emerald-400 font-bold mb-2 uppercase text-xs">Защо да го купите?</div>
-                  <p className="text-sm text-slate-300">Гарантиран произход, отлично състояние на спирачките и гумите, безупречна диагностика и реални данни от всички модули.</p>
-               </div>
                <Link href="/book" className="block w-full bg-emerald-500 hover:bg-emerald-400 text-white text-center py-5 rounded-2xl font-black text-xl transition-all shadow-xl shadow-emerald-500/20">
                 ЗАЯВИ ПРОВЕРКА ЗА ТВОЯ КОЛА
               </Link>
@@ -201,6 +201,49 @@ export default function ReportPage() {
         </div>
       </div>
     </main>
+  )
+}
+
+// УНИВЕРСАЛЕН КОМПОНЕНТ: Падащо меню за детайли
+function ExpandableCheckItem({ text, status, info, details }: { 
+  text: string, 
+  status: 'ok' | 'warning' | 'error', 
+  info?: string,
+  details: { label: string, value: string }[] 
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="border-b border-slate-50 pb-2">
+      <div 
+        className="flex items-center justify-between cursor-pointer hover:bg-slate-50/50 p-1 rounded-lg transition-colors group"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex items-center gap-3">
+          {status === 'ok' ? <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" /> : <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0" />}
+          <span className="text-slate-700 font-bold text-sm md:text-base group-hover:text-slate-900">{text}</span>
+          {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+        </div>
+        {info && (
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold bg-emerald-50 text-emerald-700 px-2 py-1 rounded uppercase tracking-tighter">
+              {info}
+            </span>
+          </div>
+        )}
+      </div>
+      
+      {isOpen && (
+        <div className="mt-3 ml-8 space-y-2 bg-slate-50/80 backdrop-blur-sm rounded-2xl p-4 border border-slate-100 shadow-inner">
+          {details.map((item, idx) => (
+            <div key={idx} className="flex flex-col md:flex-row md:justify-between text-xs md:text-sm border-b border-slate-200/50 pb-1.5 last:border-0 gap-1">
+              <span className="text-slate-500 font-medium">{item.label}</span>
+              <span className="text-slate-900 font-mono font-bold">{item.value}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
 
