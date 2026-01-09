@@ -2,8 +2,6 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import fs from 'fs'
-import path from 'path'
 import GallerySection from "../../components/GallerySection"
 import { 
   CheckCircle2, 
@@ -18,21 +16,20 @@ import {
   Eye,
   Wrench,
   Stethoscope,
+  Thermometer,
+  Droplets,
   Wind,
   Layers,
   Cpu,
-  Droplets,
   ChevronDown,
   ChevronUp,
-  CircleDot
+  History,
+  Lightbulb
 } from "lucide-react"
 
 export default function ReportPage() {
-  const imageFiles = [
-    "/images/sample-report/1.jpg",
-    "/images/sample-report/2.jpg",
-    "/images/sample-report/3.jpg"
-  ];
+  // Масив със снимки - дефиниран тук, за да избегнем грешки с файловата система в браузъра
+  const imageFiles = Array.from({ length: 24 }, (_, i) => `/images/sample-report/${i + 1}.jpg`);
 
   return (
     <main className="min-h-screen bg-slate-50 pb-20">
@@ -42,7 +39,7 @@ export default function ReportPage() {
           <div>
             <div className="flex items-center gap-2 text-emerald-700 font-bold mb-3 tracking-wide">
               <ShieldCheck className="w-6 h-6" />
-              <span className="text-sm uppercase tracking-widest">ИНСПЕКЦИОНЕН ДОКЛАД #20260104-GT3</span>
+              <span className="text-sm uppercase tracking-widest">ИНСПЕКЦИОНЕН ДОКЛАД #20260109-GT3</span>
             </div>
             <h1 className="text-4xl font-extrabold text-slate-900 leading-tight">
               Porsche 911 GT3 (992)
@@ -92,6 +89,7 @@ export default function ReportPage() {
             <CheckItem text="Марка и Модел" status="ok" info="Porsche 911 GT3 (992)" />
             <CheckItem text="Година на производство" status="ok" info="2023" />
             <CheckItem text="Пробег" status="ok" info="12,450 км" />
+            <CheckItem text="Safety Recalls (Сервизни акции)" status="ok" info="Няма активни" />
             <CheckItem text="VIN номер" status="ok" info="WP0ZZZ99ZNS2*****" />
             <CheckItem text="Тип двигател / Брой цилиндри" status="ok" info="Boxer-6 / 4.0L" />
             <CheckItem text="Трансмисия (тип/предавки)" status="ok" info="PDK / 7-speed" />
@@ -99,29 +97,26 @@ export default function ReportPage() {
             <CheckItem text="Гориво (Fuel Type)" status="ok" info="Petrol / 100 Octane" />
             <CheckItem text="Цвят на купето (Body Color)" status="ok" info="Shark Blue" />
             <CheckItem text="Интериор (Материал и цвят)" status="ok" info="Alcantara / Black" />
-            <CheckItem text="Stock Number (Референтен №)" status="ok" info="#GT3-2026-01" />
-            <CheckItem text="Брой оси" status="ok" info="2" />
           </SectionCard>
 
-          {/* СЕКЦИЯ 2: ЕКСТЕРИОР И БОЯ (С ПАДАЩО МЕНЮ) */}
+          {/* СЕКЦИЯ 2: ЕКСТЕРИОР И БОЯ */}
           <SectionCard title="Екстериор и Каросерия" icon={<ShieldCheck className="w-6 h-6 text-emerald-600"/>}>
             <ExpandableCheckItem 
-              text="Дебелина на боята (Всички панели)" 
+              text="Дебелина на боята (Micron Measurement)" 
               status="ok" 
               info="95-115 μm"
               details={[
                 { label: "Преден капак", value: "102 μm" },
-                { label: "Калник преден ляв", value: "98 μm" },
-                { label: "Калник преден десен", value: "105 μm" },
-                { label: "Врата лява (център/долу)", value: "110 / 112 μm" },
-                { label: "Врата дясна (център/долу)", value: "108 / 110 μm" },
-                { label: "A-колона (лява/дясна)", value: "95 / 97 μm" },
+                { label: "Калници (L/R)", value: "98 / 105 μm" },
+                { label: "Врати (L/R)", value: "110 / 108 μm" },
+                { label: "A/B Колони", value: "95 / 65 μm" },
                 { label: "Таван", value: "100 μm" },
                 { label: "Заден калник (L/R)", value: "112 / 115 μm" },
                 { label: "Прагове (L/R)", value: "92 / 94 μm" },
               ]}
             />
-            <CheckItem text="Проверка на шаси и рама" status="ok" />
+            <CheckItem text="Точки за вдигане с крик (Структура)" status="ok" />
+            <CheckItem text="Тест на ел. регулиране на фарове" status="ok" />
             <CheckItem text="Състояние на лака (Scratches/Dents)" status="ok" />
             <CheckItem text="Структурна проверка (Кит/Ръжда)" status="ok" />
             <CheckItem text="Геометрия на панели и фуги" status="ok" />
@@ -131,21 +126,24 @@ export default function ReportPage() {
           {/* СЕКЦИЯ 3: ДВИГАТЕЛ И МЕХАНИКА */}
           <SectionCard title="Двигател и Механика" icon={<Wrench className="w-6 h-6 text-emerald-600"/>}>
             <CheckItem text="Течове на течности и маслени пари" status="ok" />
+            <CheckItem text="Лепенка/Маркировка за ангренаж" status="ok" info="Налична" />
             <CheckItem text="Ниво и състояние на масло" status="ok" />
             <CheckItem text="Спирачна течност (Тест за влага)" status="ok" info="0.5% (Perfect)" />
-            <CheckItem text="Акумулатор и алтернатор" status="ok" />
+            <CheckItem text="Акумулатор и алтернатор (Зареждане)" status="ok" />
             <CheckItem text="Статус регенерация DPF / Емисии" status="ok" info="Clean" />
           </SectionCard>
 
-          {/* СЕКЦИЯ 4: КЛИМАТИЗАЦИЯ */}
-          <SectionCard title="Охлаждане и Климатизация" icon={<Wind className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="Радиатор и вентилатор" status="ok" />
-            <CheckItem text="AC Компресор и интензивност" status="ok" />
-            <CheckItem text="Изходящ въздух дюзи (Мерене)" status="ok" info="4.2°C" />
-            <CheckItem text="Отоплителна система (Парно)" status="ok" />
+          {/* СЕКЦИЯ 4: ИНТЕРИОР И ЕЛЕКТРОНИКА */}
+          <SectionCard title="Интериор и Електроника" icon={<ClipboardList className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Износване (Седалки, Волан, Педали)" status="ok" />
+            <CheckItem text="Влага под мокета / Ниша за гума" status="ok" info="Dry" />
+            <CheckItem text="Индикации на таблото и контролни уреди" status="ok" />
+            <CheckItem text="Мултимедия, Навигация и Свързаност" status="ok" />
+            <CheckItem text="Климатизация (Температура дюзи)" status="ok" info="4.2°C" />
+            <CheckItem text="Обща чистота и наличие на миризми" status="ok" />
           </SectionCard>
 
-          {/* СЕКЦИЯ 5: ГУМИ И ДЖАНТИ (НОВО ПАДАЩО МЕНЮ) */}
+          {/* СЕКЦИЯ 5: ГУМИ И ХОДОВА ЧАСТ */}
           <SectionCard title="Гуми, Джанти и Ходова част" icon={<Layers className="w-6 h-6 text-emerald-600"/>}>
             <ExpandableCheckItem 
               text="Гуми (Марка, DOT и Грайфер)" 
@@ -159,19 +157,21 @@ export default function ReportPage() {
                 { label: "Резервна гума / Комплект", value: "Комплект за ремонт (OK)" },
               ]}
             />
+            <CheckItem text="Контактно петно на дисковете (Tragbild)" status="ok" />
             <CheckItem text="Джанти (Кривини и ожулвания)" status="warning" info="Леко предна дясна" />
-            <CheckItem text="Окачване и амортисьори" status="ok" />
-            <CheckItem text="Спирачна помпа и маркучи" status="ok" />
+            <CheckItem text="Окачване (Амортисьори, Тампони)" status="ok" />
             <CheckItem text="Рама и точки на закрепване" status="ok" />
           </SectionCard>
 
           {/* СЕКЦИЯ 6: ДИАГНОСТИКА */}
           <SectionCard title="Диагностика и Пътен Тест" icon={<Cpu className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="OBD II - Проверка за грешки" status="ok" />
+            <CheckItem text="OBD II - Проверка за грешки (DTC)" status="ok" />
             <CheckItem text="Верификация на реални километри" status="ok" />
-            <CheckItem text="Студен старт и празен ход" status="ok" />
-            <CheckItem text="Управление и стабилност (Дърпане)" status="ok" />
             <CheckItem text="TPMS - Датчици налягане" status="ok" />
+            <CheckItem text="Студен старт и празен ход" status="ok" />
+            <CheckItem text="Превключване на скорости (Smoothness)" status="ok" />
+            <CheckItem text="Спиране (липса на вибрации)" status="ok" />
+            <CheckItem text="Управление и стабилност (Дърпане)" status="ok" />
           </SectionCard>
 
         </div>
@@ -182,7 +182,7 @@ export default function ReportPage() {
             <div>
               <h2 className="text-3xl font-bold mb-6 italic">Обобщение от инспектора</h2>
               <p className="text-slate-300 text-lg leading-relaxed mb-6">
-                Автомобилът е в перфектно техническо и визуално състояние. Изключително рядък екземпляр с реални километри и пълна сервизна история в Porsche. Всички системи, включително климатичната инсталация и гумите, са в отлично здраве.
+                Автомобилът премина пълна инспекция по германски стандарт. Структурно здрави точки за повдигане, перфектно контактно петно на спирачките и липса на влага в критичните зони. Всички системи работят безупречно.
               </p>
               <div className="flex items-center gap-4 border-t border-white/10 pt-6">
                 <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center font-bold text-xl">F</div>
@@ -193,6 +193,10 @@ export default function ReportPage() {
               </div>
             </div>
             <div className="space-y-4">
+               <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
+                  <div className="text-emerald-400 font-bold mb-2 uppercase text-xs">Защо да го купите?</div>
+                  <p className="text-sm text-slate-300">Гарантиран произход, отлично състояние на спирачките и гумите, безупречна диагностика и реални данни от всички модули.</p>
+               </div>
                <Link href="/book" className="block w-full bg-emerald-500 hover:bg-emerald-400 text-white text-center py-5 rounded-2xl font-black text-xl transition-all shadow-xl shadow-emerald-500/20">
                 ЗАЯВИ ПРОВЕРКА ЗА ТВОЯ КОЛА
               </Link>
@@ -225,11 +229,9 @@ function ExpandableCheckItem({ text, status, info, details }: {
           {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
         </div>
         {info && (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold bg-emerald-50 text-emerald-700 px-2 py-1 rounded uppercase tracking-tighter">
-              {info}
-            </span>
-          </div>
+          <span className="text-[11px] font-bold bg-emerald-50 text-emerald-700 px-2 py-1 rounded uppercase tracking-tighter">
+            {info}
+          </span>
         )}
       </div>
       
