@@ -133,7 +133,7 @@ export default function ReportPage() {
 
           <SectionCard title="Интериор и Електроника" icon={<ClipboardList className="w-6 h-6 text-emerald-600"/>}>
             <CheckItem text="Износване (Седалки, Волан, Педали)" status="ok" />
-            <CheckItem text="Влага под мокета (Тест с влагомер)" status="ok" info="Dry" />
+            <CheckItem text="Влага под мокета (Тест с влагомер)" status="warning" info="Има влага леко" />
             <CheckItem text="Индикации на таблото и контролни уреди" status="ok" />
             <CheckItem text="Мултимедия, Навигация и Свързаност" status="ok" />
             <CheckItem text="Ел. пакети (Прозорци, Шибидах, Огледала)" status="ok" />
