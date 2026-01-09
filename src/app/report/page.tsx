@@ -107,8 +107,6 @@ export default function ReportPage() {
             <CheckItem text="Гориво (Fuel Type)" status="ok" info="Petrol / 100 Octane" />
             <CheckItem text="Цвят на купето (Body Color)" status="ok" info="Shark Blue" />
             <CheckItem text="Интериор (Материал и цвят)" status="ok" info="Alcantara / Black" />
-            <CheckItem text="Stock Number (Референтен №)" status="ok" info="#GT3-2026-01" />
-            <CheckItem text="Брой оси" status="ok" info="2" />
           </SectionCard>
 
           <SectionCard title="Екстериор и Каросерия (Micron Measurement)" icon={<ShieldCheck className="w-6 h-6 text-emerald-600"/>}>
