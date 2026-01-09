@@ -14,7 +14,12 @@ import {
   Search,
   Eye,
   Wrench,
-  Stethoscope
+  Stethoscope,
+  Thermometer,
+  Droplets,
+  Wind,
+  Layers,
+  Cpu
 } from "lucide-react"
 
 export default function ReportPage() {
@@ -86,39 +91,78 @@ export default function ReportPage() {
         {/* ДЕТАЙЛНА ПРОВЕРКА ПО СЕКЦИИ */}
         <div className="grid lg:grid-cols-2 gap-8">
           
-          <SectionCard title="Екстериор и Каросерия" icon={<ShieldCheck className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="Структурни повреди" status="ok" />
-            <CheckItem text="Проверка на стъкла и фарове" status="ok" />
-            <CheckItem text="Дебелина на боята (всички детайли)" status="ok" info="95-110 μm" />
-            <CheckItem text="Проверка на пластмасови елементи" status="ok" />
-            <CheckItem text="Функция на врати и ключалки" status="ok" />
-            <CheckItem text="Джанти и гуми" status="warning" info="Леко охлузване предна дясна" />
+          <SectionCard title="Екстериор и Каросерия (Micron Measurement)" icon={<ShieldCheck className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Дебелина на боята (A-колони, Врати, Прагове)" status="ok" info="95-115 μm" />
+            <CheckItem text="Проверка на шаси (предна/задна част)" status="ok" />
+            <CheckItem text="Състояние на лака (Scratches/Dings/Chips)" status="ok" />
+            <CheckItem text="Структурна проверка (Кит / Ръжда)" status="ok" />
+            <CheckItem text="Геометрия на панели и фуги" status="ok" />
+            <CheckItem text="Стъкла, чистачки и система за измиване" status="ok" />
+            <CheckItem text="Огледала (Ел. настройка и подгрев)" status="ok" />
+            <CheckItem text="Светлини и фарове (замъгляване/повреда)" status="ok" />
+          </SectionCard>
+
+          <SectionCard title="Двигател и Механика" icon={<Wrench className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Течове на течности и маслени пари" status="ok" />
+            <CheckItem text="Ниво и чистота на двиг. масло" status="ok" />
+            <CheckItem text="Спирачна течност (Тест за влага)" status="ok" info="0.5% (Perfect)" />
+            <CheckItem text="Акумулатор и алтернатор (Зареждане)" status="ok" />
+            <CheckItem text="Трансмисия и диференциал (Течове)" status="ok" />
+            <CheckItem text="Смукателна/Изпускателна система" status="ok" />
+            <CheckItem text="Статус регенерация DPF / Емисии" status="ok" info="Clean" />
+            <CheckItem text="Капачка за масло (липса на нагар)" status="ok" />
           </SectionCard>
 
           <SectionCard title="Интериор и Електроника" icon={<ClipboardList className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="Състояние на тапицерия и волан" status="ok" />
-            <CheckItem text="Мултимедия и Навигация" status="ok" />
-            <CheckItem text="Климатична система" status="ok" />
-            <CheckItem text="Ел. седалки и подгрев" status="ok" />
-            <CheckItem text="OBD II Диагностика - DME статус" status="ok" />
-            <CheckItem text="Индикация за грешки на таблото" status="ok" />
+            <CheckItem text="Износване (Седалки, Волан, Педали)" status="ok" />
+            <CheckItem text="Влага под мокета (Тест с влагомер)" status="ok" info="Dry" />
+            <CheckItem text="Индикации на таблото и контролни уреди" status="ok" />
+            <CheckItem text="Мултимедия, Навигация и Свързаност" status="ok" />
+            <CheckItem text="Ел. пакети (Прозорци, Шибидах, Огледала)" status="ok" />
+            <CheckItem text="Централно заключване и Key fob" status="ok" />
+            <CheckItem text="Обща чистота и наличие на миризми" status="ok" />
           </SectionCard>
 
-          <SectionCard title="Двигател и Ходова част" icon={<Wrench className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="Ниво и състояние на масло" status="ok" />
-            <CheckItem text="Охладителна система (Течове)" status="ok" />
-            <CheckItem text="Спирачна система (Дискове/Накладки)" status="ok" />
-            <CheckItem text="Турбокомпресор / Изпускателна система" status="ok" />
-            <CheckItem text="Окачване и амортисьори" status="ok" />
-            <CheckItem text="Скоростна кутия (Превключване)" status="ok" />
+          <SectionCard title="Охлаждане и Климатизация" icon={<Wind className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Радиатор и охлаждащ вентилатор" status="ok" />
+            <CheckItem text="Маркучи (еластичност и херметичност)" status="ok" />
+            <CheckItem text="Антифриз (ниво и чистота)" status="ok" />
+            <CheckItem text="AC Компресор и интензивност" status="ok" />
+            <CheckItem text="Изходящ въздух дюзи (Мерене с уред)" status="ok" info="4.2°C" />
+            <CheckItem text="Отоплителна система (Парно)" status="ok" />
+            <CheckItem text="Управление на потоци и клапи" status="ok" />
           </SectionCard>
 
-          <SectionCard title="Резултати от тест драйв" icon={<Stethoscope className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="Студен старт на двигателя" status="ok" />
-            <CheckItem text="Поведение на пътя (Вибрации)" status="ok" />
-            <CheckItem text="Ускорение и спиране" status="ok" />
-            <CheckItem text="Шум в купето при скорост" status="ok" />
-            <CheckItem text="Система за завиване (Rear steering)" status="ok" />
+          <SectionCard title="Гуми, Джанти и Ходова част" icon={<Layers className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Гуми DOT и Дълбочина (мм)" status="ok" info="6.5mm / 2023" />
+            <CheckItem text="Джанти (Кривини и ожулвания)" status="warning" info="Леко предна дясна" />
+            <CheckItem text="Окачване (Амортисьори, Тампони)" status="ok" />
+            <CheckItem text="Спирачна помпа и маркучи" status="ok" />
+            <CheckItem text="Рама и точки на закрепване" status="ok" />
+            <CheckItem text="Резервна гума / Комплект за ремонт" status="ok" />
+          </SectionCard>
+
+          <SectionCard title="Диагностика и Пътен Тест" icon={<Cpu className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="OBD II - Проверка за грешки (DTC)" status="ok" />
+            <CheckItem text="Верификация на реални километри" status="ok" />
+            <CheckItem text="TPMS - Датчици налягане" status="ok" />
+            <CheckItem text="Студен старт и празен ход" status="ok" />
+            <CheckItem text="Превключване на скорости (Smoothness)" status="ok" />
+            <CheckItem text="Спиране (липса на вибрации)" status="ok" />
+            <CheckItem text="Управление и стабилност (Дърпане)" status="ok" />
+          </SectionCard>
+
+          <SectionCard title="Специфики за Кабриолети" icon={<Droplets className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Цикъл на покрива (време/шум)" status="ok" info="N/A for this model" />
+            <CheckItem text="Уплътнения и херметичност" status="ok" />
+            <CheckItem text="Зъбни колела и задвижване" status="ok" />
+          </SectionCard>
+
+          <SectionCard title="Техническа идентификация" icon={<Car className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="VIN съпоставка (всички места)" status="ok" />
+            <CheckItem text="Тип двигател / Брой цилиндри" status="ok" info="B6 / 4.0L" />
+            <CheckItem text="Задвижване / Гориво" status="ok" info="RWD / Petrol" />
+            <CheckItem text="Stock Number / Референция" status="ok" info="#GT3-2026" />
           </SectionCard>
 
         </div>
@@ -129,20 +173,20 @@ export default function ReportPage() {
             <div>
               <h2 className="text-3xl font-bold mb-6 italic">Обобщение от инспектора</h2>
               <p className="text-slate-300 text-lg leading-relaxed mb-6">
-                Автомобилът е в перфектно техническо и визуално състояние. Изключително рядък екземпляр с реални километри и пълна сервизна история в Porsche. Няма признаци за участия в инциденти или тежки ремонти.
+                Автомобилът е в перфектно техническо и визуално състояние. Изключително рядък екземпляр с реални километри и пълна сервизна история в Porsche. Няма признаци за участия в инциденти или тежки ремонти. Всички системи, включително климатичната инсталация и електронните модули, работят безупречно.
               </p>
               <div className="flex items-center gap-4 border-t border-white/10 pt-6">
-                <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center font-bold text-xl">М</div>
+                <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center font-bold text-xl">F</div>
                 <div>
-                  <div className="font-bold">Мартин Филев</div>
-                  <div className="text-sm text-slate-400">Главен инспектор, FileVerified</div>
+                  <div className="font-bold">Главен инспектор</div>
+                  <div className="text-sm text-slate-400">Екипът на FileVerified</div>
                 </div>
               </div>
             </div>
             <div className="space-y-4">
                <div className="bg-white/5 rounded-2xl p-6 border border-white/10">
                   <div className="text-emerald-400 font-bold mb-2 uppercase text-xs">Защо да го купите?</div>
-                  <p className="text-sm text-slate-300">Гарантиран произход, отлично състояние на спирачките и гумите, безупречна диагностика.</p>
+                  <p className="text-sm text-slate-300">Гарантиран произход, отлично състояние на спирачките и гумите, безупречна диагностика и реални данни от всички модули.</p>
                </div>
                <Link href="/book" className="block w-full bg-emerald-500 hover:bg-emerald-400 text-white text-center py-5 rounded-2xl font-black text-xl transition-all shadow-xl shadow-emerald-500/20">
                 ЗАЯВИ ПРОВЕРКА ЗА ТВОЯ КОЛА
