@@ -19,7 +19,11 @@ import {
   Droplets,
   Wind,
   Layers,
-  Cpu
+  Cpu,
+  Hash,
+  Fuel,
+  Palette,
+  Settings
 } from "lucide-react"
 
 export default function ReportPage() {
@@ -91,6 +95,22 @@ export default function ReportPage() {
         {/* ДЕТАЙЛНА ПРОВЕРКА ПО СЕКЦИИ */}
         <div className="grid lg:grid-cols-2 gap-8">
           
+          {/* Section 1: Vehicle Info - ТУК СА ВСИЧКИ НОВИ ДАННИ */}
+          <SectionCard title="Информация за автомобила (Vehicle Info)" icon={<Car className="w-6 h-6 text-emerald-600"/>}>
+            <CheckItem text="Марка и Модел" status="ok" info="Porsche 911 GT3 (992)" />
+            <CheckItem text="Година на производство" status="ok" info="2023" />
+            <CheckItem text="Пробег" status="ok" info="12,450 км" />
+            <CheckItem text="VIN номер" status="ok" info="WP0ZZZ99ZNS2*****" />
+            <CheckItem text="Тип двигател / Брой цилиндри" status="ok" info="Boxer-6 / 4.0L" />
+            <CheckItem text="Трансмисия (тип/предавки)" status="ok" info="PDK / 7-speed" />
+            <CheckItem text="Задвижване (Drive Type)" status="ok" info="RWD" />
+            <CheckItem text="Гориво (Fuel Type)" status="ok" info="Petrol / 100 Octane" />
+            <CheckItem text="Цвят на купето (Body Color)" status="ok" info="Shark Blue" />
+            <CheckItem text="Интериор (Материал и цвят)" status="ok" info="Alcantara / Black" />
+            <CheckItem text="Stock Number (Референтен №)" status="ok" info="#GT3-2026-01" />
+            <CheckItem text="Брой оси" status="ok" info="2" />
+          </SectionCard>
+
           <SectionCard title="Екстериор и Каросерия (Micron Measurement)" icon={<ShieldCheck className="w-6 h-6 text-emerald-600"/>}>
             <CheckItem text="Дебелина на боята (A-колони, Врати, Прагове)" status="ok" info="95-115 μm" />
             <CheckItem text="Проверка на шаси (предна/задна част)" status="ok" />
@@ -98,7 +118,6 @@ export default function ReportPage() {
             <CheckItem text="Структурна проверка (Кит / Ръжда)" status="ok" />
             <CheckItem text="Геометрия на панели и фуги" status="ok" />
             <CheckItem text="Стъкла, чистачки и система за измиване" status="ok" />
-            <CheckItem text="Огледала (Ел. настройка и подгрев)" status="ok" />
             <CheckItem text="Светлини и фарове (замъгляване/повреда)" status="ok" />
           </SectionCard>
 
@@ -108,7 +127,6 @@ export default function ReportPage() {
             <CheckItem text="Спирачна течност (Тест за влага)" status="ok" info="0.5% (Perfect)" />
             <CheckItem text="Акумулатор и алтернатор (Зареждане)" status="ok" />
             <CheckItem text="Трансмисия и диференциал (Течове)" status="ok" />
-            <CheckItem text="Смукателна/Изпускателна система" status="ok" />
             <CheckItem text="Статус регенерация DPF / Емисии" status="ok" info="Clean" />
             <CheckItem text="Капачка за масло (липса на нагар)" status="ok" />
           </SectionCard>
@@ -119,14 +137,12 @@ export default function ReportPage() {
             <CheckItem text="Индикации на таблото и контролни уреди" status="ok" />
             <CheckItem text="Мултимедия, Навигация и Свързаност" status="ok" />
             <CheckItem text="Ел. пакети (Прозорци, Шибидах, Огледала)" status="ok" />
-            <CheckItem text="Централно заключване и Key fob" status="ok" />
             <CheckItem text="Обща чистота и наличие на миризми" status="ok" />
           </SectionCard>
 
           <SectionCard title="Охлаждане и Климатизация" icon={<Wind className="w-6 h-6 text-emerald-600"/>}>
             <CheckItem text="Радиатор и охлаждащ вентилатор" status="ok" />
             <CheckItem text="Маркучи (еластичност и херметичност)" status="ok" />
-            <CheckItem text="Антифриз (ниво и чистота)" status="ok" />
             <CheckItem text="AC Компресор и интензивност" status="ok" />
             <CheckItem text="Изходящ въздух дюзи (Мерене с уред)" status="ok" info="4.2°C" />
             <CheckItem text="Отоплителна система (Парно)" status="ok" />
@@ -139,7 +155,6 @@ export default function ReportPage() {
             <CheckItem text="Окачване (Амортисьори, Тампони)" status="ok" />
             <CheckItem text="Спирачна помпа и маркучи" status="ok" />
             <CheckItem text="Рама и точки на закрепване" status="ok" />
-            <CheckItem text="Резервна гума / Комплект за ремонт" status="ok" />
           </SectionCard>
 
           <SectionCard title="Диагностика и Пътен Тест" icon={<Cpu className="w-6 h-6 text-emerald-600"/>}>
@@ -155,14 +170,6 @@ export default function ReportPage() {
           <SectionCard title="Специфики за Кабриолети" icon={<Droplets className="w-6 h-6 text-emerald-600"/>}>
             <CheckItem text="Цикъл на покрива (време/шум)" status="ok" info="N/A for this model" />
             <CheckItem text="Уплътнения и херметичност" status="ok" />
-            <CheckItem text="Зъбни колела и задвижване" status="ok" />
-          </SectionCard>
-
-          <SectionCard title="Техническа идентификация" icon={<Car className="w-6 h-6 text-emerald-600"/>}>
-            <CheckItem text="VIN съпоставка (всички места)" status="ok" />
-            <CheckItem text="Тип двигател / Брой цилиндри" status="ok" info="B6 / 4.0L" />
-            <CheckItem text="Задвижване / Гориво" status="ok" info="RWD / Petrol" />
-            <CheckItem text="Stock Number / Референция" status="ok" info="#GT3-2026" />
           </SectionCard>
 
         </div>
