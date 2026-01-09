@@ -1,8 +1,47 @@
+import Link from "next/link"
+import { 
+  CheckCircle2, 
+  AlertCircle, 
+  CalendarCheck, 
+  CarFront, 
+  ClipboardCheck, 
+  Sparkles,
+  ThermometerSnowflake 
+} from "lucide-react"
+
 export const metadata = {
   title: "Често задавани въпроси | FileVerified",
   description:
     "Отговори на най-често задаваните въпроси за оглед на автомобил преди покупка в София – срокове, какво включва, доклад, ограничения и др.",
 }
+
+const PREP_STEPS = [
+  {
+    title: "Потвърдете наличността",
+    text: "Уверете се, че автомобилът все още се продава и не е капариран.",
+    icon: <CalendarCheck className="w-5 h-5 text-emerald-600" />
+  },
+  {
+    title: "Вземете съгласие за инспекция",
+    text: "Продавачът трябва да е съгласен за компютърна диагностика и мерене на боята.",
+    icon: <ClipboardCheck className="w-5 h-5 text-emerald-600" />
+  },
+  {
+    title: "Проверете за тест-драйв",
+    text: "Попитайте дали колата има номера и застраховка, за да бъде тествана в движение.",
+    icon: <CarFront className="w-5 h-5 text-emerald-600" />
+  },
+  {
+    title: "Помолете за чист автомобил",
+    text: "На мръсна кола не могат да се видят дефекти по лака и фини драскотини.",
+    icon: <Sparkles className="w-5 h-5 text-emerald-600" />
+  },
+  {
+    title: "Изисквайте студен старт",
+    text: "Помолете продавача да не пали колата преди огледа, за да чуем реалния студен старт.",
+    icon: <ThermometerSnowflake className="w-5 h-5 text-emerald-600" />
+  }
+]
 
 const FAQS: Array<{ q: string; a: string }> = [
   {
@@ -81,52 +120,93 @@ const FAQS: Array<{ q: string; a: string }> = [
 
 export default function FAQPage() {
   return (
-    <section className="space-y-10">
-      <div className="space-y-3">
-        <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
+    <section className="max-w-4xl mx-auto py-12 px-6 space-y-16">
+      {/* HEADER SECTION */}
+      <div className="space-y-4 text-center md:text-left">
+        <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
           Често задавани въпроси
         </h1>
-        <p className="text-slate-600 text-lg">
-          Отговори на най-честите въпроси за оглед на автомобил преди покупка.
+        <p className="text-slate-600 text-xl leading-relaxed">
+          Всичко, което трябва да знаете за професионалния оглед на автомобил.
         </p>
       </div>
 
-      <div className="rounded-2xl border bg-white p-2 shadow-sm">
-        {FAQS.map((item, idx) => (
-          <details
-            key={idx}
-            className="group rounded-xl p-4 hover:bg-slate-50 open:bg-emerald-50/40 transition"
-          >
-            <summary className="cursor-pointer list-none">
-              <div className="flex items-start justify-between gap-4">
-                <div className="font-semibold text-slate-900">{item.q}</div>
-                <div className="mt-0.5 text-emerald-700 font-bold select-none">
-                  <span className="group-open:hidden">+</span>
-                  <span className="hidden group-open:inline">–</span>
-                </div>
+      {/* GERMAN PREP STEPS SECTION */}
+      <div className="bg-emerald-50 rounded-[2.5rem] p-8 md:p-12 border border-emerald-100 shadow-sm">
+        <div className="flex items-center gap-3 mb-8">
+          <AlertCircle className="w-8 h-8 text-emerald-600" />
+          <h2 className="text-2xl font-bold text-emerald-900">
+            5 стъпки ПРЕДИ да поръчате оглед
+          </h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1">
+          {PREP_STEPS.map((step, idx) => (
+            <div key={idx} className="flex gap-4 bg-white/60 p-5 rounded-2xl border border-white">
+              <div className="bg-white p-2.5 rounded-xl shadow-sm h-fit">
+                {step.icon}
               </div>
-            </summary>
-            <div className="mt-3 text-slate-700 leading-relaxed">{item.a}</div>
-          </details>
-        ))}
+              <div>
+                <h3 className="font-bold text-slate-900 mb-1">{step.title}</h3>
+                <p className="text-sm text-slate-600 leading-snug">{step.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="rounded-2xl border bg-emerald-50 p-6">
-        <div className="text-lg font-bold text-slate-900">
-          Не намираш отговор?
+      {/* FAQ ACCORDION SECTION */}
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-slate-900 px-2">Всички въпроси</h2>
+        <div className="rounded-3xl border bg-white p-2 shadow-xl shadow-slate-200/50 overflow-hidden">
+          {FAQS.map((item, idx) => (
+            <details
+              key={idx}
+              className="group rounded-2xl p-4 hover:bg-slate-50 open:bg-emerald-50/30 transition-all duration-300"
+            >
+              <summary className="cursor-pointer list-none">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="font-bold text-slate-900 text-lg leading-tight group-open:text-emerald-900">
+                    {item.q}
+                  </div>
+                  <div className="mt-0.5 text-emerald-600 font-black select-none text-2xl">
+                    <span className="group-open:hidden">+</span>
+                    <span className="hidden group-open:inline">–</span>
+                  </div>
+                </div>
+              </summary>
+              <div className="mt-4 text-slate-700 leading-relaxed text-md pl-1 border-t border-emerald-100/50 pt-4">
+                {item.a}
+              </div>
+            </details>
+          ))}
         </div>
-        <p className="mt-2 text-slate-700">
-          Пиши в заявката си (или ни звънни) и ще уточним детайлите според
-          конкретния автомобил.
-        </p>
-        <div className="mt-4">
-          <a
-            href="/book"
-            className="inline-flex items-center rounded-xl bg-emerald-600 px-5 py-3 font-semibold text-white hover:bg-emerald-700 transition"
-          >
-            Запази оглед
-          </a>
+      </div>
+
+      {/* FINAL CTA */}
+      <div className="rounded-[2.5rem] border bg-slate-900 p-10 md:p-14 text-center md:text-left relative overflow-hidden">
+        <div className="relative z-10">
+            <h2 className="text-3xl font-bold text-white mb-4">
+            Не намирате отговора?
+            </h2>
+            <p className="text-slate-300 text-lg mb-8 max-w-xl">
+            Пишете ни в заявката или ни се обадете директно. Нашите инспектори ще уточнят всеки детайл според конкретната кола.
+            </p>
+            <div className="flex flex-col md:flex-row gap-4">
+            <Link
+                href="/book"
+                className="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-8 py-4 font-black text-white hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/20 text-lg"
+            >
+                ЗАПАЗЕТЕ ОГЛЕД
+            </Link>
+            <a
+                href="tel:0888570037"
+                className="inline-flex items-center justify-center rounded-2xl bg-white/10 px-8 py-4 font-bold text-white hover:bg-white/20 transition-all backdrop-blur-md border border-white/10"
+            >
+                0888 57 00 37
+            </a>
+            </div>
         </div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
       </div>
     </section>
   )
