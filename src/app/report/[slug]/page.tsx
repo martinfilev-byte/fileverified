@@ -13,9 +13,16 @@ import {
   Zap,
   Calendar,
   Fingerprint,
-  Activity
+  Activity,
+  Fuel,
+  Settings2,
+  Disc,
+  CarFront,
+  AlertTriangle,
+  Info,
+  MapPin
 } from "lucide-react"
-import GallerySection from "@/components/GallerySection" // Твоят модул
+import GallerySection from "@/components/GallerySection"
 
 export default function PublicReport({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
@@ -34,115 +41,172 @@ export default function PublicReport({ params }: { params: Promise<{ slug: strin
       });
   }, [slug]);
 
-  if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 font-black text-slate-300 tracking-[0.2em] uppercase italic">FileVerified Инспекция...</div>;
-  if (!report) return <div className="min-h-screen flex items-center justify-center bg-slate-50 font-black text-red-400">ДОКЛАДЪТ НЕ Е НАМЕРЕН</div>;
+  if (loading) return (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+      <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <div className="font-black text-slate-300 tracking-[0.3em] uppercase italic animate-pulse">FileVerified Анализ...</div>
+    </div>
+  );
 
-  // Форматираме пътищата на снимките, за да минават през API-то за файлове
+  if (!report) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 font-black text-rose-500 text-2xl tracking-tighter">
+      ДОКЛАДЪТ НЕ Е НАМЕРЕН ИЛИ НЕ Е ПУБЛИКУВАН
+    </div>
+  );
+
   const formattedImages = (report.data.images || []).map((img: string) => `/api/files?path=${img}`);
 
+  // Проверка за общия статус
+  const isExcellent = report.data.finalVerdict?.toLowerCase().includes('отлич') || report.data.finalVerdict?.toLowerCase().includes('без забележ');
+
   return (
-    <main className="min-h-screen bg-[#F8FAFC] pb-20 font-sans text-slate-900">
+    <main className="min-h-screen bg-[#F1F5F9] pb-20 font-sans text-slate-900 selection:bg-blue-100">
       
-      {/* HEADER (Премиум дизайн) */}
-      <div className="bg-white border-b px-6 py-12 shadow-sm">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-8">
-          <div>
-            <div className="flex items-center gap-2 text-blue-700 font-bold mb-3 tracking-wide">
-              <ShieldCheck className="w-6 h-6" />
-              <span className="text-sm uppercase tracking-widest font-black">Инспекционен доклад #{report.id.substring(0,8).toUpperCase()}</span>
+      {/* PREMIUM HEADER */}
+      <div className="bg-white border-b border-slate-200 px-6 py-12 md:py-20 shadow-sm relative overflow-hidden">
+        <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
+            <ShieldCheck size={400} />
+        </div>
+        
+        <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-10 relative z-10">
+          <div className="space-y-6">
+            <div className="flex items-center gap-3 text-blue-700 font-black mb-3 tracking-wide bg-blue-50 w-fit px-4 py-1.5 rounded-full border border-blue-100">
+              <ShieldCheck className="w-5 h-5" />
+              <span className="text-[10px] uppercase tracking-[0.2em]">Independent Inspection Report</span>
             </div>
-            <h1 className="text-4xl md:text-6xl font-black text-slate-900 leading-none tracking-tighter">
+            
+            <h1 className="text-5xl md:text-8xl font-black text-slate-900 leading-[0.85] tracking-tighter uppercase italic">
               {report.carModel}
             </h1>
-            <div className="flex items-center gap-4 mt-4 text-slate-500 font-medium">
+
+            <div className="flex flex-wrap items-center gap-y-4 gap-x-8 mt-6 text-slate-500 font-bold uppercase text-[11px] tracking-widest">
               <span className="flex items-center gap-2">Инспекция за: <b className="text-slate-900">{report.clientName}</b></span>
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-              <span className="font-bold uppercase tracking-tighter">VIN: {report.data.vin || "---"}</span>
+              <span className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+              <span className="flex items-center gap-2"><Fingerprint size={14}/> VIN: <b className="text-slate-900 font-mono tracking-normal">{report.data.vin || "---"}</b></span>
+              {report.data.location && (
+                 <span className="flex items-center gap-2"><MapPin size={14} className="text-rose-500"/> {report.data.location}</span>
+              )}
             </div>
           </div>
           
-          <div className="bg-blue-600 rounded-[2.5rem] p-8 flex items-center gap-6 shadow-2xl shadow-blue-200">
-            <div className="bg-white/20 text-white p-3 rounded-2xl">
-              <CheckCircle2 className="w-10 h-10" />
+          <div className={`rounded-[3rem] p-10 flex items-center gap-6 shadow-2xl border-2 transition-all ${isExcellent ? 'bg-emerald-50 border-emerald-200 shadow-emerald-100' : 'bg-amber-50 border-amber-200 shadow-amber-100'}`}>
+            <div className={`p-4 rounded-2xl ${isExcellent ? 'bg-emerald-500' : 'bg-amber-500'} text-white shadow-lg`}>
+              {isExcellent ? <CheckCircle2 className="w-12 h-12" /> : <AlertTriangle className="w-12 h-12" />}
             </div>
-            <div className="text-white">
-              <div className="text-[10px] font-black uppercase tracking-widest opacity-70 mb-1">Финален статус</div>
-              <div className="text-2xl font-black uppercase leading-none tracking-tight">ПРОВЕРЕН</div>
+            <div>
+              <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${isExcellent ? 'text-emerald-700' : 'text-amber-700'}`}>Технически Статус</div>
+              <div className={`text-3xl font-black uppercase leading-none tracking-tighter ${isExcellent ? 'text-emerald-900' : 'text-amber-900'}`}>
+                {isExcellent ? 'ПРОВЕРЕН' : 'СЪС ЗАБЕЛЕЖКИ'}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 mt-12 space-y-12">
+      <div className="max-w-7xl mx-auto px-6 -mt-10 space-y-10 relative z-20">
         
-        {/* КЛЮЧОВИ КАРТИ */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
-          <InfoCard icon={<Calendar className="w-5 h-5"/>} label="Година" value={report.data.year || "---"} />
-          <InfoCard icon={<Gauge className="w-5 h-5"/>} label="Пробег" value={`${report.data.mileage} км`} />
-          <InfoCard icon={<Fingerprint className="w-5 h-5"/>} label="VIN Номер" value={report.data.vin ? report.data.vin.substring(0,8) + '...' : '---'} />
-          <InfoCard icon={<Activity className="w-5 h-5"/>} label="Статус" value="Verified" />
+        {/* КЛЮЧОВИ ТЕХНИЧЕСКИ ДАННИ */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard icon={<Calendar />} label="Година" value={report.data.year} />
+          <StatCard icon={<Gauge />} label="Пробег" value={`${report.data.mileage} км`} />
+          <StatCard icon={<Fuel />} label="Гориво" value={report.data.fuel} />
+          <StatCard icon={<Settings2 />} label="Кутия" value={report.data.gearbox} />
+          <StatCard icon={<Zap />} label="Мощност" value={`${report.data.hp} к.с.`} />
+          <StatCard icon={<Activity />} label="Диагностика" value={report.data.ecuErrors ? "Грешки" : "Чиста"} color={report.data.ecuErrors ? "text-rose-600" : "text-emerald-600"} />
         </div>
 
-        {/* ТВОЯТА ГАЛЕРИЯ (Интегрирана) */}
-        <div className="bg-white rounded-[2rem] border p-2 shadow-xl shadow-slate-200/50 overflow-hidden">
-          <div className="p-6 font-bold text-slate-900 border-b flex items-center justify-between">
-            <span className="flex items-center gap-2 uppercase font-black tracking-tighter">
-              <Eye className="w-5 h-5 text-emerald-600"/> Фотодоклад ({formattedImages.length} снимки)
-            </span>
-          </div>
-          {/* Подаваме вече готовите линкове */}
-          <GallerySection images={formattedImages} />
-        </div>
-
-        {/* СЕКЦИИ С ДАННИ */}
-        <div className="grid lg:grid-cols-2 gap-8">
-          <SectionCard title="Екстериор и ЛКП" icon={<ShieldCheck className="w-6 h-6 text-blue-600"/>}>
-            <ExpandableCheckItem 
-              text="Дебелина на боята (Micron Measurement)" 
-              status="ok" 
-              info="ЛКП Данни"
-              details={Object.entries(report.data.paintData || {}).map(([label, value]) => ({
-                label,
-                value: `${value} μm`
-              }))}
-            />
-            <CheckItem text="Проверка за кит и вторични ремонти" status="ok" />
-            <CheckItem text="Състояние на фугите и панелите" status="ok" />
-          </SectionCard>
-
-          <SectionCard title="Диагностика и Оглед" icon={<Cpu className="w-6 h-6 text-blue-600"/>}>
-            <div className="bg-slate-50 p-8 rounded-[2rem] border-2 border-slate-100 italic text-slate-800 font-bold leading-relaxed text-lg shadow-inner">
-              {report.data.diagnostics}
+        <div className="grid lg:grid-cols-3 gap-8">
+          
+          {/* ЛЯВА КОЛОНА: ГАЛЕРИЯ И ЧЕКЛИСТОВЕ */}
+          <div className="lg:col-span-2 space-y-10">
+            
+            {/* ГАЛЕРИЯ */}
+            <div className="bg-white rounded-[3.5rem] border border-slate-200 p-2 shadow-2xl shadow-slate-200/50 overflow-hidden">
+              <div className="p-8 font-black text-slate-900 border-b border-slate-50 flex items-center justify-between">
+                <span className="flex items-center gap-3 uppercase text-sm tracking-tighter italic">
+                  <Eye className="w-6 h-6 text-blue-600"/> Визуален Доклад ({formattedImages.length} снимки)
+                </span>
+                <span className="text-[10px] bg-slate-100 px-3 py-1 rounded-full text-slate-400 font-black">4K HIGH RES</span>
+              </div>
+              <GallerySection images={formattedImages} />
             </div>
-          </SectionCard>
-        </div>
 
-        {/* ЗАКЛЮЧЕНИЕ */}
-        <div className="bg-slate-900 text-white rounded-[4rem] p-10 md:p-20 shadow-2xl relative overflow-hidden">
-          <div className="absolute -bottom-20 -right-20 opacity-10 rotate-12"><CheckCircle2 size={500} /></div>
-          <div className="relative z-10 grid md:grid-cols-2 gap-16 items-center">
-            <div>
-              <h2 className="text-4xl font-black mb-8 italic text-blue-400 uppercase tracking-tight">Заключение</h2>
-              <p className="text-slate-300 text-xl leading-relaxed mb-10 font-medium">
-                {report.data.finalVerdict}
-              </p>
-              <div className="flex items-center gap-5 border-t border-white/10 pt-10">
-                <div className="w-16 h-16 rounded-3xl bg-blue-600 flex items-center justify-center font-black text-2xl shadow-xl shadow-blue-500/20">М</div>
-                <div>
-                  <div className="font-black text-xl tracking-tight">Мартин Филев</div>
-                  <div className="text-sm text-blue-400 font-black uppercase tracking-widest tracking-tighter">FileVerified Инспектор</div>
+            {/* ДЕТАЙЛНИ СЕКЦИИ */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <SectionCard title="Екстериор и ЛКП" icon={<CarFront size={20} className="text-blue-600"/>}>
+                <ExpandableCheckItem 
+                  text="Измерване дебелина на лака" 
+                  isOpenDefault={true}
+                  details={Object.entries(report.data.paintData || {}).map(([label, value]) => ({
+                    label,
+                    value: `${value} μm`
+                  }))}
+                />
+                <CheckItem text="Състояние на стъкла и оптика" status="ok" info={report.data.exteriorStatus} desc={report.data.exteriorNotes} />
+              </SectionCard>
+
+              <SectionCard title="Интериор и Системи" icon={<Search size={20} className="text-emerald-600"/>}>
+                <CheckItem text="Проверка на модули и тапицерия" status="ok" info={report.data.interiorStatus} desc={report.data.interiorNotes} />
+                <CheckItem text="Климатична система и отопление" status="ok" />
+              </SectionCard>
+
+              <SectionCard title="Двигател и Кутия" icon={<Zap size={20} className="text-amber-500"/>}>
+                <CheckItem text="Работа на мотора и трансмисия" status="ok" info={report.data.engineStatus} desc={report.data.engineNotes} />
+                <CheckItem text="Ниво и състояние на флуиди" status="ok" />
+              </SectionCard>
+
+              <SectionCard title="Ходова част" icon={<Disc size={20} className="text-rose-500"/>}>
+                <CheckItem text="Спирачки и окачване" status="ok" info={report.data.suspensionStatus} desc={report.data.suspensionNotes} />
+              </SectionCard>
+            </div>
+          </div>
+
+          {/* ДЯСНА КОЛОНА: ДИАГНОСТИКА И ЗАКЛЮЧЕНИЕ */}
+          <div className="space-y-8">
+            
+            {/* OBD DIAGNOSTICS */}
+            <div className="bg-slate-900 text-white rounded-[3.5rem] p-10 shadow-2xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 group-hover:rotate-0 transition-transform duration-1000">
+                <Cpu size={120} />
+              </div>
+              <div className="relative z-10">
+                <h3 className="text-blue-400 font-black uppercase text-[10px] tracking-[0.3em] mb-8 flex items-center gap-2">
+                  <Cpu size={18} /> Компютърна Диагностика
+                </h3>
+                <div className={`text-sm font-black uppercase mb-4 px-4 py-2 rounded-xl inline-block ${report.data.ecuErrors ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                  {report.data.ecuErrors ? 'Открити грешки' : 'Няма активни грешки'}
+                </div>
+                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl italic text-slate-300 text-sm leading-relaxed font-medium">
+                  {report.data.diagnostics || "Всички системи са сканирани успешно. Няма записани кодове за грешки в основните модули (Engine, Transmission, ABS, Airbag)."}
                 </div>
               </div>
             </div>
-            <div className="space-y-4">
-               <div className="bg-white/5 rounded-3xl p-8 border border-white/10 backdrop-blur-sm">
-                  <div className="text-blue-400 font-black mb-2 uppercase text-xs tracking-widest">Професионален статус</div>
-                  <p className="text-sm text-slate-300 leading-relaxed font-bold italic">Проверката е извършена със специализирана апаратура за ЛКП и OBD II диагностика.</p>
-               </div>
-               <a href="/" className="block w-full bg-white text-slate-900 text-center py-6 rounded-[2rem] font-black text-2xl transition-all hover:bg-blue-600 hover:text-white">
-                НОВА ИНСПЕКЦИЯ
-              </a>
+
+            {/* FINAL VERDICT CARD */}
+            <div className="bg-white rounded-[3.5rem] p-10 border border-slate-200 shadow-xl relative">
+              <div className="absolute -top-4 -right-4 bg-blue-600 text-white p-4 rounded-3xl shadow-lg rotate-12">
+                <ShieldCheck size={24} />
+              </div>
+              <h3 className="text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] mb-8 flex items-center gap-2">
+                <Info size={16} /> Експертна присъда
+              </h3>
+              <p className="text-slate-900 font-black text-2xl leading-tight italic tracking-tighter mb-10">
+                "{report.data.finalVerdict}"
+              </p>
+              
+              <div className="pt-10 border-t border-slate-100 flex items-center gap-5">
+                <div className="w-16 h-16 rounded-[1.5rem] bg-slate-900 flex items-center justify-center font-black text-2xl text-white shadow-xl">МФ</div>
+                <div>
+                  <div className="font-black text-xl text-slate-900 tracking-tighter leading-none">Мартин Филев</div>
+                  <div className="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">FileVerified Lead Inspector</div>
+                </div>
+              </div>
             </div>
+
+            {/* CALL TO ACTION */}
+            <a href="https://fileverified.eu" className="flex items-center justify-center w-full bg-slate-900 text-white py-8 rounded-[2.5rem] font-black text-xl transition-all hover:bg-blue-600 hover:scale-[1.02] shadow-2xl active:scale-95">
+              НОВА ИНСПЕКЦИЯ
+            </a>
           </div>
         </div>
 
@@ -151,63 +215,80 @@ export default function PublicReport({ params }: { params: Promise<{ slug: strin
   )
 }
 
-// Помощни компоненти
-function InfoCard({ icon, label, value }: { icon: any, label: string, value: string }) {
+// --- УНИКАЛНИ UI КОМПОНЕНТИ ЗА ПУБЛИЧНИЯ РЕПОРТ ---
+
+function StatCard({ icon, label, value, color = "text-blue-600" }: any) {
   return (
-    <div className="bg-white p-8 rounded-[2.5rem] border-4 border-white shadow-md flex items-center gap-5 hover:shadow-xl transition-all">
-      <div className="text-blue-600 bg-blue-50 p-4 rounded-3xl">{icon}</div>
+    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center gap-4 hover:shadow-xl transition-all group">
+      <div className={`${color} bg-slate-50 p-3 rounded-2xl group-hover:scale-110 transition-transform`}>
+        {cloneElement(icon, { size: 20 })}
+      </div>
       <div>
-        <div className="text-[10px] text-slate-400 uppercase font-black tracking-widest mb-1">{label}</div>
-        <div className="text-slate-900 font-black text-xl leading-none">{value}</div>
+        <div className="text-[9px] text-slate-400 uppercase font-black tracking-widest leading-none mb-1">{label}</div>
+        <div className="text-slate-900 font-black text-base md:text-lg leading-none tracking-tighter uppercase italic">{value || "---"}</div>
       </div>
     </div>
   )
 }
 
-function SectionCard({ title, icon, children }: { title: string, icon: any, children: any }) {
+function SectionCard({ title, icon, children }: any) {
   return (
-    <div className="bg-white rounded-[3rem] border-4 border-white shadow-xl overflow-hidden">
-      <div className="p-8 border-b flex items-center gap-4 bg-slate-50/50 font-black uppercase text-xs tracking-widest text-slate-400">
-        {icon} {title}
+    <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+      <div className="p-8 border-b border-slate-50 flex items-center gap-3 bg-slate-50/30">
+        {icon}
+        <span className="font-black uppercase text-[11px] tracking-[0.2em] text-slate-500">{title}</span>
       </div>
-      <div className="p-8 space-y-6">{children}</div>
+      <div className="p-8 space-y-6 flex-1">{children}</div>
     </div>
   )
 }
 
-function CheckItem({ text, status, info }: { text: string, status: 'ok' | 'warning' | 'error', info?: string }) {
+function CheckItem({ text, status, info, desc }: any) {
   return (
-    <div className="flex items-center justify-between border-b border-slate-50 pb-3">
-      <div className="flex items-center gap-4">
-        <CheckCircle2 className="w-6 h-6 text-blue-500" />
-        <span className="text-slate-800 font-bold text-base">{text}</span>
-      </div>
-      {info && <span className="text-[10px] font-black bg-slate-100 text-slate-500 px-3 py-1 rounded-full uppercase">{info}</span>}
-    </div>
-  )
-}
-
-function ExpandableCheckItem({ text, status, info, details }: { text: string, status: any, info?: string, details: any[] }) {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <div className="border-b border-slate-100 pb-3">
-      <div className="flex items-center justify-between cursor-pointer hover:bg-slate-50 p-2 rounded-2xl transition-all group" onClick={() => setIsOpen(!isOpen)}>
-        <div className="flex items-center gap-4">
-          <CheckCircle2 className="w-6 h-6 text-blue-500" />
-          <span className="text-slate-800 font-black text-base md:text-lg">{text}</span>
-          {isOpen ? <ChevronUp className="w-5 h-5 text-slate-300" /> : <ChevronDown className="w-5 h-5 text-slate-300" />}
+    <div className="space-y-2">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5 text-blue-500" />
+          <span className="text-slate-900 font-black text-sm tracking-tight">{text}</span>
         </div>
+        {info && <span className="text-[9px] font-black bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded uppercase">{info}</span>}
+      </div>
+      {desc && <p className="ml-8 text-[11px] text-slate-400 font-medium italic leading-relaxed">"{desc}"</p>}
+    </div>
+  )
+}
+
+function ExpandableCheckItem({ text, details, isOpenDefault = false }: any) {
+  const [isOpen, setIsOpen] = useState(isOpenDefault);
+  return (
+    <div className="bg-slate-50 rounded-3xl border border-slate-100 overflow-hidden">
+      <div 
+        className="flex items-center justify-between p-5 cursor-pointer hover:bg-white transition-all"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex items-center gap-3">
+          <Activity className="w-5 h-5 text-blue-500" />
+          <span className="text-slate-900 font-black text-sm tracking-tight">{text}</span>
+        </div>
+        {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
       </div>
       {isOpen && (
-        <div className="mt-4 ml-10 space-y-3 bg-slate-50/50 rounded-3xl p-6 border border-slate-100 shadow-inner">
-          {details.map((item, idx) => (
-            <div key={idx} className="flex justify-between text-sm md:text-base border-b border-slate-200/30 pb-2 last:border-0">
-              <span className="text-slate-500 font-bold uppercase text-[11px] tracking-widest">{item.label}</span>
-              <span className="text-slate-900 font-black">{item.value}</span>
-            </div>
-          ))}
+        <div className="p-6 pt-0 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="grid grid-cols-2 gap-3">
+            {details.map((item: any, idx: number) => (
+              <div key={idx} className="bg-white px-3 py-2 rounded-xl border border-slate-200/50 flex justify-between items-center">
+                <span className="text-[8px] text-slate-400 font-black uppercase tracking-widest">{item.label}</span>
+                <span className="text-slate-900 font-black text-xs">{item.value}</span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 p-3 bg-blue-100/30 rounded-xl text-[9px] text-blue-600 font-bold flex items-center gap-2">
+            <Info size={12} /> Фабрични стойности: 90 - 150 μm
+          </div>
         </div>
       )}
     </div>
   )
 }
+
+import { cloneElement } from "react";
