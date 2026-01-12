@@ -1,0 +1,30 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider      = "prisma-client-js"
+  // Добавяме поддръжка за native (твоя компютър) и linux-musl (Docker контейнера)
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Report {
+  id             String   @id @default(cuid())
+  slug           String   @unique   // Уникалният линк за клиента (напр. audi-a6-ivan)
+  carModel       String             // Марка и модел за списъка в админа
+  clientName     String             // Име на клиента
+  inspectionDate DateTime @default(now())
+  
+  // В това поле jsonData записваме всички технически данни (боя, снимки, диагностика) като текст
+  jsonData       String   
+  
+  isPublished    Boolean  @default(false) // Статус за видимост на отчета
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([slug]) // Индекс за по-бързо търсене по линк
+}

@@ -23,7 +23,6 @@ export default function GallerySection({ images = [] }: GalleryProps) {
 
   if (!mounted || images.length === 0) return null;
 
-  // Показваме само първите 5 снимки в мрежата
   const visibleImages = images.slice(0, 5);
   const remainingCount = images.length - 5;
 
@@ -43,18 +42,17 @@ export default function GallerySection({ images = [] }: GalleryProps) {
                 src={src}
                 alt={`Инспекция детайл ${i + 1}`}
                 fill
+                unoptimized // ДОБАВЕНО: за да работят снимките през API-то
                 className={`object-cover transition duration-300 group-hover:scale-110 ${isLastVisible ? 'blur-[2px] brightness-50' : ''}`}
                 sizes="(max-w-768px) 50vw, 20vw"
               />
               
-              {/* Overlay за нормалните снимки */}
               {!isLastVisible && (
                 <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
                   <Maximize2 className="text-white w-6 h-6" />
                 </div>
               )}
 
-              {/* Специален бутон върху 5-тата снимка, ако има още */}
               {isLastVisible && (
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/40 group-hover:bg-black/20 transition-colors">
                   <span className="text-2xl font-black">+{remainingCount}</span>
@@ -66,12 +64,11 @@ export default function GallerySection({ images = [] }: GalleryProps) {
         })}
       </div>
 
-      {/* Бутон под галерията за по-добра видимост */}
       {remainingCount > 0 && (
         <div className="mt-4 flex justify-center">
           <button 
             onClick={() => setIndex(0)}
-            className="flex items-center gap-2 px-6 py-2 border-2 border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 hover:border-slate-300 transition-all text-sm"
+            className="flex items-center gap-2 px-6 py-2 border-2 border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 hover:border-slate-300 transition-all text-sm uppercase tracking-tighter"
           >
             <ImageIcon className="w-4 h-4" />
             ВИЖ ВСИЧКИ {images.length} СНИМКИ
@@ -85,7 +82,6 @@ export default function GallerySection({ images = [] }: GalleryProps) {
         close={() => setIndex(-1)}
         slides={images.map(src => ({ src }))}
         plugins={[Zoom, Thumbnails]}
-        portal={{ root: document.body }}
       />
     </div>
   );

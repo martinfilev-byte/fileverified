@@ -1,8 +1,12 @@
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   reactCompiler: true,
-  // Използваме само локални снимки от public/, така че не ни трябват remotePatterns
+  // standalone е задължително за Docker
+  output: 'standalone',
+  images: {
+    // Изключваме вградената оптимизация, за да не товарим Docker контейнера
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;
