@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
+import { mkdir } from "fs/promises";
 import path from "path";
+import sharp from "sharp";
+
+// Увеличаваме лимитите за обработка на големи снимки от iPhone
+export const maxDuration = 60; 
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: Request) {
   try {
@@ -8,47 +13,55 @@ export async function POST(request: Request) {
     const files = formData.getAll("files") as File[];
     const slug = formData.get("slug") as string;
 
-    console.log(`Започва качване за автомобил: ${slug}, брой файлове: ${files.length}`);
-
     if (!slug) {
-      return NextResponse.json({ error: "Липсва линк (slug). Не мога да създам папка." }, { status: 400 });
+      return NextResponse.json({ error: "Липсва линк (slug) за създаване на папка." }, { status: 400 });
     }
 
-    if (!files.length) {
+    if (!files || files.length === 0) {
       return NextResponse.json({ error: "Няма избрани файлове." }, { status: 400 });
     }
 
+    // Дефинираме пътя до папката
     const uploadDir = path.join(process.cwd(), "public", "uploads", slug);
     
-    // Създаваме папката и проверяваме за грешки в правата
-    try {
-      await mkdir(uploadDir, { recursive: true });
-    } catch (e: any) {
-      console.error("Грешка при създаване на папка:", e.message);
-      return NextResponse.json({ error: "Нямам права да създам папка в Docker." }, { status: 500 });
-    }
+    // Създаваме папката, ако не съществува
+    await mkdir(uploadDir, { recursive: true });
 
     const uploadedPaths: string[] = [];
 
     for (const file of files) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const filename = `${Date.now()}-${file.name.replaceAll(" ", "_")}`;
+      // Превръщаме файла в Buffer за обработка с Sharp
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+
+      // Генерираме име на файла (винаги .webp за максимална лекота на сайта)
+      const filename = `${Date.now()}-${file.name.split('.')[0].replaceAll(" ", "_")}.webp`;
       const filepath = path.join(uploadDir, filename);
 
-      try {
-        await writeFile(filepath, buffer);
-        uploadedPaths.push(`/uploads/${slug}/${filename}`);
-        console.log(`Успешно записан файл: ${filename}`);
-      } catch (writeError: any) {
-        console.error("Грешка при запис на файл:", writeError.message);
-        return NextResponse.json({ error: `Грешка при запис на ${file.name}` }, { status: 500 });
-      }
+      // ОБРАБОТКА:
+      // 1. Resize до макс 1920px ширина (Full HD е предостатъчно за уеб)
+      // 2. Конвертиране в WebP с 80% качество (осигурява супер малък размер)
+      await sharp(buffer)
+        .resize(1920, 1080, { 
+          fit: 'inside', 
+          withoutEnlargement: true // Ако снимката е по-малка, не я разпъвай
+        })
+        .webp({ quality: 80 })
+        .toFile(filepath);
+
+      // Записваме пътя за базата данни
+      uploadedPaths.push(`/uploads/${slug}/${filename}`);
     }
 
-    return NextResponse.json({ paths: uploadedPaths });
+    return NextResponse.json({ 
+      success: true, 
+      paths: uploadedPaths 
+    });
+
   } catch (error: any) {
-    console.error("Глобална грешка в API Upload:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("Грешка при качване и обработка:", error);
+    return NextResponse.json({ 
+      error: "Грешка при обработка на изображенията: " + error.message 
+    }, { status: 500 });
   }
 }
