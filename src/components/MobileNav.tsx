@@ -40,7 +40,7 @@ export default function MobileNav() {
       {/* Плътен фон за застраховка */}
       <div 
         className="absolute inset-0 bg-white"
-        style={{ opacity: 0.90, backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
+        style={{ opacity: 0.95, backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
       />
       
       <div className="relative flex flex-col h-full w-full shadow-2xl">
@@ -53,18 +53,20 @@ export default function MobileNav() {
         </div>
 
         {/* Links */}
-        <nav className="flex flex-col p-8 gap-2">
+        <nav className="flex flex-col p-8 gap-1 overflow-y-auto">
           {[
             { name: "НАЧАЛО", href: "/" },
             { name: "ПРОВЕРКА", href: "/services" },
+            { name: "VIN ПРОВЕРКА", href: "/check" },
             { name: "ДИАГНОСТИКА", href: "/diagnostics" },
             { name: "TPMS", href: "/tpms" },
+            { name: "КОНТАКТИ", href: "/contact" },
             { name: "FAQ", href: "/faq" },
           ].map((item) => (
             <Link
               key={item.href}
               href={item.href}
-              className={`py-5 text-xl font-bold border-b border-slate-50 ${
+              className={`py-4 text-xl font-bold border-b border-slate-50 ${
                 pathname === item.href ? "text-emerald-600" : "text-slate-900"
               }`}
             >
@@ -72,12 +74,29 @@ export default function MobileNav() {
             </Link>
           ))}
           
-          <Link 
-            href="/book" 
-            className="mt-10 w-full text-center rounded-xl bg-emerald-600 py-5 text-lg font-black text-white shadow-lg"
-          >
-            ЗАПАЗИ ОГЛЕД
-          </Link>
+          <div className="mt-8 flex flex-col gap-4">
+            <Link 
+              href="/book" 
+              className="w-full text-center rounded-xl bg-emerald-600 py-5 text-lg font-black text-white shadow-lg"
+            >
+              ЗАПАЗИ ОГЛЕД
+            </Link>
+
+            <div className="grid grid-cols-2 gap-3">
+                <Link 
+                    href="/portal" 
+                    className="w-full text-center rounded-xl bg-slate-100 py-4 text-xs font-black text-slate-900 uppercase tracking-widest"
+                >
+                    ПОРТАЛ
+                </Link>
+                <Link 
+                    href="/admin" 
+                    className="w-full text-center rounded-xl bg-slate-900 py-4 text-xs font-black text-white uppercase tracking-widest"
+                >
+                    АДМИН
+                </Link>
+            </div>
+          </div>
         </nav>
       </div>
     </div>
