@@ -57,7 +57,6 @@ export default function MobileNav() {
           {[
             { name: "НАЧАЛО", href: "/" },
             { name: "ПРОВЕРКА", href: "/services" },
-            { name: "VIN ПРОВЕРКА", href: "/check" },
             { name: "ДИАГНОСТИКА", href: "/diagnostics" },
             { name: "TPMS", href: "/tpms" },
             { name: "КОНТАКТИ", href: "/contact" },
