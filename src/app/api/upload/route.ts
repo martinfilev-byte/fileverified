@@ -13,8 +13,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Липсва slug или файлове" }, { status: 400 });
     }
 
+    // Пътят до папката на диска
     const uploadDir = join(process.cwd(), "public", "uploads", slug);
     
+    // Създаваме папката, ако не съществува
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
     }
@@ -24,11 +26,15 @@ export async function POST(req: NextRequest) {
     for (const file of files) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-      const path = join(uploadDir, fileName);
       
-      await writeFile(path, buffer);
-      savedPaths.push(`${slug}/${fileName}`);
+      // Почистваме името на файла от интервали
+      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+      const pathOnDisk = join(uploadDir, fileName);
+      
+      await writeFile(pathOnDisk, buffer);
+      
+      // ВАЖНО: Записваме пътя с 'uploads/', за да съвпада с очакванията на api/files
+      savedPaths.push(`uploads/${slug}/${fileName}`);
     }
 
     return NextResponse.json({ paths: savedPaths });
