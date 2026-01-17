@@ -1,4 +1,4 @@
-FILEVERIFIED PROJECT SNAPSHOT - Sat Jan 17 08:00:32 AM EET 2026
+FILEVERIFIED PROJECT SNAPSHOT - Sat Jan 17 09:31:33 AM EET 2026
 ========================================
 
 --- START OF FILE: src/components/ContactForm.tsx ---
@@ -1045,113 +1045,112 @@ export async function POST(request: Request) {
 }
 --- END OF FILE: src/app/api/contact/route.ts ---
 
+--- START OF FILE: src/app/api/bookings/route.ts ---
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  try {
+    const bookings = await prisma.booking.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    return NextResponse.json(bookings);
+  } catch (error) {
+    console.error("Грешка в API Bookings:", error);
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const { id, status } = await request.json();
+    const updated = await prisma.booking.update({
+      where: { id },
+      data: { status }
+    });
+    return NextResponse.json(updated);
+  } catch (error) {
+    return NextResponse.json({ error: "Update error" }, { status: 500 });
+  }
+}
+--- END OF FILE: src/app/api/bookings/route.ts ---
+
 --- START OF FILE: src/app/api/send/route.ts ---
 import { Resend } from 'resend';
 import { NextResponse } from 'next/server';
+import { prisma } from "@/lib/prisma";
 
-// Инициализираме Resend само ако има ключ, за да не гърми при 'npm run build'
-const resend = process.env.RESEND_API_KEY 
-  ? new Resend(process.env.RESEND_API_KEY) 
-  : null;
+// Инициализираме Resend
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
 
 export async function POST(request: Request) {
-  // Проверка дали услугата е конфигурирана правилно при самото извикване
-  if (!resend) {
-    console.error("RESEND_API_KEY is missing");
-    return NextResponse.json({ error: 'Email service not configured' }, { status: 500 });
-  }
-
   try {
+    if (!resend) {
+      console.error("ГРЕШКА: RESEND_API_KEY липсва в обкръжението.");
+      return NextResponse.json({ error: 'Имейл услугата не е конфигурирана' }, { status: 500 });
+    }
+
     const body = await request.json();
-    
     const { 
-      fullName, 
-      email, 
-      phone, 
-      makeModel, 
-      carLink, 
-      year, 
-      vin, 
-      date, 
-      time, 
-      notes, 
-      packageName, 
-      packagePrice 
+      fullName, email, phone, makeModel, carLink, 
+      year, vin, date, time, notes, packageName, packagePrice 
     } = body;
 
-    // 1. ИЗПРАЩАНЕ ДО МАРТИН (Админ)
-    const adminRes = await resend.emails.send({
+    // 1. ЗАПИС В POSTGRESQL БАЗАТА
+    try {
+      await prisma.booking.create({
+        data: {
+          pkgName: packageName || "Standard",
+          date: date || "",
+          time: time || "",
+          fullName: fullName || "Анонимен",
+          phone: phone || "",
+          email: email || "",
+          makeModel: makeModel || "",
+          year: year || "",
+          vin: vin || "",
+          notes: notes || "",
+          status: "new"
+        }
+      });
+      console.log("Успешен запис на заявката в базата.");
+    } catch (dbErr) {
+      console.error("Грешка при запис в базата:", dbErr);
+      // Продължаваме с имейла, дори ако базата се провали
+    }
+
+    // 2. ИЗПРАЩАНЕ НА ИМЕЙЛ ДО АДМИН (Мартин)
+    const adminEmail = await resend.emails.send({
       from: 'FileVerified <info@fileverified.eu>',
       to: ['martin.filev@gmail.com'],
-      replyTo: email || undefined, 
+      replyTo: email || undefined,
       subject: `Нова резервация: ${makeModel} - ${fullName}`,
       html: `
-        <div style="font-family: sans-serif; line-height: 1.5; color: #333;">
-          <h2 style="color: #1e293b; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px;">Нова заявка за проверка</h2>
-          <div style="background: #f8fafc; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0;">
-            <p><strong>Пакет:</strong> <span style="color: #059669; font-weight: bold;">${packageName} (${packagePrice})</span></p>
-            <p><strong>Клиент:</strong> ${fullName}</p>
-            <p><strong>Телефон:</strong> ${phone}</p>
-            <p><strong>Имейл:</strong> ${email}</p>
-            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;" />
-            <p><strong>Автомобил:</strong> ${makeModel}</p>
-            <p><strong>Година:</strong> ${year || 'Не е посочена'}</p>
-            <p><strong>VIN:</strong> ${vin || 'Не е посочен'}</p>
-            <p><strong>Линк към обява:</strong> <a href="${carLink}" style="color: #2563eb;">${carLink}</a></p>
-            <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 15px 0;" />
-            <p><strong>Желан час:</strong> <span style="font-weight: bold;">${date} в ${time} ч.</span></p>
-            <p><strong>Бележки:</strong> ${notes || 'Няма'}</p>
-          </div>
+        <div style="font-family: sans-serif; padding: 20px;">
+          <h2 style="color: #059669;">Нова заявка от сайта</h2>
+          <p><strong>Клиент:</strong> ${fullName}</p>
+          <p><strong>Телефон:</strong> ${phone}</p>
+          <p><strong>Кола:</strong> ${makeModel}</p>
+          <p><strong>Пакет:</strong> ${packageName} (${packagePrice})</p>
+          <p><strong>Дата/Час:</strong> ${date} в ${time} ч.</p>
+          <hr />
+          <p><strong>Линк:</strong> <a href="${carLink}">${carLink}</a></p>
+          <p><strong>Бележки:</strong> ${notes || 'Няма'}</p>
         </div>
       `
     });
 
-    if (adminRes.error) {
-      console.error("Admin Email Error:", adminRes.error);
-    }
-
-    // 2. ИЗПРАЩАНЕ ДО КЛИЕНТА (Потвърждение)
-    if (email && email.trim() !== "") {
-      const customerRes = await resend.emails.send({
-        from: 'FileVerified <info@fileverified.eu>',
-        to: [email.trim()],
-        subject: `Вашата заявка за оглед е приета - FileVerified.eu`,
-        html: `
-          <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #059669;">Здравейте, ${fullName}!</h2>
-            <p>Благодарим Ви, че избрахте <strong>FileVerified.eu</strong> за независима проверка на Вашия бъдещ автомобил.</p>
-            <p>Вашата заявка за <strong>${makeModel}</strong> беше получена успешно. Мартин Филев ще се свърже с Вас скоро на телефон <strong>${phone}</strong> за финално потвърждение на часа.</p>
-            
-            <div style="background-color: #f3f4f6; padding: 20px; border-radius: 12px; margin: 25px 0; border: 1px solid #e5e7eb;">
-              <h3 style="margin-top: 0; color: #1f2937;">Обобщение на заявката:</h3>
-              <p style="margin: 5px 0;"><strong>Пакет:</strong> ${packageName}</p>
-              <p style="margin: 5px 0;"><strong>Планирана дата:</strong> ${date} в ${time} часа</p>
-            </div>
-
-            <p><strong>Какво следва?</strong></p>
-            <ul style="color: #4b5563;">
-              <li>Ще потвърдим огледа с Вас и с продавача на автомобила.</li>
-              <li>След извършване на проверката, ще изготвим детайлен доклад.</li>
-              <li>Ще получите доклада директно на този имейл адрес.</li>
-            </ul>
-            
-            <p style="margin-top: 30px;">Поздрави,<br /><strong>Екипът на FileVerified.eu</strong><br />
-            <a href="https://fileverified.eu" style="color: #2563eb; text-decoration: none;">www.fileverified.eu</a></p>
-            <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;" />
-            <p style="font-size: 11px; color: #9ca3af; text-align: center;">Това е автоматично съобщение. Моля, не отговаряйте директно на него.</p>
-          </div>
-        `
-      });
-      
-      if (customerRes.error) {
-        console.error("Customer Email Error:", customerRes.error);
-      }
+    if (adminEmail.error) {
+      console.error("Грешка при изпращане на имейл:", adminEmail.error);
     }
 
     return NextResponse.json({ success: true });
   } catch (error: any) {
-    console.error("Critical Route Error:", error);
-    return NextResponse.json({ error: 'Грешка при изпращането' }, { status: 500 });
+    console.error("Критична грешка в API Route:", error);
+    return NextResponse.json({ error: 'Сървърна грешка' }, { status: 500 });
   }
 }
 --- END OF FILE: src/app/api/send/route.ts ---
@@ -1172,10 +1171,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Липсва slug или файлове" }, { status: 400 });
     }
 
-    // Път до папката: public/uploads/[slug]
     const uploadDir = join(process.cwd(), "public", "uploads", slug);
     
-    // Създаваме папката, ако не съществува
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
     }
@@ -1185,14 +1182,10 @@ export async function POST(req: NextRequest) {
     for (const file of files) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      
-      // Генерираме уникално име за всяка снимка
       const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
       const path = join(uploadDir, fileName);
       
       await writeFile(path, buffer);
-      
-      // Връщаме пътя, който ще се пази в базата
       savedPaths.push(`${slug}/${fileName}`);
     }
 
@@ -1202,13 +1195,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Сървърна грешка при качване" }, { status: 500 });
   }
 }
-
-// Важно: Увеличаваме лимита за API-то (само за App Router)
-export const config = {
-  api: {
-    bodyParser: false, // Изключваме стандартния парсер за големи файлове
-  },
-};
 --- END OF FILE: src/app/api/upload/route.ts ---
 
 --- START OF FILE: src/app/api/files/route.ts ---
@@ -3240,64 +3226,42 @@ export default function PrivacyPage() {
 --- END OF FILE: src/app/privacy/page.tsx ---
 
 --- START OF FILE: src/lib/bookings.ts ---
-import fs from "node:fs/promises"
-import path from "node:path"
+import { prisma } from "./prisma";
 
-export type BookingStatus = "new" | "confirmed" | "done" | "canceled"
+export type BookingStatus = "new" | "confirmed" | "done" | "canceled";
 
-export type Booking = {
-  id: string
-  createdAt: string
-  status: BookingStatus
-  pkg: "Standard" | "Premium" | "PremiumEV"
-  pkgName: string
-  date: string
-  time: string
-  fullName: string
-  phone: string
-  email?: string
-  makeModel: string
-  year?: string
-  vin?: string
-  mileage?: string
-  location?: string
-  notes?: string
+export async function listBookings() {
+  // Взимаме всички от базата, подредени по дата (най-новите отгоре)
+  return await prisma.booking.findMany({
+    orderBy: {
+      createdAt: 'desc',
+    },
+  });
 }
 
-const DATA_DIR = process.env.BOOKINGS_DIR ?? "/data"
-const FILE_PATH = path.join(DATA_DIR, "bookings.json")
-
-async function ensureFile() {
-  try {
-    await fs.mkdir(DATA_DIR, { recursive: true })
-    await fs.access(FILE_PATH)
-  } catch {
-    await fs.writeFile(FILE_PATH, JSON.stringify([], null, 2), "utf8")
-  }
-}
-
-export async function listBookings(): Promise<Booking[]> {
-  await ensureFile()
-  const raw = await fs.readFile(FILE_PATH, "utf8")
-  const items = JSON.parse(raw) as Booking[]
-  // newest first
-  return items.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
-}
-
-export async function addBooking(b: Booking): Promise<void> {
-  await ensureFile()
-  const items = await listBookings()
-  items.unshift(b)
-  await fs.writeFile(FILE_PATH, JSON.stringify(items, null, 2), "utf8")
+export async function addBooking(data: any) {
+  return await prisma.booking.create({
+    data: {
+      pkgName: data.packageName || data.pkgName,
+      date: data.date,
+      time: data.time,
+      fullName: data.fullName,
+      phone: data.phone,
+      email: data.email,
+      makeModel: data.makeModel,
+      year: data.year,
+      vin: data.vin,
+      notes: data.notes,
+      status: "new",
+    },
+  });
 }
 
 export async function updateBookingStatus(id: string, status: BookingStatus) {
-  await ensureFile()
-  const items = await listBookings()
-  const idx = items.findIndex((x) => x.id === id)
-  if (idx === -1) return
-  items[idx] = { ...items[idx], status }
-  await fs.writeFile(FILE_PATH, JSON.stringify(items, null, 2), "utf8")
+  return await prisma.booking.update({
+    where: { id },
+    data: { status },
+  });
 }
 --- END OF FILE: src/lib/bookings.ts ---
 
@@ -3312,35 +3276,43 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 --- END OF FILE: src/lib/prisma.ts ---
 
 --- START OF FILE: prisma/schema.prisma ---
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider      = "prisma-client-js"
-  // Добавяме поддръжка за native (твоя компютър) и linux-musl (Docker контейнера)
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Report {
   id             String   @id @default(cuid())
-  slug           String   @unique   // Уникалният линк за клиента (напр. audi-a6-ivan)
-  carModel       String             // Марка и модел за списъка в админа
-  clientName     String             // Име на клиента
+  slug           String   @unique
+  carModel       String
+  clientName     String
   inspectionDate DateTime @default(now())
-  
-  // В това поле jsonData записваме всички технически данни (боя, снимки, диагностика) като текст
-  jsonData       String   
-  
-  isPublished    Boolean  @default(false) // Статус за видимост на отчета
+  jsonData       String   @db.Text
+  isPublished    Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  @@index([slug]) // Индекс за по-бързо търсене по линк
+  @@index([slug])
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  status    String   @default("new")
+  pkgName   String
+  date      String
+  time      String
+  fullName  String
+  phone     String
+  email     String?
+  makeModel String
+  year      String?
+  vin       String?
+  notes     String?
 }
 --- END OF FILE: prisma/schema.prisma ---
 
@@ -3348,9 +3320,7 @@ model Report {
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // ТОВА Е КРИТИЧНИЯТ РЕД:
   output: 'standalone', 
-
   images: {
     unoptimized: true, 
     remotePatterns: [
@@ -3360,10 +3330,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  
   experimental: {
     serverActions: {
-      bodySizeLimit: "200mb", 
+      bodySizeLimit: "20mb", 
     },
   },
 };
@@ -3373,63 +3342,81 @@ export default nextConfig;
 
 --- START OF CONFIG: compose.yml ---
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: fileverified-db
+    restart: always
+    environment:
+      POSTGRES_USER: fileverified
+      POSTGRES_PASSWORD: strongpassword123
+      POSTGRES_DB: fileverified
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fileverified -d fileverified"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
   web:
     build: .
     container_name: fileverified-web
-    restart: unless-stopped
+    restart: always
     ports:
       - "80:3000"
     environment:
-      - ADMIN_PASSWORD=Brumb@r1303
-      - DATABASE_URL=file:/app/prisma/data/app.db
-      - RESEND_API_KEY=re_8YkvujP5_7Az6LJzp19eLPvcP3Jx7cdjL
-      - NODE_ENV=production
-      - NEXT_TELEMETRY_DISABLED=1
+      DATABASE_URL: "postgresql://fileverified:strongpassword123@db:5432/fileverified?schema=public"
+      NEXTAUTH_URL: "https://fileverified.eu"
+      RESEND_API_KEY: "re_8YkvujP5_7Az6LJzp19eLPvcP3Jx7cdjL"
+      ADMIN_PASSWORD: "Brumb@r1303"
+      NODE_ENV: "production"
+    depends_on:
+      db:
+        condition: service_healthy
     volumes:
-      - ./prisma:/app/prisma
       - ./public/uploads:/app/public/uploads
-    deploy:
-      resources:
-        limits:
-          memory: 512M
+
+volumes:
+  postgres_data:
 --- END OF CONFIG: compose.yml ---
 
 --- START OF CONFIG: Dockerfile ---
-FROM node:20-alpine AS deps
-RUN apk add --no-cache libc6-compat
+FROM node:22-slim AS builder
 WORKDIR /app
-COPY package.json package-lock.json* ./
-RUN npm ci
 
-FROM node:20-alpine AS builder
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
+
+# Копираме package.json за инсталация
+COPY package.json ./
+RUN npm install
+
+# Копираме Prisma
+COPY prisma ./prisma/
+
+# Копираме всичко останало
 COPY . .
-RUN npx prisma generate || true
-ENV NEXT_TELEMETRY_DISABLED 1
+
+# Билдваме (това автоматично пуска npx prisma generate)
+ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
-FROM node:20-alpine AS runner
+FROM node:22-slim AS runner
 WORKDIR /app
-ENV NODE_ENV production
-ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
 
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/prisma ./prisma
 
-# Осигуряваме правата върху папката с данни
-USER root
-RUN mkdir -p /app/prisma/data && chown -R nextjs:nodejs /app/prisma
-USER nextjs
+RUN mkdir -p public/uploads && chmod -R 777 public/uploads
 
 EXPOSE 3000
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]
 --- END OF CONFIG: Dockerfile ---
@@ -3441,65 +3428,75 @@ CMD ["node", "server.js"]
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "npx prisma generate && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "next lint"
   },
   "dependencies": {
-    "@prisma/client": "^6.2.1",
-    "better-sqlite3": "^12.5.0",
+    "@prisma/client": "6.2.1",
+    "prisma": "6.2.1",
     "lucide-react": "^0.562.0",
     "next": "16.1.0",
-    "react": "19.2.3",
-    "react-dom": "19.2.3",
+    "pg": "^8.13.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
     "resend": "^6.6.0",
-    "yet-another-react-lightbox": "^3.28.0"
+    "yet-another-react-lightbox": "^3.28.0",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "babel-plugin-react-compiler": "1.0.0",
-    "eslint": "^9",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/pg": "^8.11.10",
+    "@types/bcryptjs": "^2.4.6",
+    "eslint": "^9.0.0",
     "eslint-config-next": "16.1.0",
-    "prisma": "^6.2.1",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "postcss": "^8.4.31",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.0.0"
   }
 }
-
 --- END OF CONFIG: package.json ---
 
 --- START OF CONFIG: prisma/schema.prisma ---
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-  provider      = "prisma-client-js"
-  // Добавяме поддръжка за native (твоя компютър) и linux-musl (Docker контейнера)
-  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
 model Report {
   id             String   @id @default(cuid())
-  slug           String   @unique   // Уникалният линк за клиента (напр. audi-a6-ivan)
-  carModel       String             // Марка и модел за списъка в админа
-  clientName     String             // Име на клиента
+  slug           String   @unique
+  carModel       String
+  clientName     String
   inspectionDate DateTime @default(now())
-  
-  // В това поле jsonData записваме всички технически данни (боя, снимки, диагностика) като текст
-  jsonData       String   
-  
-  isPublished    Boolean  @default(false) // Статус за видимост на отчета
+  jsonData       String   @db.Text
+  isPublished    Boolean  @default(false)
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  @@index([slug]) // Индекс за по-бързо търсене по линк
+  @@index([slug])
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  status    String   @default("new")
+  pkgName   String
+  date      String
+  time      String
+  fullName  String
+  phone     String
+  email     String?
+  makeModel String
+  year      String?
+  vin       String?
+  notes     String?
 }
 --- END OF CONFIG: prisma/schema.prisma ---

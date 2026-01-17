@@ -1,9 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // ТОВА Е КРИТИЧНИЯТ РЕД:
   output: 'standalone', 
-
   images: {
     unoptimized: true, 
     remotePatterns: [
@@ -13,10 +11,9 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  
   experimental: {
     serverActions: {
-      bodySizeLimit: "200mb", 
+      bodySizeLimit: "20mb", 
     },
   },
 };
