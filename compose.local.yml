@@ -1,0 +1,42 @@
+services:
+  db-local:
+    image: postgres:16-alpine
+    container_name: fileverified-db-local
+    restart: always
+    environment:
+      POSTGRES_USER: fileverified_dev
+      POSTGRES_PASSWORD: local_password_123
+      POSTGRES_DB: fileverified_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_local_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fileverified_dev -d fileverified_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web-local:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: fileverified-web-local
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: "postgresql://fileverified_dev:local_password_123@db-local:5432/fileverified_dev?schema=public"
+      RESEND_API_KEY: "re_8YkvujP5_7Az6LJzp19eLPvcP3Jx7cdjL"
+      ADMIN_PASSWORD: "Brumb@r1303"
+      NODE_ENV: "development"
+    depends_on:
+      db-local:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./public/uploads:/app/public/uploads
+
+volumes:
+  postgres_local_data:

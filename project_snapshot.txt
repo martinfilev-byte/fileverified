@@ -1,776 +1,293 @@
-FILEVERIFIED PROJECT SNAPSHOT - Sat Jan 17 09:31:33 AM EET 2026
+FILEVERIFIED PROJECT SNAPSHOT - Sat Jan 17 11:35:40 EET 2026
 ========================================
 
---- START OF FILE: src/components/ContactForm.tsx ---
-"use client"
+--- START OF FILE: src/app/robots.ts ---
+import { MetadataRoute } from 'next'
 
-import { useState } from "react"
-import { Send, CheckCircle2, Loader2, AlertCircle } from "lucide-react"
-
-export default function ContactForm() {
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
-
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setStatus("loading")
-
-    const formData = new FormData(e.currentTarget)
-    const data = {
-      name: formData.get("name"),
-      phone: formData.get("phone"),
-      message: formData.get("message"),
-    }
-
-    try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      })
-
-      if (response.ok) {
-        setStatus("success")
-      } else {
-        setStatus("error")
-      }
-    } catch (error) {
-      console.error("Form submission error:", error)
-      setStatus("error")
-    }
-  }
-
-  if (status === "success") {
-    return (
-      <div className="bg-emerald-50 border border-emerald-100 p-8 rounded-2xl text-center animate-in fade-in zoom-in duration-300">
-        <div className="flex justify-center mb-4 text-emerald-600">
-          <CheckCircle2 className="w-12 h-12" />
-        </div>
-        <h3 className="text-xl font-bold text-slate-900 mb-2">Запитването е изпратено!</h3>
-        <p className="text-slate-600">Благодарим Ви, ще се свържем с Вас съвсем скоро.</p>
-        <button 
-          onClick={() => setStatus("idle")}
-          className="mt-6 text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
-        >
-          Изпрати ново съобщение
-        </button>
-      </div>
-    )
-  }
-
-  return (
-    <div className="bg-slate-50 border border-slate-100 p-8 rounded-2xl">
-      <h3 className="text-xl font-bold text-slate-900 mb-6">Бързо запитване</h3>
-      
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Вашето Име</label>
-            <input 
-              name="name"
-              required 
-              type="text" 
-              placeholder="Име и фамилия"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all bg-white"
-            />
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Телефон</label>
-            <input 
-              name="phone"
-              required 
-              type="tel" 
-              placeholder="0888 000 000"
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all bg-white"
-            />
-          </div>
-        </div>
-        
-        <div className="space-y-2">
-          <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Какво Ви интересува?</label>
-          <textarea 
-            name="message"
-            required
-            rows={4}
-            placeholder="Опишете накратко как можем да Ви помогнем..."
-            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none bg-white"
-          ></textarea>
-        </div>
-
-        <button 
-          disabled={status === "loading"}
-          type="submit"
-          className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-[0.98] disabled:opacity-70"
-        >
-          {status === "loading" ? (
-            <Loader2 className="w-5 h-5 animate-spin" />
-          ) : (
-            <Send className="w-4 h-4" />
-          )}
-          {status === "loading" ? "Изпращане..." : "Изпрати запитване"}
-        </button>
-
-        {status === "error" && (
-          <div className="flex items-center gap-2 text-red-600 text-sm justify-center mt-2">
-            <AlertCircle className="w-4 h-4" />
-            Грешка при изпращането. Моля, проверете връзката си.
-          </div>
-        )}
-      </form>
-    </div>
-  )
-}
---- END OF FILE: src/components/ContactForm.tsx ---
-
---- START OF FILE: src/components/MobileNav.tsx ---
-"use client"
-
-import { useState, useEffect } from "react"
-import { createPortal } from "react-dom"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { Menu, X } from "lucide-react"
-
-export default function MobileNav() {
-  const [isOpen, setIsOpen] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const pathname = usePathname()
-
-  // Проверка дали сме в браузъра (клиентска част)
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden'
-    } else {
-      document.body.style.overflow = 'unset'
-    }
-  }, [isOpen])
-
-  useEffect(() => {
-    setIsOpen(false)
-  }, [pathname])
-
-  const menuContent = (
-    <div
-      style={{
-        position: 'fixed',
-        inset: 0,
-        zIndex: 99999,
-        display: isOpen ? 'block' : 'none',
-      }}
-    >
-      {/* Плътен фон за застраховка */}
-      <div 
-        className="absolute inset-0 bg-white"
-        style={{ opacity: 0.95, backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
-      />
-      
-      <div className="relative flex flex-col h-full w-full shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between px-6 h-20 border-b border-slate-100">
-          <span className="font-bold text-lg text-slate-900">МЕНЮ</span>
-          <button onClick={() => setIsOpen(false)} className="p-2 bg-slate-100 rounded-full">
-            <X className="h-6 w-6 text-slate-900" />
-          </button>
-        </div>
-
-        {/* Links */}
-        <nav className="flex flex-col p-8 gap-1 overflow-y-auto">
-          {[
-            { name: "НАЧАЛО", href: "/" },
-            { name: "ПРОВЕРКА", href: "/services" },
-            { name: "ДИАГНОСТИКА", href: "/diagnostics" },
-            { name: "TPMS", href: "/tpms" },
-            { name: "КОНТАКТИ", href: "/contact" },
-            { name: "FAQ", href: "/faq" },
-          ].map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`py-4 text-xl font-bold border-b border-slate-50 ${
-                pathname === item.href ? "text-emerald-600" : "text-slate-900"
-              }`}
-            >
-              {item.name}
-            </Link>
-          ))}
-          
-          <div className="mt-8 flex flex-col gap-4">
-            <Link 
-              href="/book" 
-              className="w-full text-center rounded-xl bg-emerald-600 py-5 text-lg font-black text-white shadow-lg"
-            >
-              ЗАПАЗИ ОГЛЕД
-            </Link>
-
-            <div className="grid grid-cols-2 gap-3">
-                <Link 
-                    href="/portal" 
-                    className="w-full text-center rounded-xl bg-slate-100 py-4 text-xs font-black text-slate-900 uppercase tracking-widest"
-                >
-                    ПОРТАЛ
-                </Link>
-                <Link 
-                    href="/admin" 
-                    className="w-full text-center rounded-xl bg-slate-900 py-4 text-xs font-black text-white uppercase tracking-widest"
-                >
-                    АДМИН
-                </Link>
-            </div>
-          </div>
-        </nav>
-      </div>
-    </div>
-  )
-
-  return (
-    <div className="md:hidden">
-      <button onClick={() => setIsOpen(true)} className="p-2 text-slate-900">
-        <Menu className="h-6 w-6" />
-      </button>
-
-      {/* Рендираме менюто директно в body, за да не се влияе от хедъра */}
-      {mounted && createPortal(menuContent, document.body)}
-    </div>
-  )
-}
---- END OF FILE: src/components/MobileNav.tsx ---
-
---- START OF FILE: src/components/GallerySection.tsx ---
-"use client";
-
-import React, { useState, useEffect } from 'react';
-import Image from 'next/image';
-import Lightbox from "yet-another-react-lightbox";
-import Zoom from "yet-another-react-lightbox/plugins/zoom";
-import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
-import "yet-another-react-lightbox/styles.css";
-import "yet-another-react-lightbox/plugins/thumbnails.css";
-import { Maximize2, ImageIcon } from 'lucide-react';
-
-interface GalleryProps {
-  images?: string[];
-}
-
-export default function GallerySection({ images = [] }: GalleryProps) {
-  const [index, setIndex] = useState(-1);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted || images.length === 0) return null;
-
-  const visibleImages = images.slice(0, 5);
-  const remainingCount = images.length - 5;
-
-  return (
-    <div className="w-full bg-white p-4">
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-        {visibleImages.map((src, i) => {
-          const isLastVisible = i === 4 && remainingCount > 0;
-
-          return (
-            <div 
-              key={i}
-              className="relative aspect-[4/3] cursor-pointer group overflow-hidden rounded-xl bg-gray-100 border border-slate-200 shadow-sm"
-              onClick={() => setIndex(i)}
-            >
-              <Image
-                src={src}
-                alt={`Инспекция детайл ${i + 1}`}
-                fill
-                unoptimized // ДОБАВЕНО: за да работят снимките през API-то
-                className={`object-cover transition duration-300 group-hover:scale-110 ${isLastVisible ? 'blur-[2px] brightness-50' : ''}`}
-                sizes="(max-w-768px) 50vw, 20vw"
-              />
-              
-              {!isLastVisible && (
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
-                  <Maximize2 className="text-white w-6 h-6" />
-                </div>
-              )}
-
-              {isLastVisible && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/40 group-hover:bg-black/20 transition-colors">
-                  <span className="text-2xl font-black">+{remainingCount}</span>
-                  <span className="text-[10px] uppercase font-bold tracking-widest">снимки</span>
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {remainingCount > 0 && (
-        <div className="mt-4 flex justify-center">
-          <button 
-            onClick={() => setIndex(0)}
-            className="flex items-center gap-2 px-6 py-2 border-2 border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 hover:border-slate-300 transition-all text-sm uppercase tracking-tighter"
-          >
-            <ImageIcon className="w-4 h-4" />
-            ВИЖ ВСИЧКИ {images.length} СНИМКИ
-          </button>
-        </div>
-      )}
-
-      <Lightbox
-        index={index}
-        open={index >= 0}
-        close={() => setIndex(-1)}
-        slides={images.map(src => ({ src }))}
-        plugins={[Zoom, Thumbnails]}
-      />
-    </div>
-  );
-}
---- END OF FILE: src/components/GallerySection.tsx ---
-
---- START OF FILE: src/app/admin/reports/page.tsx ---
-"use client";
-
-import React, { useState, useEffect } from "react";
-import { 
-  Loader2, Save, Plus, Edit3, Trash2, ChevronLeft, 
-  Eye, ImageIcon, X, Upload, CarFront, Cpu, 
-  Activity, Gauge, Zap, ShieldCheck, User,
-  Disc, Fuel, Search, Layers
-} from "lucide-react";
-
-// Дефинираме типовете за данните вjsonData
-interface ReportData {
-  vin: string;
-  year: string;
-  mileage: string;
-  engine: string;
-  hp: string;
-  gearbox: string;
-  fuel: string;
-  drivetrain: string;
-  location: string;
-  images: string[];
-  paintData: Record<string, string>;
-  exteriorStatus: string;
-  exteriorNotes: string;
-  interiorStatus: string;
-  interiorNotes: string;
-  engineStatus: string;
-  engineNotes: string;
-  suspensionStatus: string;
-  suspensionNotes: string;
-  brakesStatus: string;
-  brakesNotes: string;
-  diagnostics: string;
-  ecuErrors: boolean;
-  testDrive: string;
-  finalVerdict: string;
-}
-
-export default function AdminReports() {
-  const [reports, setReports] = useState<any[]>([]);
-  const [editingReport, setEditingReport] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
-
-  const emptyData: ReportData = {
-    vin: "", year: "", mileage: "", engine: "", hp: "",
-    gearbox: "Автоматична", fuel: "Дизел", drivetrain: "AWD (4x4)",
-    location: "София",
-    images: [],
-    paintData: { 
-      "Преден капак": "", "Таван": "", "Багажник": "",
-      "Калник ПЛ": "", "Калник ПД": "", "Калник ЗЛ": "", "Калник ЗД": "",
-      "Врата ПЛ": "", "Врата ПД": "", "Врата ЗЛ": "", "Врата ЗД": "",
-      "Колона А (Л):": "", "Колона А (Д):": "",
-      "Колона B (Л):": "", "Колона B (Д):": ""
+export default function robots(): MetadataRoute.Robots {
+  return {
+    rules: {
+      userAgent: '*',
+      allow: '/',
+      disallow: '/private/', 
     },
-    exteriorStatus: "Отличен", exteriorNotes: "",
-    interiorStatus: "Отличен", interiorNotes: "",
-    engineStatus: "Отличен", engineNotes: "",
-    suspensionStatus: "Отличен", suspensionNotes: "",
-    brakesStatus: "Отличен", brakesNotes: "",
-    diagnostics: "", 
-    ecuErrors: false,
-    testDrive: "",
-    finalVerdict: ""
-  };
+    sitemap: 'https://fileverified.eu/sitemap.xml',
+  }
+}
+--- END OF FILE: src/app/robots.ts ---
 
-  useEffect(() => { fetchReports(); }, []);
+--- START OF FILE: src/app/privacy/page.tsx ---
+import type { Metadata } from "next"
+import { Lock, ShieldCheck } from "lucide-react"
+import ContactForm from "@/components/ContactForm"
 
-  const fetchReports = async () => {
-    try {
-      const res = await fetch("/api/reports");
-      const data = await res.json();
-      setReports(Array.isArray(data) ? data : []);
-    } catch (e) { console.error(e); }
-  };
+export const metadata: Metadata = {
+  title: "Поверителност | FileVerified",
+  description: "Политика за поверителност и защита на личните данни на FileVerified.",
+}
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.length) return;
-    if (!editingReport.slug) {
-      alert("ГРЕШКА: Първо напишете Линк (slug) горе!");
-      return;
-    }
-    
-    setUploading(true);
-    const formData = new FormData();
-    formData.append("slug", editingReport.slug); 
-    Array.from(e.target.files).forEach(file => formData.append("files", file));
-
-    try {
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
-      const data = await res.json();
-      if (data.paths) {
-        const currentImages = editingReport.data.images || [];
-        setEditingReport({
-          ...editingReport,
-          data: { ...editingReport.data, images: [...currentImages, ...data.paths] }
-        });
-      }
-    } catch (err) { alert("Грешка при качване"); }
-    finally { setUploading(false); e.target.value = ''; }
-  };
-
-  const handleSave = async () => {
-    setError("");
-    if (!editingReport.carModel || !editingReport.slug) return setError("Марка и Линк са задължителни!");
-    setLoading(true);
-    const payload = { ...editingReport, jsonData: JSON.stringify(editingReport.data) };
-    try {
-      const res = await fetch("/api/reports", {
-        method: editingReport.id ? "PUT" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (res.ok) { setEditingReport(null); fetchReports(); }
-      else { const d = await res.json(); setError(d.error); }
-    } catch (e) { setError("Грешка при запис"); }
-    finally { setLoading(false); }
-  };
-
+export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-10 font-sans text-slate-900 selection:bg-blue-100">
-      <div className="max-w-[1400px] mx-auto">
-        
-        {!editingReport ? (
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 mt-10">
-            <div>
-              <h1 className="text-5xl font-black tracking-tighter uppercase italic">Инспекции</h1>
-              <p className="text-slate-400 font-bold mt-2 uppercase text-[10px] tracking-[0.3em]">FileVerified Admin Terminal</p>
-            </div>
-            <button onClick={() => setEditingReport({ slug: "", carModel: "", clientName: "", data: { ...emptyData }, isPublished: false })} 
-              className="w-full md:w-auto bg-blue-600 text-white px-12 py-6 rounded-3xl font-black flex items-center justify-center gap-3 shadow-2xl shadow-blue-200 hover:scale-[1.02] transition-all">
-              <Plus size={28} /> НОВ РЕПОРТ
-            </button>
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto max-w-4xl px-6 py-16">
+        <div className="flex items-center gap-3 mb-8 text-emerald-600 border-b pb-6">
+          <Lock className="w-8 h-8" />
+          <h1 className="text-3xl font-bold text-slate-900">Политика за поверителност</h1>
+        </div>
+
+        <div className="space-y-12 text-slate-600 leading-relaxed">
+          <div className="space-y-8">
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">1. Лични данни</h2>
+              <p>Събираме Вашите имена, телефон и имейл единствено с цел изпълнение на услугата по оглед на автомобил.</p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">2. Бисквитки</h2>
+              <p>Използваме Google Analytics, за да подобряваме работата на сайта. Данните са анонимни.</p>
+            </section>
+
+            <section className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 flex items-start gap-4 text-emerald-800">
+              <ShieldCheck className="w-6 h-6 shrink-0 mt-1" />
+              <p className="text-sm font-medium">Никога не споделяме данните Ви с трети лица (автокъщи, продавачи) без Вашето изрично съгласие.</p>
+            </section>
           </div>
-        ) : (
-          <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-200 overflow-hidden mb-20 animate-in fade-in zoom-in duration-300">
-             
-             <div className="p-8 border-b bg-slate-50 flex justify-between items-center">
-                <button onClick={() => setEditingReport(null)} className="font-black text-slate-400 hover:text-blue-600 flex items-center gap-2 uppercase text-[10px] tracking-widest transition-colors">
-                  <ChevronLeft size={20}/> Отказ
-                </button>
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="text-blue-600" size={24} />
-                  <span className="font-black uppercase text-xs tracking-widest text-slate-800 italic underline decoration-blue-500 decoration-4 underline-offset-4">Редактиране на Доклад</span>
-                </div>
+
+          {/* КОНТАКТНА ФОРМА */}
+          <div className="mt-20 pt-12 border-t">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-900">Вашите права</h2>
+              <p className="text-slate-500">По всяко време можете да поискате изтриване на Вашите данни от нашата база чрез формата по-долу.</p>
             </div>
-
-            <div className="p-8 md:p-16 space-y-16">
-              
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <InputGroup label="Марка и Модел" icon={<CarFront size={18}/>}>
-                  <input className="w-full p-5 bg-slate-50 rounded-2xl outline-none font-black text-xl border-2 border-transparent focus:border-blue-500 transition-all shadow-inner" placeholder="Audi RS6 C8" value={editingReport.carModel} onChange={(e) => setEditingReport({...editingReport, carModel: e.target.value})} />
-                </InputGroup>
-                <InputGroup label="Линк (Slug)" icon={<Activity size={18}/>}>
-                  <input className="w-full p-5 bg-blue-50 border-2 border-blue-100 text-blue-700 rounded-2xl outline-none font-bold text-xl" placeholder="audi-rs6-ivan" value={editingReport.slug} onChange={(e) => setEditingReport({...editingReport, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')})} />
-                </InputGroup>
-                <InputGroup label="Клиент" icon={<User size={18}/>}>
-                  <input className="w-full p-5 bg-slate-50 rounded-2xl outline-none font-bold text-xl border-2 border-transparent focus:border-blue-500 shadow-inner" placeholder="Име на клиент" value={editingReport.clientName} onChange={(e) => setEditingReport({...editingReport, clientName: e.target.value})} />
-                </InputGroup>
-              </div>
-
-              <div className="bg-slate-900 rounded-[3rem] p-10 grid grid-cols-2 lg:grid-cols-4 gap-8 shadow-2xl">
-                  <DarkInput label="VIN Номер" value={editingReport.data.vin} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, vin: v.toUpperCase()}})} />
-                  <DarkInput label="Година" value={editingReport.data.year} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, year: v}})} />
-                  <DarkInput label="Пробег" value={editingReport.data.mileage} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, mileage: v}})} />
-                  <DarkInput label="Двигател" value={editingReport.data.engine} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, engine: v}})} />
-                  <DarkInput label="Мощност (hp)" value={editingReport.data.hp} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, hp: v}})} />
-                  <SelectInput label="Трансмисия" value={editingReport.data.gearbox} options={["Автоматична", "Ръчна", "DSG", "CVT"]} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, gearbox: v}})} />
-                  <SelectInput label="Гориво" value={editingReport.data.fuel} options={["Дизел", "Бензин", "Хибрид", "Електрическа"]} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, fuel: v}})} />
-                  <SelectInput label="Задвижване" value={editingReport.data.drivetrain} options={["AWD (4x4)", "RWD (Задно)", "FWD (Предно)"]} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, drivetrain: v}})} />
-              </div>
-
-              <section className="bg-white p-10 rounded-[3rem] border-2 border-slate-100 shadow-sm relative overflow-hidden">
-                <Layers className="absolute -right-10 -top-10 w-40 h-40 text-slate-50 rotate-12" />
-                <h3 className="text-sm font-black uppercase tracking-[0.3em] text-blue-600 mb-10 flex items-center gap-3">
-                  <Gauge size={24} /> Измерване на ЛКП (μm)
-                </h3>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 relative z-10">
-                  {Object.keys(editingReport.data.paintData).map((key) => (
-                    <div key={key} className="space-y-2">
-                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{key}</label>
-                      <input 
-                        type="number"
-                        className="w-full p-4 bg-slate-50 rounded-2xl font-black text-center text-lg focus:bg-white focus:ring-4 focus:ring-blue-100 transition-all outline-none border border-transparent focus:border-blue-400"
-                        value={editingReport.data.paintData[key]}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                          const newPaint = { ...editingReport.data.paintData, [key]: e.target.value };
-                          setEditingReport({ ...editingReport, data: { ...editingReport.data, paintData: newPaint } });
-                        }}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-                <StatusCard label="Екстериор" icon={<CarFront />} status={editingReport.data.exteriorStatus} onStatusChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, exteriorStatus: v}})} notes={editingReport.data.exteriorNotes} onNotesChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, exteriorNotes: v}})} />
-                <StatusCard label="Интериор" icon={<Search />} status={editingReport.data.interiorStatus} onStatusChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, interiorStatus: v}})} notes={editingReport.data.interiorNotes} onNotesChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, interiorNotes: v}})} />
-                <StatusCard label="Двигател" icon={<Zap />} status={editingReport.data.engineStatus} onStatusChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, engineStatus: v}})} notes={editingReport.data.engineNotes} onNotesChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, engineNotes: v}})} />
-                <StatusCard label="Окачване" icon={<Disc />} status={editingReport.data.suspensionStatus} onStatusChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, suspensionStatus: v}})} notes={editingReport.data.suspensionNotes} onNotesChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, suspensionNotes: v}})} />
-              </div>
-
-              <div className="bg-slate-900 rounded-[3rem] p-10 text-white space-y-6">
-                  <div className="flex justify-between items-center">
-                    <h3 className="font-black uppercase text-xs tracking-widest text-blue-400 flex items-center gap-2"><Cpu /> Компютърна Диагностика</h3>
-                    <label className="flex items-center gap-3 bg-white/10 px-4 py-2 rounded-xl cursor-pointer hover:bg-white/20 transition-all">
-                      <input type="checkbox" checked={editingReport.data.ecuErrors} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingReport({...editingReport, data: {...editingReport.data, ecuErrors: e.target.checked}})} className="w-5 h-5 accent-blue-500" />
-                      <span className="text-[10px] font-black uppercase">Активни Грешки</span>
-                    </label>
-                  </div>
-                  <textarea className="w-full bg-white/5 border border-white/10 p-6 rounded-[2rem] outline-none min-h-[150px] font-medium text-slate-300 italic" placeholder="Заключение от диагностиката..." value={editingReport.data.diagnostics} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditingReport({...editingReport, data: {...editingReport.data, diagnostics: e.target.value}})} />
-              </div>
-
-              <div className="space-y-4">
-                  <h3 className="font-black uppercase text-sm tracking-[0.3em] text-blue-600 ml-6 italic">ЕКСПЕРТНО ЗАКЛЮЧЕНИЕ</h3>
-                  <textarea className="w-full bg-blue-600 text-white p-12 rounded-[4rem] outline-none font-black text-2xl shadow-2xl shadow-blue-200 placeholder:text-blue-300 min-h-[200px]" placeholder="Финална присъда..." value={editingReport.data.finalVerdict} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditingReport({...editingReport, data: {...editingReport.data, finalVerdict: e.target.value}})} />
-              </div>
-
-              <section className={`p-10 rounded-[4rem] border-4 transition-all ${!editingReport.slug ? 'bg-slate-50 border-slate-100 opacity-50' : 'bg-white border-dashed border-blue-200'}`}>
-                <div className="flex flex-col lg:flex-row justify-between items-center gap-8 mb-12">
-                  <div>
-                    <h3 className="text-slate-900 font-black text-2xl uppercase tracking-tighter flex items-center gap-3"><ImageIcon className="text-blue-600" size={32}/> Фотодоклад ({editingReport.data.images?.length || 0})</h3>
-                  </div>
-                  <label className={`w-full lg:w-auto px-16 py-8 rounded-[2.5rem] font-black text-xl flex items-center justify-center gap-4 transition-all shadow-2xl ${!editingReport.slug ? 'bg-slate-300 cursor-not-allowed' : 'bg-blue-600 text-white cursor-pointer hover:bg-slate-900'}`}>
-                    {uploading ? <Loader2 className="animate-spin" size={32}/> : <Upload size={32}/>}
-                    КАЧИ СНИМКИ
-                    <input type="file" multiple className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading || !editingReport.slug} />
-                  </label>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                  {editingReport.data.images?.map((img: string, i: number) => (
-                    <div key={i} className="relative group aspect-square rounded-[2rem] overflow-hidden shadow-lg bg-slate-100 border-4 border-white">
-                      <img src={`/api/files?path=${img}`} className="w-full h-full object-cover" alt="car" />
-                      <button onClick={() => {
-                         const filtered = editingReport.data.images.filter((_: any, idx: number) => idx !== i);
-                         setEditingReport({ ...editingReport, data: { ...editingReport.data, images: filtered } });
-                      }} className="absolute inset-0 bg-red-600/90 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all font-black text-xs uppercase tracking-widest">
-                        <X size={32} className="mb-2" /> Изтрий
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </section>
-
-              <div className="flex flex-col lg:flex-row gap-8 pt-10">
-                <div className="flex-1 flex items-center gap-6 p-10 bg-white rounded-[3rem] border-4 border-slate-100 shadow-inner">
-                  <input type="checkbox" id="pub" checked={editingReport.isPublished} onChange={(e) => setEditingReport({...editingReport, isPublished: e.target.checked})} className="w-12 h-12 accent-emerald-500 cursor-pointer" />
-                  <label htmlFor="pub" className="font-black text-slate-800 uppercase tracking-widest text-lg cursor-pointer">Публикувай</label>
-                </div>
-                <button onClick={handleSave} disabled={loading} className="flex-[2] bg-slate-900 text-white py-10 rounded-[3.5rem] font-black text-3xl flex items-center justify-center gap-6 hover:bg-blue-600 transition-all shadow-2xl">
-                  {loading ? <Loader2 className="animate-spin" size={40} /> : <Save size={40} />} ГЕНЕРИРАЙ ОТЧЕТ
-                </button>
-              </div>
-
-              {error && <div className="p-8 bg-red-50 text-red-600 rounded-[2.5rem] border-4 border-red-100 font-black text-center uppercase text-lg">{error}</div>}
-            </div>
+            <ContactForm />
           </div>
-        )}
 
-        {/* СПИСЪК */}
-        {!editingReport && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
-            {reports.map((r: any) => (
-              <div key={r.id} className="bg-white p-10 rounded-[3.5rem] border-2 border-slate-100 shadow-xl flex flex-col justify-between group hover:border-blue-500 transition-all">
-                <div className="flex justify-between items-start mb-10">
-                  <div>
-                    <h3 className="text-3xl font-black tracking-tighter uppercase italic text-slate-900">{r.carModel}</h3>
-                    <p className="text-slate-400 font-black uppercase text-[10px] tracking-widest mt-2">{r.clientName}</p>
-                  </div>
-                  <span className={`text-[10px] px-4 py-2 rounded-full font-black uppercase tracking-[0.2em] ${r.isPublished ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-                    {r.isPublished ? 'LIVE' : 'DRAFT'}
-                  </span>
-                </div>
-                <div className="flex gap-3">
-                  <a href={`/report/${r.slug}`} target="_blank" className="flex-1 bg-slate-50 p-6 rounded-2xl flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all"><Eye size={24} /></a>
-                  <button onClick={() => setEditingReport({ ...r, data: JSON.parse(r.jsonData) })} className="flex-1 bg-slate-50 p-6 rounded-2xl flex items-center justify-center hover:bg-blue-600 hover:text-white transition-all"><Edit3 size={24} /></button>
-                  <button onClick={async () => { if (confirm("Изтриване?")) { await fetch(`/api/reports?id=${r.id}`, { method: "DELETE" }); fetchReports(); } }} className="flex-1 bg-slate-50 p-6 rounded-2xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"><Trash2 size={24} /></button>
-                </div>
-              </div>
-            ))}
+          <div className="pt-8 text-sm text-slate-400">
+            Последна актуализация: {new Date().toLocaleDateString('bg-BG')}
           </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-// --- ТИПИЗИРАНИ UI HELPERS ---
-
-interface InputGroupProps {
-  label: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}
-function InputGroup({ label, icon, children }: InputGroupProps) {
-  return (
-    <div className="space-y-3">
-      <label className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4 flex items-center gap-2">
-        {icon} {label}
-      </label>
-      {children}
-    </div>
-  );
-}
-
-interface DarkInputProps {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}
-function DarkInput({ label, value, onChange }: DarkInputProps) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">{label}</label>
-      <input 
-        className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none font-black text-white text-lg focus:border-blue-500 focus:bg-white/10 transition-all" 
-        value={value} 
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)} 
-      />
-    </div>
-  );
-}
-
-interface SelectInputProps {
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
-}
-function SelectInput({ label, value, options, onChange }: SelectInputProps) {
-  return (
-    <div className="flex flex-col gap-2">
-      <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-2">{label}</label>
-      <select 
-        className="p-4 bg-white/5 border border-white/10 rounded-2xl outline-none font-black text-white text-lg focus:border-blue-500 appearance-none cursor-pointer" 
-        value={value} 
-        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange(e.target.value)}
-      >
-        {options.map((opt: string) => <option key={opt} className="bg-slate-900 text-white font-bold">{opt}</option>)}
-      </select>
-    </div>
-  );
-}
-
-interface StatusCardProps {
-  label: string;
-  icon: React.ReactNode;
-  status: string;
-  onStatusChange: (v: string) => void;
-  notes: string;
-  onNotesChange: (v: string) => void;
-}
-function StatusCard({ label, icon, status, onStatusChange, notes, onNotesChange }: StatusCardProps) {
-  const getStatusColor = (s: string) => {
-    if (s === "Отличен") return "bg-emerald-500";
-    if (s === "Добър") return "bg-blue-500";
-    if (s === "Забележки") return "bg-amber-500";
-    return "bg-rose-500";
-  };
-
-  return (
-    <div className="bg-white p-10 rounded-[3rem] border-2 border-slate-100 space-y-6 shadow-sm group hover:shadow-xl transition-all duration-500">
-      <div className="flex justify-between items-center">
-        <h3 className="font-black uppercase text-xs tracking-widest text-slate-500 flex items-center gap-3">
-          <span className="text-blue-600">{icon}</span> {label}
-        </h3>
-        <div className="flex items-center gap-2">
-           <div className={`w-2 h-2 rounded-full animate-pulse ${getStatusColor(status)}`}></div>
-           <select 
-              value={status} 
-              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onStatusChange(e.target.value)} 
-              className="bg-slate-50 p-3 rounded-xl font-black text-xs uppercase tracking-tighter cursor-pointer outline-none border-none"
-            >
-            <option>Отличен</option>
-            <option>Добър</option>
-            <option>Забележки</option>
-            <option>Критичен</option>
-          </select>
         </div>
       </div>
-      <textarea 
-        className="w-full p-6 bg-slate-50 rounded-[2rem] outline-none text-base font-bold italic min-h-[120px] border-2 border-transparent focus:border-blue-100 transition-all shadow-inner"
-        placeholder={`Бележки за ${label.toLowerCase()}...`}
-        value={notes}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onNotesChange(e.target.value)}
-      />
-    </div>
-  );
-}
---- END OF FILE: src/app/admin/reports/page.tsx ---
-
---- START OF FILE: src/app/admin/login/page.tsx ---
-"use client"
-
-import { useState } from "react"
-
-export default function AdminLogin() {
-  const [password, setPassword] = useState("")
-  const [err, setErr] = useState("")
-
-  async function submit(e: React.FormEvent) {
-    e.preventDefault()
-    setErr("")
-    const res = await fetch("/api/admin/login", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ password }),
-    })
-    if (!res.ok) {
-      setErr("Грешна парола.")
-      return
-    }
-    window.location.href = "/admin"
-  }
-
-  return (
-    <div className="max-w-md rounded-2xl border bg-white p-6 shadow-sm">
-      <h1 className="text-2xl font-bold text-slate-900">Admin вход</h1>
-      <p className="mt-2 text-slate-600">Въведи паролата за админ панела.</p>
-
-      <form onSubmit={submit} className="mt-6 space-y-4">
-        <input
-          type="password"
-          className="w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-100"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Парола"
-          required
-        />
-        {err && <div className="text-sm text-red-600">{err}</div>}
-        <button className="w-full rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-700">
-          Вход
-        </button>
-      </form>
     </div>
   )
 }
---- END OF FILE: src/app/admin/login/page.tsx ---
+--- END OF FILE: src/app/privacy/page.tsx ---
+
+--- START OF FILE: src/app/faq/page.tsx ---
+import Link from "next/link"
+import { 
+  CheckCircle2, 
+  AlertCircle, 
+  CalendarCheck, 
+  CarFront, 
+  ClipboardCheck, 
+  Sparkles,
+  ThermometerSnowflake 
+} from "lucide-react"
+
+export const metadata = {
+  title: "Често задавани въпроси | FileVerified",
+  description:
+    "Отговори на най-често задаваните въпроси за оглед на автомобил преди покупка в София.",
+}
+
+const PREP_STEPS = [
+  {
+    title: "Потвърдете наличността",
+    text: "Уверете се, че автомобилът все още се продава и не е капариран.",
+    icon: <CalendarCheck className="w-5 h-5 text-emerald-600" />
+  },
+  {
+    title: "Вземете съгласие за инспекция",
+    text: "Продавачът трябва да е съгласен за компютърна диагностика и мерене на боята.",
+    icon: <ClipboardCheck className="w-5 h-5 text-emerald-600" />
+  },
+  {
+    title: "Проверете за тест-драйв",
+    text: "Попитайте дали колата има номера и застраховка, за да бъде тествана в движение.",
+    icon: <CarFront className="w-5 h-5 text-emerald-600" />
+  },
+  {
+    title: "Помолете за чист автомобил",
+    text: "На мръсна кола не могат да се видят дефекти по лака и фини драскотини.",
+    icon: <Sparkles className="w-5 h-5 text-emerald-600" />
+  },
+  {
+    title: "Изисквайте студен старт",
+    text: "Помолете продавача да не пали колата преди огледа, за да чуем реалния студен старт.",
+    icon: <ThermometerSnowflake className="w-5 h-5 text-emerald-600" />
+  }
+]
+
+const FAQS: Array<{ q: string; a: string }> = [
+  {
+    q: "Защо да поръчам оглед преди покупка?",
+    a: "За да вземеш решение на база факти: реално състояние, диагностика, следи от ПТП/ремонти, потенциални скрити разходи и рискове.",
+  },
+  {
+    q: "Какво включва огледът?",
+    a: "Комбинация от визуална проверка (кузов, боя, салон), диагностика (OBD), проверка на ключови системи и обобщение с препоръка.",
+  },
+  {
+    q: "Правите ли оглед на място в София?",
+    a: "Да – огледът е мобилен и се прави на мястото, където е автомобилът.",
+  },
+  {
+    q: "Кога получавам резултат/доклад?",
+    a: "След огледа получаваш обобщение. Подробният доклад се изпраща допълнително.",
+  },
+]
+
+export default function FAQPage() {
+  return (
+    <section className="max-w-4xl mx-auto py-12 px-6 space-y-16">
+      <div className="space-y-4 text-center md:text-left">
+        <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
+          Често задавани въпроси
+        </h1>
+        <p className="text-slate-600 text-xl leading-relaxed">
+          Всичко, което трябва да знаете за професионалния оглед на автомобил.
+        </p>
+      </div>
+
+      <div className="bg-emerald-50 rounded-[2.5rem] p-8 md:p-12 border border-emerald-100 shadow-sm">
+        <div className="flex items-center gap-3 mb-8">
+          <AlertCircle className="w-8 h-8 text-emerald-600" />
+          <h2 className="text-2xl font-bold text-emerald-900">
+            5 стъпки ПРЕДИ да поръчате оглед
+          </h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1">
+          {PREP_STEPS.map((step, idx) => (
+            <div key={idx} className="flex gap-4 bg-white/60 p-5 rounded-2xl border border-white">
+              <div className="bg-white p-2.5 rounded-xl shadow-sm h-fit">
+                {step.icon}
+              </div>
+              <div>
+                <h3 className="font-bold text-slate-900 mb-1">{step.title}</h3>
+                <p className="text-sm text-slate-600 leading-snug">{step.text}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h2 className="text-2xl font-bold text-slate-900 px-2">Всички въпроси</h2>
+        <div className="rounded-3xl border bg-white p-2 shadow-xl shadow-slate-200/50 overflow-hidden">
+          {FAQS.map((item, idx) => (
+            <details
+              key={idx}
+              className="group rounded-2xl p-4 hover:bg-slate-50 open:bg-emerald-50/30 transition-all duration-300"
+            >
+              <summary className="cursor-pointer list-none">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="font-bold text-slate-900 text-lg leading-tight group-open:text-emerald-900">
+                    {item.q}
+                  </div>
+                  <div className="mt-0.5 text-emerald-600 font-black select-none text-2xl">
+                    <span className="group-open:hidden">+</span>
+                    <span className="hidden group-open:inline">–</span>
+                  </div>
+                </div>
+              </summary>
+              <div className="mt-4 text-slate-700 leading-relaxed text-md pl-1 border-t border-emerald-100/50 pt-4">
+                {item.a}
+              </div>
+            </details>
+          ))}
+        </div>
+      </div>
+
+      <div className="rounded-[2.5rem] border-2 border-slate-100 bg-white p-10 md:p-14 text-center md:text-left relative overflow-hidden shadow-2xl shadow-slate-200/50">
+        <div className="relative z-10">
+            <h2 className="text-3xl font-black text-slate-900 mb-4 uppercase">
+            Не намирате отговора?
+            </h2>
+            <p className="text-slate-600 text-lg mb-8 max-w-xl font-medium">
+            Пишете ни в заявката или ни се обадете директно.
+            </p>
+            <div className="flex flex-col md:flex-row gap-4">
+            <Link
+                href="/book"
+                className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-8 py-4 font-black text-white hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/20 text-lg uppercase tracking-tighter"
+            >
+                ЗАПАЗЕТЕ ОГЛЕД
+            </Link>
+            <a
+                href="tel:0888570037"
+                className="inline-flex items-center justify-center rounded-2xl bg-slate-50 px-8 py-4 font-bold text-slate-900 hover:bg-slate-100 transition-all border border-slate-200"
+            >
+                0888 57 00 37
+            </a>
+            </div>
+        </div>
+        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+      </div>
+    </section>
+  )
+}
+--- END OF FILE: src/app/faq/page.tsx ---
+
+--- START OF FILE: src/app/terms/page.tsx ---
+import type { Metadata } from "next"
+import { Scale } from "lucide-react"
+import ContactForm from "@/components/ContactForm"
+
+export const metadata: Metadata = {
+  title: "Общи условия | FileVerified",
+  description: "Общи условия за ползване на услугите на FileVerified - независима проверка на автомобили.",
+}
+
+export default function TermsPage() {
+  return (
+    <div className="min-h-screen bg-white">
+      <div className="mx-auto max-w-4xl px-6 py-16">
+        <div className="flex items-center gap-3 mb-8 text-emerald-600 border-b pb-6">
+          <Scale className="w-8 h-8" />
+          <h1 className="text-3xl font-bold text-slate-900">Общи условия</h1>
+        </div>
+
+        <div className="space-y-12 text-slate-600 leading-relaxed">
+          <div className="space-y-8">
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">1. Предмет</h2>
+              <p>
+                Настоящите Общи условия уреждат отношенията между Мартин Филев, наричан по-долу „Изпълнител“, 
+                и потребителите на услугите, предлагани чрез уебсайта <strong>fileverified.eu</strong>.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">2. Описание на услугите</h2>
+              <p>Изпълнителят предоставя независима експертна оценка на техническото състояние на употребявани автомобили, включваща диагностика, оглед и тест-драйв.</p>
+            </section>
+
+            <section>
+              <h2 className="text-xl font-bold text-slate-900 mb-4">3. Резервации</h2>
+              <p>
+                Заявка за оглед се счита за потвърдена само след личен контакт по телефон или писмено потвърждение от наша страна.
+              </p>
+            </section>
+          </div>
+
+          {/* КОНТАКТНА ФОРМА */}
+          <div className="mt-20 pt-12 border-t">
+            <div className="mb-8">
+              <h2 className="text-2xl font-bold text-slate-900">Имате въпроси?</h2>
+              <p className="text-slate-500">Ако не намирате отговор в общите ни условия, пишете ни директно.</p>
+            </div>
+            <ContactForm />
+          </div>
+
+          <div className="pt-8 text-sm text-slate-400">
+            Последна актуализация: {new Date().toLocaleDateString('bg-BG')}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+--- END OF FILE: src/app/terms/page.tsx ---
 
 --- START OF FILE: src/app/admin/page.tsx ---
 "use client"
@@ -911,354 +428,448 @@ export default function AdminPage() {
 }
 --- END OF FILE: src/app/admin/page.tsx ---
 
---- START OF FILE: src/app/api/reports/route.ts ---
-import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+--- START OF FILE: src/app/admin/login/page.tsx ---
+"use client"
 
-export async function GET() {
-  try {
-    const reports = await prisma.report.findMany({ orderBy: { createdAt: 'desc' } });
-    return NextResponse.json(reports);
-  } catch (error) {
-    return NextResponse.json({ error: "Грешка при четене" }, { status: 500 });
-  }
-}
+import { useState } from "react"
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    // Взимаме само полетата, които съществуват в schema.prisma
-    const report = await prisma.report.create({
-      data: {
-        slug: body.slug,
-        carModel: body.carModel,
-        clientName: body.clientName,
-        jsonData: body.jsonData,
-        isPublished: body.isPublished || false
-      }
-    });
-    return NextResponse.json(report);
-  } catch (error: any) {
-    console.error("API POST ERROR:", error);
-    return NextResponse.json({ error: error.message || "Грешка при създаване" }, { status: 400 });
-  }
-}
+export default function AdminLogin() {
+  const [password, setPassword] = useState("")
+  const [err, setErr] = useState("")
 
-export async function PUT(request: Request) {
-  try {
-    const body = await request.json();
-    const { id, slug, carModel, clientName, jsonData, isPublished } = body;
-
-    const report = await prisma.report.update({
-      where: { id: id },
-      data: {
-        slug,
-        carModel,
-        clientName,
-        jsonData,
-        isPublished
-      }
-    });
-    return NextResponse.json(report);
-  } catch (error: any) {
-    console.error("API PUT ERROR:", error);
-    return NextResponse.json({ error: error.message || "Грешка при обновяване" }, { status: 500 });
-  }
-}
-
-export async function DELETE(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
-    if (!id) return NextResponse.json({ error: "Липсва ID" }, { status: 400 });
-    
-    await prisma.report.delete({ where: { id } });
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    return NextResponse.json({ error: "Грешка при изтриване" }, { status: 500 });
-  }
-}
---- END OF FILE: src/app/api/reports/route.ts ---
-
---- START OF FILE: src/app/api/contact/route.ts ---
-import { Resend } from 'resend';
-import { NextResponse } from 'next/server';
-
-export const dynamic = 'force-dynamic';
-
-export async function POST(request: Request) {
-  try {
-    const apiKey = process.env.RESEND_API_KEY;
-    
-    if (!apiKey) {
-      throw new Error("RESEND_API_KEY is missing");
+  async function submit(e: React.FormEvent) {
+    e.preventDefault()
+    setErr("")
+    const res = await fetch("/api/admin/login", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ password }),
+    })
+    if (!res.ok) {
+      setErr("Грешна парола.")
+      return
     }
-
-    const resend = new Resend(apiKey);
-    const body = await request.json();
-    
-    const { 
-      fullName, email, phone, makeModel, carLink, 
-      year, vin, date, time, notes, packageName, packagePrice 
-    } = body;
-
-    const adminRes = await resend.emails.send({
-      from: 'FileVerified <info@fileverified.eu>',
-      to: ['martin.filev@gmail.com'],
-      replyTo: email || undefined, 
-      subject: `Нова резервация: ${makeModel} - ${fullName}`,
-      html: `
-        <div style="font-family: sans-serif; line-height: 1.5;">
-          <h2>Нова заявка за проверка</h2>
-          <hr />
-          <p><strong>Пакет:</strong> ${packageName} (${packagePrice})</p>
-          <p><strong>Клиент:</strong> ${fullName}</p>
-          <p><strong>Телефон:</strong> ${phone}</p>
-          <p><strong>Имейл:</strong> ${email}</p>
-          <br />
-          <p><strong>Автомобил:</strong> ${makeModel}</p>
-          <p><strong>Линк:</strong> <a href="${carLink}">${carLink}</a></p>
-          <p><strong>Дата/Час:</strong> ${date} в ${time} ч.</p>
-        </div>
-      `
-    });
-
-    if (email && email.trim() !== "") {
-      await resend.emails.send({
-        from: 'FileVerified <info@fileverified.eu>',
-        to: [email.trim()],
-        subject: `Вашата заявка за оглед е приета - FileVerified.eu`,
-        html: `
-          <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
-            <h2 style="color: #059669;">Здравейте, ${fullName}!</h2>
-            <p>Вашата заявка за <strong>${makeModel}</strong> беше получена успешно.</p>
-          </div>
-        `
-      });
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("Booking Route Error:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    window.location.href = "/admin"
   }
+
+  return (
+    <div className="max-w-md rounded-2xl border bg-white p-6 shadow-sm">
+      <h1 className="text-2xl font-bold text-slate-900">Admin вход</h1>
+      <p className="mt-2 text-slate-600">Въведи паролата за админ панела.</p>
+
+      <form onSubmit={submit} className="mt-6 space-y-4">
+        <input
+          type="password"
+          className="w-full rounded-xl border px-4 py-3 outline-none focus:ring-2 focus:ring-emerald-100"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="Парола"
+          required
+        />
+        {err && <div className="text-sm text-red-600">{err}</div>}
+        <button className="w-full rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-700">
+          Вход
+        </button>
+      </form>
+    </div>
+  )
 }
---- END OF FILE: src/app/api/contact/route.ts ---
+--- END OF FILE: src/app/admin/login/page.tsx ---
 
---- START OF FILE: src/app/api/bookings/route.ts ---
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+--- START OF FILE: src/app/admin/reports/page.tsx ---
+"use client";
 
-export const dynamic = 'force-dynamic';
+import React, { useState, useEffect } from "react";
+import { 
+  Loader2, Save, Plus, Edit3, Trash2, ChevronLeft, 
+  Eye, ImageIcon, X, Upload, CarFront, Cpu, 
+  Activity, Gauge, Zap, ShieldCheck, User,
+  Disc, Fuel, Search, Layers, Info
+} from "lucide-react";
 
-export async function GET() {
-  try {
-    const bookings = await prisma.booking.findMany({
-      orderBy: { createdAt: 'desc' }
-    });
-    return NextResponse.json(bookings);
-  } catch (error) {
-    console.error("Грешка в API Bookings:", error);
-    return NextResponse.json({ error: "Database error" }, { status: 500 });
-  }
+interface ReportData {
+  vin: string;
+  year: string;
+  mileage: string;
+  engine: string;
+  hp: string;
+  gearbox: string;
+  fuel: string;
+  drivetrain: string;
+  location: string;
+  images: string[];
+  paintData: Record<string, string>;
+  exteriorStatus: string;
+  exteriorNotes: string;
+  interiorStatus: string;
+  interiorNotes: string;
+  engineStatus: string;
+  engineNotes: string;
+  suspensionStatus: string;
+  suspensionNotes: string;
+  brakesStatus: string;
+  brakesNotes: string;
+  diagnostics: string;
+  ecuErrors: boolean;
+  testDrive: string;
+  finalVerdict: string;
 }
 
-export async function PATCH(request: Request) {
-  try {
-    const { id, status } = await request.json();
-    const updated = await prisma.booking.update({
-      where: { id },
-      data: { status }
-    });
-    return NextResponse.json(updated);
-  } catch (error) {
-    return NextResponse.json({ error: "Update error" }, { status: 500 });
-  }
-}
---- END OF FILE: src/app/api/bookings/route.ts ---
+export default function AdminReports() {
+  const [reports, setReports] = useState<any[]>([]);
+  const [editingReport, setEditingReport] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
 
---- START OF FILE: src/app/api/send/route.ts ---
-import { Resend } from 'resend';
-import { NextResponse } from 'next/server';
-import { prisma } from "@/lib/prisma";
+  const emptyData: ReportData = {
+    vin: "", year: "", mileage: "", engine: "", hp: "",
+    gearbox: "Автоматична", fuel: "Дизел", drivetrain: "AWD (4x4)",
+    location: "София",
+    images: [],
+    paintData: { 
+      "Преден капак": "", "Таван": "", "Багажник": "",
+      "Калник ПЛ": "", "Калник ПД": "", "Калник ЗЛ": "", "Калник ЗД": "",
+      "Врата ПЛ": "", "Врата ПД": "", "Врата ЗЛ": "", "Врата ЗД": "",
+      "Колона А (Л)": "", "Колона А (Д)": "",
+      "Колона B (Л)": "", "Колона B (Д)": ""
+    },
+    exteriorStatus: "Отличен", exteriorNotes: "",
+    interiorStatus: "Отличен", interiorNotes: "",
+    engineStatus: "Отличен", engineNotes: "",
+    suspensionStatus: "Отличен", suspensionNotes: "",
+    brakesStatus: "Отличен", brakesNotes: "",
+    diagnostics: "", 
+    ecuErrors: false,
+    testDrive: "",
+    finalVerdict: ""
+  };
 
-// Инициализираме Resend
-const resendApiKey = process.env.RESEND_API_KEY;
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
+  useEffect(() => { fetchReports(); }, []);
 
-export async function POST(request: Request) {
-  try {
-    if (!resend) {
-      console.error("ГРЕШКА: RESEND_API_KEY липсва в обкръжението.");
-      return NextResponse.json({ error: 'Имейл услугата не е конфигурирана' }, { status: 500 });
-    }
-
-    const body = await request.json();
-    const { 
-      fullName, email, phone, makeModel, carLink, 
-      year, vin, date, time, notes, packageName, packagePrice 
-    } = body;
-
-    // 1. ЗАПИС В POSTGRESQL БАЗАТА
+  const fetchReports = async () => {
     try {
-      await prisma.booking.create({
-        data: {
-          pkgName: packageName || "Standard",
-          date: date || "",
-          time: time || "",
-          fullName: fullName || "Анонимен",
-          phone: phone || "",
-          email: email || "",
-          makeModel: makeModel || "",
-          year: year || "",
-          vin: vin || "",
-          notes: notes || "",
-          status: "new"
-        }
-      });
-      console.log("Успешен запис на заявката в базата.");
-    } catch (dbErr) {
-      console.error("Грешка при запис в базата:", dbErr);
-      // Продължаваме с имейла, дори ако базата се провали
+      const res = await fetch("/api/reports");
+      const data = await res.json();
+      setReports(Array.isArray(data) ? data : []);
+    } catch (e) { console.error(e); }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.length) return;
+    if (!editingReport.slug) {
+      alert("ГРЕШКА: Първо напишете Линк (slug) горе!");
+      return;
     }
-
-    // 2. ИЗПРАЩАНЕ НА ИМЕЙЛ ДО АДМИН (Мартин)
-    const adminEmail = await resend.emails.send({
-      from: 'FileVerified <info@fileverified.eu>',
-      to: ['martin.filev@gmail.com'],
-      replyTo: email || undefined,
-      subject: `Нова резервация: ${makeModel} - ${fullName}`,
-      html: `
-        <div style="font-family: sans-serif; padding: 20px;">
-          <h2 style="color: #059669;">Нова заявка от сайта</h2>
-          <p><strong>Клиент:</strong> ${fullName}</p>
-          <p><strong>Телефон:</strong> ${phone}</p>
-          <p><strong>Кола:</strong> ${makeModel}</p>
-          <p><strong>Пакет:</strong> ${packageName} (${packagePrice})</p>
-          <p><strong>Дата/Час:</strong> ${date} в ${time} ч.</p>
-          <hr />
-          <p><strong>Линк:</strong> <a href="${carLink}">${carLink}</a></p>
-          <p><strong>Бележки:</strong> ${notes || 'Няма'}</p>
-        </div>
-      `
-    });
-
-    if (adminEmail.error) {
-      console.error("Грешка при изпращане на имейл:", adminEmail.error);
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (error: any) {
-    console.error("Критична грешка в API Route:", error);
-    return NextResponse.json({ error: 'Сървърна грешка' }, { status: 500 });
-  }
-}
---- END OF FILE: src/app/api/send/route.ts ---
-
---- START OF FILE: src/app/api/upload/route.ts ---
-import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { existsSync } from "fs";
-
-export async function POST(req: NextRequest) {
-  try {
-    const formData = await req.formData();
-    const slug = formData.get("slug") as string;
-    const files = formData.getAll("files") as File[];
-
-    if (!slug || files.length === 0) {
-      return NextResponse.json({ error: "Липсва slug или файлове" }, { status: 400 });
-    }
-
-    const uploadDir = join(process.cwd(), "public", "uploads", slug);
     
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
+    setUploading(true);
+    const formData = new FormData();
+    formData.append("slug", editingReport.slug); 
+    Array.from(e.target.files).forEach(file => formData.append("files", file));
 
-    const savedPaths = [];
+    try {
+      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const data = await res.json();
+      if (data.paths) {
+        const currentImages = editingReport.data.images || [];
+        setEditingReport({
+          ...editingReport,
+          data: { ...editingReport.data, images: [...currentImages, ...data.paths] }
+        });
+      }
+    } catch (err) { alert("Грешка при качване"); }
+    finally { setUploading(false); e.target.value = ''; }
+  };
 
-    for (const file of files) {
-      const bytes = await file.arrayBuffer();
-      const buffer = Buffer.from(bytes);
-      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-      const path = join(uploadDir, fileName);
-      
-      await writeFile(path, buffer);
-      savedPaths.push(`${slug}/${fileName}`);
-    }
+  const handleSave = async () => {
+    setError("");
+    if (!editingReport.carModel || !editingReport.slug) return setError("Марка и Линк са задължителни!");
+    setLoading(true);
+    const payload = { ...editingReport, jsonData: JSON.stringify(editingReport.data) };
+    try {
+      const res = await fetch("/api/reports", {
+        method: editingReport.id ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) { setEditingReport(null); fetchReports(); }
+      else { const d = await res.json(); setError(d.error); }
+    } catch (e) { setError("Грешка при запис"); }
+    finally { setLoading(false); }
+  };
 
-    return NextResponse.json({ paths: savedPaths });
-  } catch (error) {
-    console.error("Грешка при качване:", error);
-    return NextResponse.json({ error: "Сървърна грешка при качване" }, { status: 500 });
-  }
+  return (
+    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-10 font-sans text-slate-900">
+      <div className="max-w-[1400px] mx-auto">
+        
+        {!editingReport ? (
+          <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 mt-10">
+            <div>
+              <h1 className="text-5xl font-black tracking-tighter uppercase">Инспекции</h1>
+              <p className="text-slate-400 font-bold mt-2 uppercase text-[10px] tracking-[0.3em]">FileVerified Admin Terminal</p>
+            </div>
+            <button onClick={() => setEditingReport({ slug: "", carModel: "", clientName: "", data: { ...emptyData }, isPublished: false })} 
+              className="w-full md:w-auto bg-emerald-600 text-white px-12 py-6 rounded-3xl font-black flex items-center justify-center gap-3 shadow-2xl shadow-emerald-200 hover:scale-[1.02] transition-all uppercase">
+              <Plus size={28} /> Нов Репорт
+            </button>
+          </div>
+        ) : (
+          <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden mb-20">
+             
+             <div className="p-8 border-b bg-slate-50 flex justify-between items-center">
+                <button onClick={() => setEditingReport(null)} className="font-black text-slate-400 hover:text-emerald-600 flex items-center gap-2 uppercase text-[10px] tracking-widest transition-colors">
+                  <ChevronLeft size={20}/> Отказ
+                </button>
+                <div className="flex items-center gap-3">
+                  <ShieldCheck className="text-emerald-600" size={24} />
+                  <span className="font-black uppercase text-xs tracking-widest text-slate-800">Редактиране на Доклад</span>
+                </div>
+            </div>
+
+            <div className="p-8 md:p-16 space-y-16">
+              
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <InputGroup label="Марка и Модел" icon={<CarFront size={18}/>}>
+                  <input className="w-full p-5 bg-slate-50 rounded-2xl outline-none font-black text-xl border-2 border-transparent focus:border-emerald-500 transition-all shadow-inner" placeholder="Audi RS6 C8" value={editingReport.carModel} onChange={(e) => setEditingReport({...editingReport, carModel: e.target.value})} />
+                </InputGroup>
+                <InputGroup label="Линк (Slug)" icon={<Activity size={18}/>}>
+                  <input className="w-full p-5 bg-emerald-50 border-2 border-emerald-100 text-emerald-700 rounded-2xl outline-none font-bold text-xl" placeholder="audi-rs6-ivan" value={editingReport.slug} onChange={(e) => setEditingReport({...editingReport, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')})} />
+                </InputGroup>
+                <InputGroup label="Клиент" icon={<User size={18}/>}>
+                  <input className="w-full p-5 bg-slate-50 rounded-2xl outline-none font-bold text-xl border-2 border-transparent focus:border-emerald-500 shadow-inner" placeholder="Име на клиент" value={editingReport.clientName} onChange={(e) => setEditingReport({...editingReport, clientName: e.target.value})} />
+                </InputGroup>
+              </div>
+
+              {/* ОСНОВНИ ДАННИ - ВЕЧЕ НА СВЕТЪЛ ФОН */}
+              <div className="bg-white rounded-[3rem] p-10 grid grid-cols-2 lg:grid-cols-4 gap-8 border border-slate-100 shadow-sm">
+                  <LightInput label="VIN Номер" value={editingReport.data.vin} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, vin: v.toUpperCase()}})} />
+                  <LightInput label="Година" value={editingReport.data.year} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, year: v}})} />
+                  <LightInput label="Пробег" value={editingReport.data.mileage} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, mileage: v}})} />
+                  <LightInput label="Двигател" value={editingReport.data.engine} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, engine: v}})} />
+                  <LightInput label="Мощност (hp)" value={editingReport.data.hp} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, hp: v}})} />
+                  <SelectInput label="Трансмисия" value={editingReport.data.gearbox} options={["Автоматична", "Ръчна", "DSG", "CVT"]} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, gearbox: v}})} />
+                  <SelectInput label="Гориво" value={editingReport.data.fuel} options={["Дизел", "Бензин", "Хибрид", "Електрическа"]} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, fuel: v}})} />
+                  <SelectInput label="Задвижване" value={editingReport.data.drivetrain} options={["AWD (4x4)", "RWD (Задно)", "FWD (Предно)"]} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, drivetrain: v}})} />
+              </div>
+
+              <section className="bg-white p-10 rounded-[3rem] border-2 border-slate-100 shadow-sm relative overflow-hidden">
+                <Layers className="absolute -right-10 -top-10 w-40 h-40 text-slate-50 rotate-12" />
+                <h3 className="text-sm font-black uppercase tracking-[0.3em] text-emerald-600 mb-10 flex items-center gap-3">
+                  <Gauge size={24} /> Измерване на ЛКП (μm)
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6 relative z-10">
+                  {Object.keys(editingReport.data.paintData).map((key) => (
+                    <div key={key} className="space-y-2">
+                      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">{key}</label>
+                      <input 
+                        type="number"
+                        className="w-full p-4 bg-slate-50 rounded-2xl font-black text-center text-lg focus:bg-white focus:ring-4 focus:ring-emerald-100 transition-all outline-none border border-transparent focus:border-emerald-400"
+                        value={editingReport.data.paintData[key]}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const newPaint = { ...editingReport.data.paintData, [key]: e.target.value };
+                          setEditingReport({ ...editingReport, data: { ...editingReport.data, paintData: newPaint } });
+                        }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                <StatusCard label="Екстериор" icon={<CarFront />} status={editingReport.data.exteriorStatus} onStatusChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, exteriorStatus: v}})} notes={editingReport.data.exteriorNotes} onNotesChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, exteriorNotes: v}})} />
+                <StatusCard label="Интериор" icon={<Search />} status={editingReport.data.interiorStatus} onStatusChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, interiorStatus: v}})} notes={editingReport.data.interiorNotes} onNotesChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, interiorNotes: v}})} />
+                <StatusCard label="Двигател" icon={<Zap />} status={editingReport.data.engineStatus} onStatusChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, engineStatus: v}})} notes={editingReport.data.engineNotes} onNotesChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, engineNotes: v}})} />
+                <StatusCard label="Окачване" icon={<Disc />} status={editingReport.data.suspensionStatus} onStatusChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, suspensionStatus: v}})} notes={editingReport.data.suspensionNotes} onNotesChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, suspensionNotes: v}})} />
+              </div>
+
+              {/* ДИАГНОСТИКА - ВЕЧЕ НА СВЕТЪЛ ФОН */}
+              <div className="bg-white border-2 border-slate-100 rounded-[3rem] p-10 space-y-6">
+                  <div className="flex justify-between items-center">
+                    <h3 className="font-black uppercase text-xs tracking-widest text-emerald-600 flex items-center gap-2"><Cpu /> Компютърна Диагностика</h3>
+                    <label className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-xl cursor-pointer hover:bg-slate-100 transition-all border border-slate-100">
+                      <input type="checkbox" checked={editingReport.data.ecuErrors} onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEditingReport({...editingReport, data: {...editingReport.data, ecuErrors: e.target.checked}})} className="w-5 h-5 accent-emerald-500" />
+                      <span className="text-[10px] font-black uppercase">Активни Грешки</span>
+                    </label>
+                  </div>
+                  <textarea className="w-full bg-slate-50 border border-slate-100 p-6 rounded-[2rem] outline-none min-h-[150px] font-medium text-slate-600" placeholder="Заключение от диагностиката..." value={editingReport.data.diagnostics} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditingReport({...editingReport, data: {...editingReport.data, diagnostics: e.target.value}})} />
+              </div>
+
+              <div className="space-y-4">
+                  <h3 className="font-black uppercase text-sm tracking-[0.3em] text-emerald-600 ml-6">ЕКСПЕРТНО ЗАКЛЮЧЕНИЕ</h3>
+                  <textarea className="w-full bg-emerald-600 text-white p-12 rounded-[4rem] outline-none font-black text-2xl shadow-2xl shadow-emerald-200 placeholder:text-emerald-300 min-h-[200px]" placeholder="Финална присъда..." value={editingReport.data.finalVerdict} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setEditingReport({...editingReport, data: {...editingReport.data, finalVerdict: e.target.value}})} />
+              </div>
+
+              <section className={`p-10 rounded-[4rem] border-4 transition-all ${!editingReport.slug ? 'bg-slate-50 border-slate-100 opacity-50' : 'bg-white border-dashed border-emerald-100'}`}>
+                <div className="flex flex-col lg:flex-row justify-between items-center gap-8 mb-12">
+                  <div>
+                    <h3 className="text-slate-900 font-black text-2xl uppercase tracking-tighter flex items-center gap-3"><ImageIcon className="text-emerald-600" size={32}/> Фотодоклад ({editingReport.data.images?.length || 0})</h3>
+                  </div>
+                  <label className={`w-full lg:w-auto px-16 py-8 rounded-[2.5rem] font-black text-xl flex items-center justify-center gap-4 transition-all shadow-2xl ${!editingReport.slug ? 'bg-slate-300 cursor-not-allowed' : 'bg-emerald-600 text-white cursor-pointer hover:bg-slate-800'}`}>
+                    {uploading ? <Loader2 className="animate-spin" size={32}/> : <Upload size={32}/>}
+                    КАЧИ СНИМКИ
+                    <input type="file" multiple className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading || !editingReport.slug} />
+                  </label>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                  {editingReport.data.images?.map((img: string, i: number) => (
+                    <div key={i} className="relative group aspect-square rounded-[2rem] overflow-hidden shadow-lg bg-slate-100 border-4 border-white">
+                      <img src={`/api/files?path=${img}`} className="w-full h-full object-cover" alt="car" />
+                      <button onClick={() => {
+                         const filtered = editingReport.data.images.filter((_: any, idx: number) => idx !== i);
+                         setEditingReport({ ...editingReport, data: { ...editingReport.data, images: filtered } });
+                      }} className="absolute inset-0 bg-rose-600/90 text-white flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all font-black text-xs uppercase tracking-widest">
+                        <X size={32} className="mb-2" /> Изтрий
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <div className="flex flex-col lg:flex-row gap-8 pt-10">
+                <div className="flex-1 flex items-center gap-6 p-10 bg-white rounded-[3rem] border-4 border-slate-100 shadow-inner">
+                  <input type="checkbox" id="pub" checked={editingReport.isPublished} onChange={(e) => setEditingReport({...editingReport, isPublished: e.target.checked})} className="w-12 h-12 accent-emerald-500 cursor-pointer" />
+                  <label htmlFor="pub" className="font-black text-slate-800 uppercase tracking-widest text-lg cursor-pointer">Публикувай</label>
+                </div>
+                <button onClick={handleSave} disabled={loading} className="flex-[2] bg-slate-900 text-white py-10 rounded-[3.5rem] font-black text-3xl flex items-center justify-center gap-6 hover:bg-emerald-600 transition-all shadow-2xl uppercase">
+                  {loading ? <Loader2 className="animate-spin" size={40} /> : <Save size={40} />} Генерирай Отчет
+                </button>
+              </div>
+
+              {error && <div className="p-8 bg-red-50 text-red-600 rounded-[2.5rem] border-4 border-red-100 font-black text-center uppercase text-lg">{error}</div>}
+            </div>
+          </div>
+        )}
+
+        {!editingReport && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
+            {reports.map((r: any) => (
+              <div key={r.id} className="bg-white p-10 rounded-[3.5rem] border-2 border-slate-100 shadow-xl flex flex-col justify-between group hover:border-emerald-500 transition-all">
+                <div className="flex justify-between items-start mb-10">
+                  <div>
+                    <h3 className="text-3xl font-black tracking-tighter uppercase text-slate-900">{r.carModel}</h3>
+                    <p className="text-slate-400 font-black uppercase text-[10px] tracking-widest mt-2">{r.clientName}</p>
+                  </div>
+                  <span className={`text-[10px] px-4 py-2 rounded-full font-black uppercase tracking-[0.2em] ${r.isPublished ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
+                    {r.isPublished ? 'LIVE' : 'DRAFT'}
+                  </span>
+                </div>
+                <div className="flex gap-3">
+                  <a href={`/report/${r.slug}`} target="_blank" className="flex-1 bg-slate-50 p-6 rounded-2xl flex items-center justify-center hover:bg-emerald-500 hover:text-white transition-all"><Eye size={24} /></a>
+                  <button onClick={() => setEditingReport({ ...r, data: JSON.parse(r.jsonData) })} className="flex-1 bg-slate-50 p-6 rounded-2xl flex items-center justify-center hover:bg-emerald-600 hover:text-white transition-all"><Edit3 size={24} /></button>
+                  <button onClick={async () => { if (confirm("Изтриване?")) { await fetch(`/api/reports?id=${r.id}`, { method: "DELETE" }); fetchReports(); } }} className="flex-1 bg-slate-50 p-6 rounded-2xl flex items-center justify-center hover:bg-rose-500 hover:text-white transition-all"><Trash2 size={24} /></button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
 }
---- END OF FILE: src/app/api/upload/route.ts ---
 
---- START OF FILE: src/app/api/files/route.ts ---
-import { NextRequest, NextResponse } from 'next/server';
-import { readFile } from 'fs/promises';
-import path from 'path';
+// --- UI HELPERS ---
 
-export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const filePath = searchParams.get('path'); // Очакваме нещо като /uploads/audi/file.jpg
-
-  if (!filePath) return new NextResponse('Path missing', { status: 400 });
-
-  try {
-    // Взимаме файла от реалната папка на диска
-    const absolutePath = path.join(process.cwd(), 'public', filePath);
-    const fileBuffer = await readFile(absolutePath);
-
-    // Определяме типа на файла (jpg или png)
-    const ext = path.extname(filePath).toLowerCase();
-    const contentType = ext === '.png' ? 'image/png' : 'image/jpeg';
-
-    return new NextResponse(fileBuffer, {
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
-      },
-    });
-  } catch (error) {
-    return new NextResponse('File not found', { status: 404 });
-  }
+interface InputGroupProps {
+  label: string;
+  icon: React.ReactNode;
+  children: React.ReactNode;
 }
---- END OF FILE: src/app/api/files/route.ts ---
-
---- START OF FILE: src/app/globals.css ---
-@import "tailwindcss";
-
-/* ДОБАВИ ТЕЗИ ДВА РЕДА ТУК */
-@import "yet-another-react-lightbox/styles.css";
-@import "yet-another-react-lightbox/plugins/thumbnails.css";
-
-:root {
-  --background: #ffffff;
-  --foreground: #0f172a; /* slate-900 */
+function InputGroup({ label, icon, children }: InputGroupProps) {
+  return (
+    <div className="space-y-3">
+      <label className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4 flex items-center gap-2">
+        {icon} {label}
+      </label>
+      {children}
+    </div>
+  );
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+interface LightInputProps {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+}
+function LightInput({ label, value, onChange }: LightInputProps) {
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{label}</label>
+      <input 
+        className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black text-slate-900 text-lg focus:border-emerald-500 focus:bg-white transition-all shadow-inner" 
+        value={value} 
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => onChange(e.target.value)} 
+      />
+    </div>
+  );
 }
 
-body {
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+interface SelectInputProps {
+  label: string;
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
+}
+function SelectInput({ label, value, options, onChange }: SelectInputProps) {
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{label}</label>
+      <select 
+        className="p-4 bg-slate-50 border border-slate-100 rounded-2xl outline-none font-black text-slate-900 text-lg focus:border-emerald-500 appearance-none cursor-pointer shadow-inner" 
+        value={value} 
+        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onChange(e.target.value)}
+      >
+        {options.map((opt: string) => <option key={opt} className="bg-white text-slate-900 font-bold">{opt}</option>)}
+      </select>
+    </div>
+  );
 }
 
-/* Твоят съществуващ оувъррайд */
-html,
-body {
-  background: #f8fafc !important; /* slate-50 */
+interface StatusCardProps {
+  label: string;
+  icon: React.ReactNode;
+  status: string;
+  onStatusChange: (v: string) => void;
+  notes: string;
+  onNotesChange: (v: string) => void;
 }
---- END OF FILE: src/app/globals.css ---
+function StatusCard({ label, icon, status, onStatusChange, notes, onNotesChange }: StatusCardProps) {
+  const getStatusColor = (s: string) => {
+    if (s === "Отличен") return "bg-emerald-500";
+    if (s === "Добър") return "bg-blue-500";
+    if (s === "Забележки") return "bg-amber-500";
+    return "bg-rose-500";
+  };
+
+  return (
+    <div className="bg-white p-10 rounded-[3rem] border-2 border-slate-100 space-y-6 shadow-sm group hover:shadow-xl transition-all duration-500">
+      <div className="flex justify-between items-center">
+        <h3 className="font-black uppercase text-xs tracking-widest text-slate-500 flex items-center gap-3">
+          <span className="text-emerald-600">{icon}</span> {label}
+        </h3>
+        <div className="flex items-center gap-2">
+           <div className={`w-2 h-2 rounded-full animate-pulse ${getStatusColor(status)}`}></div>
+           <select 
+              value={status} 
+              onChange={(e: React.ChangeEvent<HTMLSelectElement>) => onStatusChange(e.target.value)} 
+              className="bg-slate-50 p-3 rounded-xl font-black text-xs uppercase tracking-tighter cursor-pointer outline-none border-none"
+            >
+            <option>Отличен</option>
+            <option>Добър</option>
+            <option>Забележки</option>
+            <option>Критичен</option>
+          </select>
+        </div>
+      </div>
+      <textarea 
+        className="w-full p-6 bg-slate-50 rounded-[2rem] outline-none text-base font-bold min-h-[120px] border-2 border-transparent focus:border-emerald-100 transition-all shadow-inner text-slate-600"
+        placeholder={`Бележки за ${label.toLowerCase()}...`}
+        value={notes}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => onNotesChange(e.target.value)}
+      />
+    </div>
+  );
+}
+--- END OF FILE: src/app/admin/reports/page.tsx ---
 
 --- START OF FILE: src/app/sitemap.ts ---
 import { MetadataRoute } from 'next'
@@ -1284,6 +895,221 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }))
 }
 --- END OF FILE: src/app/sitemap.ts ---
+
+--- START OF FILE: src/app/layout.tsx ---
+import type { Metadata } from "next"
+import Link from "next/link"
+import Image from "next/image"
+import Script from "next/script"
+import { Facebook, Phone, MessageCircle, FileText, ShieldCheck, Mail, MapPin } from "lucide-react"
+import "./globals.css"
+import MobileNav from "@/components/MobileNav"
+
+export const metadata: Metadata = {
+  title: "Проверка на автомобил преди покупка в София | FileVerified",
+  description:
+    "Независима професионална проверка на автомобил преди покупка. Компютърна диагностика, оглед на купе и тест драйв. Спестете си излишни разходи!",
+  keywords: ["проверка на кола", "оглед на автомобил София", "диагностика на кола", "автоексперт", "реални километри", "преглед преди покупка"],
+  metadataBase: new URL("https://fileverified.eu"),
+  alternates: {
+    canonical: "/",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png" },
+    ],
+  },
+  manifest: "/site.webmanifest",
+  openGraph: {
+    title: "FileVerified - Независим оглед на автомобили",
+    description: "Вижте реалното състояние на автомобила, преди да платите. Професионална диагностика в София.",
+    url: "https://fileverified.eu",
+    siteName: "FileVerified",
+    images: [
+      {
+        url: "/og-image.jpg", // Увери се, че имаш такова изображение в /public
+        width: 1200,
+        height: 630,
+        alt: "FileVerified Car Inspection",
+      },
+    ],
+    locale: "bg_BG",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FileVerified - Проверка на автомобили",
+    description: "Независима проверка на кола преди покупка в София.",
+  },
+}
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const fbLink = "https://www.facebook.com/profile.php?id=61585477671669"
+  const whatsappLink = "https://wa.me/359888570037"
+  const viberLink = "viber://chat?number=%2B359888570037"
+
+  return (
+    <html lang="bg" className="scroll-smooth">
+      <head>
+        <Script 
+          async 
+          src="https://www.googletagmanager.com/gtag/js?id=G-JTLYG6PTXR" 
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-JTLYG6PTXR');
+          `}
+        </Script>
+      </head>
+      <body className="bg-slate-50 text-slate-900 antialiased flex flex-col min-h-screen">
+        {/* HEADER */}
+        <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur-sm">
+          <div className="mx-auto max-w-7xl px-6">
+            <div className="flex h-16 items-center justify-between gap-4">
+              <Link href="/" className="flex items-center transition-opacity hover:opacity-90">
+                <Image 
+                  src="/logo-green.png" 
+                  alt="FileVerified Logo" 
+                  width={180} 
+                  height={40} 
+                  className="h-8 w-auto"
+                  priority
+                />
+              </Link>
+
+              <nav className="hidden items-center gap-6 md:flex">
+                <Link href="/" className="text-sm font-medium text-slate-700 hover:text-emerald-600 transition-colors">Начало</Link>
+                <Link href="/services" className="text-sm font-medium text-slate-700 hover:text-emerald-600 transition-colors">Проверка</Link>
+                <Link href="/diagnostics" className="text-sm font-medium text-slate-700 hover:text-emerald-600 transition-colors">Диагностика</Link>
+                <Link href="/tpms" className="text-sm font-medium text-slate-700 hover:text-emerald-600 transition-colors">TPMS</Link>
+                
+                <Link href="/report" className="flex items-center gap-1.5 text-sm font-bold text-emerald-600 hover:bg-emerald-100 bg-emerald-50 px-3 py-1.5 rounded-lg transition-all">
+                  <FileText className="w-4 h-4" /> Примерен доклад
+                </Link>
+
+                <Link href="/faq" className="text-sm font-medium text-slate-700 hover:text-emerald-600 transition-colors">FAQ</Link>
+
+                <a href={fbLink} target="_blank" rel="noopener noreferrer" aria-label="Facebook Page" className="ml-2 text-slate-400 hover:text-[#1877F2] transition-colors">
+                  <Facebook className="h-5 w-5 fill-current" />
+                </a>
+
+                <Link href="/book" className="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition shadow-md shadow-emerald-100 active:scale-95">
+                  Запази оглед
+                </Link>
+              </nav>
+
+              <MobileNav />
+            </div>
+          </div>
+        </header>
+
+        {/* ANNOUNCEMENT BANNER */}
+        <div className="border-b border-amber-200 bg-amber-50/50">
+          <div className="mx-auto max-w-7xl px-6 py-2 text-xs md:text-sm text-amber-800 flex items-center justify-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+            </span>
+            Сайтът е в процес на разработка. Очаквайте скоро пълната функционалност!
+          </div>
+        </div>
+
+        {/* MAIN CONTENT */}
+        <main className="flex-grow mx-auto w-full max-w-7xl px-6 py-10">
+          {children}
+        </main>
+
+        {/* FOOTER */}
+        <footer className="border-t bg-white">
+          <div className="mx-auto max-w-7xl px-6 py-12">
+            <div className="grid gap-12 md:grid-cols-4">
+              <div className="md:col-span-1 space-y-6">
+                <Link href="/" className="inline-flex items-center">
+                  <Image src="/logo-green.png" alt="FileVerified" width={160} height={36} className="h-8 w-auto" />
+                </Link>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Професионална помощ при избор на употребяван автомобил. <br />
+                  Вашата сигурност е наш приоритет.
+                </p>
+                <div className="flex items-center gap-4">
+                  <a href={fbLink} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="text-slate-400 hover:text-[#1877F2] transition-all transform hover:scale-110"><Facebook className="h-6 w-6 fill-current" /></a>
+                  <a href={whatsappLink} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="text-slate-400 hover:text-[#25D366] transition-all transform hover:scale-110"><MessageCircle className="h-6 w-6 fill-current" /></a>
+                  <a href={viberLink} aria-label="Viber" className="text-slate-400 hover:text-[#7360F2] transition-all transform hover:scale-110"><Phone className="h-6 w-6" /></a>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-[0.2em] mb-6">Услуги</h3>
+                <ul className="space-y-3 text-sm">
+                  <li><Link href="/services" className="text-slate-600 hover:text-emerald-600 transition-colors">Оглед на място</Link></li>
+                  <li><Link href="/diagnostics" className="text-slate-600 hover:text-emerald-600 transition-colors">Компютърна диагностика</Link></li>
+                  <li><Link href="/tpms" className="text-slate-600 hover:text-emerald-600 transition-colors">Проверка на TPMS</Link></li>
+                  <li><Link href="/report" className="text-emerald-600 font-bold hover:underline">Примерен доклад</Link></li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-[0.2em] mb-6">Полезно</h3>
+                <ul className="space-y-3 text-sm">
+                  <li><Link href="/faq" className="text-slate-600 hover:text-emerald-600 transition-colors">Често задавани въпроси</Link></li>
+                  <li><Link href="/terms" className="text-slate-600 hover:text-emerald-600 transition-colors text-xs">Общи условия</Link></li>
+                  <li><Link href="/privacy" className="text-slate-600 hover:text-emerald-600 transition-colors text-xs">Поверителност</Link></li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-[0.2em] mb-6">Контакт</h3>
+                <ul className="space-y-4 text-sm">
+                  <li className="flex items-start gap-3 text-slate-600">
+                    <MapPin className="w-5 h-5 text-emerald-600 shrink-0" />
+                    <span>гр. София и околността</span>
+                  </li>
+                  <li>
+                    <a href="tel:0888570037" className="flex items-center gap-3 hover:text-emerald-600 transition-colors font-bold text-slate-900 group">
+                      <Phone className="w-5 h-5 text-emerald-600 group-hover:animate-bounce" />
+                      0888 57 00 37
+                    </a>
+                  </li>
+                  <li>
+                    <a href="mailto:info@fileverified.eu" className="flex items-center gap-3 hover:text-emerald-600 transition-colors text-slate-600">
+                      <Mail className="w-5 h-5 text-emerald-600" />
+                      info@fileverified.eu
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-12 border-t pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
+              <p className="text-[10px] text-slate-400 uppercase tracking-widest">
+                © {new Date().getFullYear()} FileVerified.eu. Всички права запазени.
+              </p>
+              <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
+                  Independent Car Inspection
+                </span>
+              </div>
+            </div>
+          </div>
+        </footer>
+      </body>
+    </html>
+  )
+}
+--- END OF FILE: src/app/layout.tsx ---
 
 --- START OF FILE: src/app/book/page.tsx ---
 "use client"
@@ -1551,356 +1377,461 @@ function Field({ label, children }: { label: string, children: React.ReactNode }
 }
 --- END OF FILE: src/app/book/page.tsx ---
 
---- START OF FILE: src/app/faq/page.tsx ---
+--- START OF FILE: src/app/diagnostics/page.tsx ---
 import Link from "next/link"
-import { 
-  CheckCircle2, 
-  AlertCircle, 
-  CalendarCheck, 
-  CarFront, 
-  ClipboardCheck, 
-  Sparkles,
-  ThermometerSnowflake 
-} from "lucide-react"
 
 export const metadata = {
-  title: "Често задавани въпроси | FileVerified",
+  title: "Компютърна диагностика | FileVerified",
   description:
-    "Отговори на най-често задаваните въпроси за оглед на автомобил преди покупка в София – срокове, какво включва, доклад, ограничения и др.",
+    "Пълна компютърна диагностика на автомобил — четене на грешки, live data, тестове и ясно обяснение. София.",
 }
 
-const PREP_STEPS = [
-  {
-    title: "Потвърдете наличността",
-    text: "Уверете се, че автомобилът все още се продава и не е капариран.",
-    icon: <CalendarCheck className="w-5 h-5 text-emerald-600" />
-  },
-  {
-    title: "Вземете съгласие за инспекция",
-    text: "Продавачът трябва да е съгласен за компютърна диагностика и мерене на боята.",
-    icon: <ClipboardCheck className="w-5 h-5 text-emerald-600" />
-  },
-  {
-    title: "Проверете за тест-драйв",
-    text: "Попитайте дали колата има номера и застраховка, за да бъде тествана в движение.",
-    icon: <CarFront className="w-5 h-5 text-emerald-600" />
-  },
-  {
-    title: "Помолете за чист автомобил",
-    text: "На мръсна кола не могат да се видят дефекти по лака и фини драскотини.",
-    icon: <Sparkles className="w-5 h-5 text-emerald-600" />
-  },
-  {
-    title: "Изисквайте студен старт",
-    text: "Помолете продавача да не пали колата преди огледа, за да чуем реалния студен старт.",
-    icon: <ThermometerSnowflake className="w-5 h-5 text-emerald-600" />
-  }
-]
-
-const FAQS: Array<{ q: string; a: string }> = [
-  {
-    q: "Защо да поръчам оглед преди покупка?",
-    a: "За да вземеш решение на база факти: реално състояние, диагностика, следи от ПТП/ремонти, потенциални скрити разходи и рискове. Огледът често спестява много повече пари, отколкото струва.",
-  },
-  {
-    q: "Какво включва огледът?",
-    a: "Комбинация от визуална проверка (кузов, боя, салон), диагностика (OBD), проверка на ключови системи (двигател/трансмисия/ходова част/спирачки), и обобщение с препоръка (купуваш/преговаряш/пропускаш).",
-  },
-  {
-    q: "Правите ли оглед на място в София?",
-    a: "Да – огледът е мобилен и се прави на мястото, където е автомобилът (частен продавач, автокъща или сервиз).",
-  },
-  {
-    q: "Колко бързо може да стане огледът?",
-    a: "Обичайно – в рамките на 1–2 работни дни, според наличност и възможност на продавача да осигури автомобил за преглед.",
-  },
-  {
-    q: "Кога получавам резултат/доклад?",
-    a: "След огледа получаваш обобщение и ключови констатации. Подробният доклад (ако е включен в пакета) се подготвя и изпраща допълнително.",
-  },
-  {
-    q: "Може ли да ускорим доклада?",
-    a: "Възможно е в рамките на разумното, но качеството е приоритет – по-добре точни изводи и снимки, отколкото прибързан текст.",
-  },
-  {
-    q: "Мога ли да присъствам на огледа?",
-    a: "По принцип – не е задължително. Ако искаш да присъстваш, най-добре е да не пречиш на процеса и да оставиш инспектора да работи спокойно. (При някои продавачи присъствието на купувач може да създаде напрежение.)",
-  },
-  {
-    q: "Ще правите ли тест драйв?",
-    a: "Когато е възможно и безопасно: автомобилът е регистриран/застрахован, има условия за движение и продавачът разреши. Понякога тестът се прави от продавача (напр. при определени автокъщи).",
-  },
-  {
-    q: "Проверявате ли за удари/ПТП и пребоядисване?",
-    a: "Да – търсим следи от ремонти и разлики в боята/елементите. Важно: не всяко ПТП може да се открие 100% само визуално, особено при качествен ремонт.",
-  },
-  {
-    q: "Проверявате ли за наводнение/влага и миризми (цигари)?",
-    a: "Търсим признаци: миризми, следи по тапицерия/електроника, окисления и др. Важно: продавачи понякога маскират миризми/следи, затова оценката е по видими признаци.",
-  },
-  {
-    q: "Гарантиран ли е огледът – може ли после да излезе проблем?",
-    a: "Огледът намалява риска, но не може да гарантира бъдещето – някои дефекти се проявяват по-късно или са интермитентни. Целта е максимално информирано решение към момента на проверката.",
-  },
-  {
-    q: "Проверявате ли номера на двигател/скоростна кутия, рамата и т.н.?",
-    a: "Когато са достъпни и видими. При някои модели/разположения това е трудно без повдигач или разглобяване (което не правим на оглед).",
-  },
-  {
-    q: "Проверявате ли под колата на подемник?",
-    a: "Мобилният оглед обичайно е без подемник. Ако автомобилът е в сервиз и има възможност за подемник – чудесно, това повишава качеството на проверката.",
-  },
-  {
-    q: "Проверявате ли спирачки, течове и ремъци?",
-    a: "Проверяваме функционално и за видими признаци/течове. Не разглобяваме (напр. не сваляме колела за измерване на накладки).",
-  },
-  {
-    q: "Проверявате ли „светнати“ грешки и диагностични кодове?",
-    a: "Да – диагностика през OBD и преглед на налични кодове/състояния. Важно: изчистването на грешки от продавач е възможно, затова гледаме и контекст (симптоми, поведение, история).",
-  },
-  {
-    q: "Какво да подготвя преди оглед?",
-    a: "Линк към обявата, VIN (ако имаш), локация и контакт на продавача. Ако има специфични притеснения (скорости, шум, ръжда) – напиши ги в бележките при заявката.",
-  },
-  {
-    q: "Какво става ако продавачът не е наличен / автомобилът се продаде?",
-    a: "Ако автомобилът стане недостъпен, пренасрочваме или прехвърляме заявката към друг автомобил според условията, които ще опишем ясно (впоследствие може да добавим автоматична политика на сайта).",
-  },
-  {
-    q: "Споделяте ли резултатите с продавача?",
-    a: "Не. Докладът е за клиента (купувача).",
-  },
-]
-
-export default function FAQPage() {
+export default function DiagnosticsPage() {
   return (
-    <section className="max-w-4xl mx-auto py-12 px-6 space-y-16">
-      {/* HEADER SECTION */}
-      <div className="space-y-4 text-center md:text-left">
-        <h1 className="text-4xl md:text-5xl font-black text-slate-900 tracking-tight">
-          Често задавани въпроси
-        </h1>
-        <p className="text-slate-600 text-xl leading-relaxed">
-          Всичко, което трябва да знаете за професионалния оглед на автомобил.
-        </p>
-      </div>
-
-      {/* GERMAN PREP STEPS SECTION */}
-      <div className="bg-emerald-50 rounded-[2.5rem] p-8 md:p-12 border border-emerald-100 shadow-sm">
-        <div className="flex items-center gap-3 mb-8">
-          <AlertCircle className="w-8 h-8 text-emerald-600" />
-          <h2 className="text-2xl font-bold text-emerald-900">
-            5 стъпки ПРЕДИ да поръчате оглед
-          </h2>
-        </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-1">
-          {PREP_STEPS.map((step, idx) => (
-            <div key={idx} className="flex gap-4 bg-white/60 p-5 rounded-2xl border border-white">
-              <div className="bg-white p-2.5 rounded-xl shadow-sm h-fit">
-                {step.icon}
-              </div>
-              <div>
-                <h3 className="font-bold text-slate-900 mb-1">{step.title}</h3>
-                <p className="text-sm text-slate-600 leading-snug">{step.text}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* FAQ ACCORDION SECTION */}
-      <div className="space-y-4">
-        <h2 className="text-2xl font-bold text-slate-900 px-2">Всички въпроси</h2>
-        <div className="rounded-3xl border bg-white p-2 shadow-xl shadow-slate-200/50 overflow-hidden">
-          {FAQS.map((item, idx) => (
-            <details
-              key={idx}
-              className="group rounded-2xl p-4 hover:bg-slate-50 open:bg-emerald-50/30 transition-all duration-300"
-            >
-              <summary className="cursor-pointer list-none">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="font-bold text-slate-900 text-lg leading-tight group-open:text-emerald-900">
-                    {item.q}
-                  </div>
-                  <div className="mt-0.5 text-emerald-600 font-black select-none text-2xl">
-                    <span className="group-open:hidden">+</span>
-                    <span className="hidden group-open:inline">–</span>
-                  </div>
-                </div>
-              </summary>
-              <div className="mt-4 text-slate-700 leading-relaxed text-md pl-1 border-t border-emerald-100/50 pt-4">
-                {item.a}
-              </div>
-            </details>
-          ))}
-        </div>
-      </div>
-
-      {/* FINAL CTA */}
-      <div className="rounded-[2.5rem] border bg-slate-900 p-10 md:p-14 text-center md:text-left relative overflow-hidden">
-        <div className="relative z-10">
-            <h2 className="text-3xl font-bold text-white mb-4">
-            Не намирате отговора?
-            </h2>
-            <p className="text-slate-300 text-lg mb-8 max-w-xl">
-            Пишете ни в заявката или ни се обадете директно. Нашите инспектори ще уточнят всеки детайл според конкретната кола.
-            </p>
-            <div className="flex flex-col md:flex-row gap-4">
-            <Link
-                href="/book"
-                className="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-8 py-4 font-black text-white hover:bg-emerald-400 transition-all shadow-lg shadow-emerald-500/20 text-lg"
-            >
-                ЗАПАЗЕТЕ ОГЛЕД
-            </Link>
-            <a
-                href="tel:0888570037"
-                className="inline-flex items-center justify-center rounded-2xl bg-white/10 px-8 py-4 font-bold text-white hover:bg-white/20 transition-all backdrop-blur-md border border-white/10"
-            >
-                0888 57 00 37
-            </a>
-            </div>
-        </div>
-        <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full -mr-32 -mt-32 blur-3xl"></div>
-      </div>
-    </section>
-  )
-}
---- END OF FILE: src/app/faq/page.tsx ---
-
---- START OF FILE: src/app/page.tsx ---
-import Link from "next/link"
-
-export default function HomePage() {
-  return (
-    <section className="space-y-20">
-      {/* HERO SECTION */}
-      <div className="grid gap-12 lg:grid-cols-2 lg:items-center px-6 pt-10">
-        <div className="space-y-6">
-          <h1 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
-            Независима проверка на автомобил преди покупка.
-            <span className="block text-emerald-700">
-              Вижте реалното състояние, спестете си изненадите.
-            </span>
+    <section className="space-y-10">
+      {/* Hero */}
+      <div className="rounded-3xl border bg-white p-8 shadow-sm">
+        <div className="space-y-3">
+          <div className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+            Диагностика • OBD • Модули
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
+            Пълна компютърна диагностика
           </h1>
-
-          <p className="text-lg text-slate-600 max-w-xl">
-            Купете следващия си автомобил с увереност. Ние проверяваме всичко вместо вас – от софтуерни грешки до дебелината на боята. Даваме ви обективната истина за всяка кола в София.
+          <p className="text-slate-600 text-lg max-w-3xl">
+            Четем грешки от управляващите модули, проверяваме live данни и
+            статуса на системите. Най-важното: получаваш ясно обяснение кое е
+            реален проблем, кое е „старо“ и кое е симптом.
           </p>
 
-          <div className="flex flex-wrap gap-4">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
             <Link
               href="/book"
-              className="inline-flex items-center rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-700 transition transform hover:scale-105 active:scale-95 shadow-sm"
+              className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition"
             >
               Запази оглед
             </Link>
-
-            <Link
-              href="/services"
-              className="inline-flex items-center rounded-xl border px-6 py-3 font-semibold text-slate-900 hover:bg-slate-50 transition transform hover:scale-105 active:scale-95 shadow-sm"
-            >
-              Виж услугите
-            </Link>
-          </div>
-        </div>
-
-        <div className="relative">
-          <div className="aspect-[4/3] overflow-hidden rounded-3xl border shadow-sm">
-            <img
-              src="/images/hero-inspection.png"
-              alt="Професионален оглед на автомобил"
-              className="h-full w-full object-cover"
-            />
+            <div className="text-sm text-slate-500">
+              Онлайн запазването е временно ограничено — потвърждението е по
+              телефон.
+            </div>
           </div>
         </div>
       </div>
 
-      {/* TRUST CARDS */}
-      <div className="grid gap-6 md:grid-cols-3 px-6">
-        <TrustCard
-          title="Независим оглед"
-          text="Ние не сме автокъща и не продаваме коли. Нашата цел е да ви дадем 100% обективна и честна оценка за състоянието на избрания от вас автомобил."
-        />
-        <TrustCard
-          title="Реални факти"
-          text="Използваме професионални дебеломери за боя и диагностични уреди. Откриваме пребоядисвани детайли, активни грешки и следи от тежки ремонти."
-        />
-        <TrustCard
-          title="Ясна препоръка"
-          text="В края на огледа получавате детайлен отчет. Ще разберете дали колата си заслужава инвестицията или е по-добре да продължите търсенето."
-        />
+      {/* What you get */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card title="Какво проверяваме">
+          ECU (двигател), трансмисия, ABS/ESP, airbag, климатроник, комфорт,
+          body/BCM, табло, TPMS (ако има), както и други модули според
+          автомобила.
+        </Card>
+
+        <Card title="Какво получаваш">
+          Списък на грешките, статус (активна/историческа), ключови live данни и
+          насоки за следващи стъпки: ремонт, тест, или наблюдение.
+        </Card>
+
+        <Card title="Защо е важно">
+          Много „светнали лампи“ са симптом. Диагностиката помага да не сменяш
+          части на сляпо и да разбереш реалната причина.
+        </Card>
       </div>
 
-      {/* HOW IT WORKS */}
-      <div className="space-y-10 px-6">
-        <h2 className="text-3xl font-bold text-slate-900">
-          Как протича огледът
+      {/* Included */}
+      <div className="rounded-3xl border bg-white p-8 shadow-sm space-y-6">
+        <h2 className="text-2xl font-bold text-slate-900">
+          Какво включва услугата
         </h2>
 
-        <div className="grid gap-6 md:grid-cols-3">
-          <StepCard
-            step="1"
-            title="Заявка"
-            text="Избираш пакет, дата и час и описваш автомобила."
+        <div className="grid gap-4 md:grid-cols-2">
+          <Bullet
+            title="Сканиране на модули"
+            text="Четене на грешки от наличните системи според оборудването."
           />
-          <StepCard
-            step="2"
-            title="Оглед на място"
-            text="Проверка на реалното състояние — визуално, технически и с диагностика."
+          <Bullet
+            title="Live data"
+            text="Проверка на ключови параметри в реално време (температури, сензори, налягания и др.)."
           />
-          <StepCard
-            step="3"
-            title="Обобщение"
-            text="Получаваш ясна оценка и аргументирана препоръка."
+          <Bullet
+            title="Статус и логика"
+            text="Разграничаваме активни от исторически грешки и търсим причинно-следствени връзки."
           />
+          <Bullet
+            title="Изчистване (при смисъл)"
+            text="Изчистваме само когато има логика (след тест/проверка), не „за да изгасне лампата“."
+          />
+        </div>
+
+        <div className="rounded-2xl bg-amber-50 p-5 text-sm text-amber-900">
+          <div className="font-semibold">Важно</div>
+          <div className="mt-1 text-amber-900/80">
+            Диагностиката не е „магия“ — при някои проблеми се изискват
+            допълнителни тестове (механични проверки, дим тест, измервания и
+            т.н.). Целта е да стесним причината и да избегнем излишни ремонти.
+          </div>
         </div>
       </div>
 
-      {/* CTA SECTION */}
-      <div className="mx-6 rounded-3xl border bg-emerald-50 p-10 text-center space-y-6">
-        <h2 className="text-3xl font-bold text-slate-900">
-          Готов ли си да провериш автомобила?
-        </h2>
-        <p className="text-slate-700 max-w-2xl mx-auto">
-          Един професионален оглед може да ти спести хиляди левове и много
-          главоболия.
-        </p>
-        <div>
-          <Link
-            href="/book"
-            className="inline-flex items-center rounded-xl bg-emerald-600 px-8 py-4 font-semibold text-white hover:bg-emerald-700 transition transform hover:scale-105 active:scale-95 shadow-md"
-          >
-            Запази оглед
-          </Link>
-        </div>
+      {/* When */}
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card title="Кога има смисъл">
+          Светнала лампа, придърпване, загуба на мощност, повишен разход,
+          неправилно превключване, проблеми с ABS/ESP, грешки след ремонт.
+        </Card>
+        <Card title="При покупка">
+          Супер полезно е като част от проверка преди покупка — виждаме какво
+          е пипано/изчиствано и дали има активни проблеми.
+        </Card>
+        <Card title="След обслужване">
+          Ако е правен ремонт/обслужване — диагностиката потвърждава дали
+          всичко е наред и няма остатъчни грешки.
+        </Card>
       </div>
     </section>
   )
 }
 
-function TrustCard({ title, text }: { title: string; text: string }) {
+function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-2xl border border-black bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
-      <div className="text-lg font-bold text-[#059669]">{title}</div>
-      <p className="mt-2 text-slate-600">{text}</p>
+    <div className="rounded-3xl border bg-white p-6 shadow-sm">
+      <div className="text-lg font-bold text-slate-900">{title}</div>
+      <div className="mt-2 text-sm leading-6 text-slate-600">{children}</div>
     </div>
   )
 }
 
-function StepCard({ step, title, text }: { step: string; title: string; text: string }) {
+function Bullet({ title, text }: { title: string; text: string }) {
   return (
-    <div className="rounded-2xl border bg-white p-6 shadow-sm space-y-3 transition-all hover:border-emerald-200">
-      <div className="flex items-center gap-3">
-        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-white font-bold">
-          {step}
-        </div>
-        <div className="text-lg font-semibold text-slate-900">{title}</div>
-      </div>
-      <p className="text-slate-600">{text}</p>
+    <div className="rounded-2xl border bg-white p-5">
+      <div className="font-semibold text-slate-900">{title}</div>
+      <div className="mt-1 text-sm text-slate-600">{text}</div>
     </div>
   )
 }
---- END OF FILE: src/app/page.tsx ---
+--- END OF FILE: src/app/diagnostics/page.tsx ---
+
+--- START OF FILE: src/app/layout_backup.tsx ---
+
+--- END OF FILE: src/app/layout_backup.tsx ---
+
+--- START OF FILE: src/app/api/contact/route.ts ---
+import { Resend } from 'resend';
+import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-dynamic';
+
+export async function POST(request: Request) {
+  try {
+    const apiKey = process.env.RESEND_API_KEY;
+    
+    if (!apiKey) {
+      throw new Error("RESEND_API_KEY is missing");
+    }
+
+    const resend = new Resend(apiKey);
+    const body = await request.json();
+    
+    const { 
+      fullName, email, phone, makeModel, carLink, 
+      year, vin, date, time, notes, packageName, packagePrice 
+    } = body;
+
+    const adminRes = await resend.emails.send({
+      from: 'FileVerified <info@fileverified.eu>',
+      to: ['martin.filev@gmail.com'],
+      replyTo: email || undefined, 
+      subject: `Нова резервация: ${makeModel} - ${fullName}`,
+      html: `
+        <div style="font-family: sans-serif; line-height: 1.5;">
+          <h2>Нова заявка за проверка</h2>
+          <hr />
+          <p><strong>Пакет:</strong> ${packageName} (${packagePrice})</p>
+          <p><strong>Клиент:</strong> ${fullName}</p>
+          <p><strong>Телефон:</strong> ${phone}</p>
+          <p><strong>Имейл:</strong> ${email}</p>
+          <br />
+          <p><strong>Автомобил:</strong> ${makeModel}</p>
+          <p><strong>Линк:</strong> <a href="${carLink}">${carLink}</a></p>
+          <p><strong>Дата/Час:</strong> ${date} в ${time} ч.</p>
+        </div>
+      `
+    });
+
+    if (email && email.trim() !== "") {
+      await resend.emails.send({
+        from: 'FileVerified <info@fileverified.eu>',
+        to: [email.trim()],
+        subject: `Вашата заявка за оглед е приета - FileVerified.eu`,
+        html: `
+          <div style="font-family: sans-serif; line-height: 1.6; color: #333;">
+            <h2 style="color: #059669;">Здравейте, ${fullName}!</h2>
+            <p>Вашата заявка за <strong>${makeModel}</strong> беше получена успешно.</p>
+          </div>
+        `
+      });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Booking Route Error:", error);
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
+--- END OF FILE: src/app/api/contact/route.ts ---
+
+--- START OF FILE: src/app/api/bookings/route.ts ---
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export const dynamic = 'force-dynamic';
+
+export async function GET() {
+  try {
+    const bookings = await prisma.booking.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    return NextResponse.json(bookings);
+  } catch (error) {
+    console.error("Грешка в API Bookings:", error);
+    return NextResponse.json({ error: "Database error" }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const { id, status } = await request.json();
+    const updated = await prisma.booking.update({
+      where: { id },
+      data: { status }
+    });
+    return NextResponse.json(updated);
+  } catch (error) {
+    return NextResponse.json({ error: "Update error" }, { status: 500 });
+  }
+}
+--- END OF FILE: src/app/api/bookings/route.ts ---
+
+--- START OF FILE: src/app/api/files/route.ts ---
+import { NextRequest, NextResponse } from 'next/server';
+import { readFile } from 'fs/promises';
+import path from 'path';
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const filePath = searchParams.get('path'); // Очакваме нещо като /uploads/audi/file.jpg
+
+  if (!filePath) return new NextResponse('Path missing', { status: 400 });
+
+  try {
+    // Взимаме файла от реалната папка на диска
+    const absolutePath = path.join(process.cwd(), 'public', filePath);
+    const fileBuffer = await readFile(absolutePath);
+
+    // Определяме типа на файла (jpg или png)
+    const ext = path.extname(filePath).toLowerCase();
+    const contentType = ext === '.png' ? 'image/png' : 'image/jpeg';
+
+    return new NextResponse(fileBuffer, {
+      headers: {
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+      },
+    });
+  } catch (error) {
+    return new NextResponse('File not found', { status: 404 });
+  }
+}
+--- END OF FILE: src/app/api/files/route.ts ---
+
+--- START OF FILE: src/app/api/send/route.ts ---
+import { Resend } from 'resend';
+import { NextResponse } from 'next/server';
+import { prisma } from "@/lib/prisma";
+
+// Инициализираме Resend
+const resendApiKey = process.env.RESEND_API_KEY;
+const resend = resendApiKey ? new Resend(resendApiKey) : null;
+
+export async function POST(request: Request) {
+  try {
+    if (!resend) {
+      console.error("ГРЕШКА: RESEND_API_KEY липсва в обкръжението.");
+      return NextResponse.json({ error: 'Имейл услугата не е конфигурирана' }, { status: 500 });
+    }
+
+    const body = await request.json();
+    const { 
+      fullName, email, phone, makeModel, carLink, 
+      year, vin, date, time, notes, packageName, packagePrice 
+    } = body;
+
+    // 1. ЗАПИС В POSTGRESQL БАЗАТА
+    try {
+      await prisma.booking.create({
+        data: {
+          pkgName: packageName || "Standard",
+          date: date || "",
+          time: time || "",
+          fullName: fullName || "Анонимен",
+          phone: phone || "",
+          email: email || "",
+          makeModel: makeModel || "",
+          year: year || "",
+          vin: vin || "",
+          notes: notes || "",
+          status: "new"
+        }
+      });
+      console.log("Успешен запис на заявката в базата.");
+    } catch (dbErr) {
+      console.error("Грешка при запис в базата:", dbErr);
+      // Продължаваме с имейла, дори ако базата се провали
+    }
+
+    // 2. ИЗПРАЩАНЕ НА ИМЕЙЛ ДО АДМИН (Мартин)
+    const adminEmail = await resend.emails.send({
+      from: 'FileVerified <info@fileverified.eu>',
+      to: ['martin.filev@gmail.com'],
+      replyTo: email || undefined,
+      subject: `Нова резервация: ${makeModel} - ${fullName}`,
+      html: `
+        <div style="font-family: sans-serif; padding: 20px;">
+          <h2 style="color: #059669;">Нова заявка от сайта</h2>
+          <p><strong>Клиент:</strong> ${fullName}</p>
+          <p><strong>Телефон:</strong> ${phone}</p>
+          <p><strong>Кола:</strong> ${makeModel}</p>
+          <p><strong>Пакет:</strong> ${packageName} (${packagePrice})</p>
+          <p><strong>Дата/Час:</strong> ${date} в ${time} ч.</p>
+          <hr />
+          <p><strong>Линк:</strong> <a href="${carLink}">${carLink}</a></p>
+          <p><strong>Бележки:</strong> ${notes || 'Няма'}</p>
+        </div>
+      `
+    });
+
+    if (adminEmail.error) {
+      console.error("Грешка при изпращане на имейл:", adminEmail.error);
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Критична грешка в API Route:", error);
+    return NextResponse.json({ error: 'Сървърна грешка' }, { status: 500 });
+  }
+}
+--- END OF FILE: src/app/api/send/route.ts ---
+
+--- START OF FILE: src/app/api/upload/route.ts ---
+import { NextRequest, NextResponse } from "next/server";
+import { writeFile, mkdir } from "fs/promises";
+import { join } from "path";
+import { existsSync } from "fs";
+
+export async function POST(req: NextRequest) {
+  try {
+    const formData = await req.formData();
+    const slug = formData.get("slug") as string;
+    const files = formData.getAll("files") as File[];
+
+    if (!slug || files.length === 0) {
+      return NextResponse.json({ error: "Липсва slug или файлове" }, { status: 400 });
+    }
+
+    const uploadDir = join(process.cwd(), "public", "uploads", slug);
+    
+    if (!existsSync(uploadDir)) {
+      await mkdir(uploadDir, { recursive: true });
+    }
+
+    const savedPaths = [];
+
+    for (const file of files) {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+      const path = join(uploadDir, fileName);
+      
+      await writeFile(path, buffer);
+      savedPaths.push(`${slug}/${fileName}`);
+    }
+
+    return NextResponse.json({ paths: savedPaths });
+  } catch (error) {
+    console.error("Грешка при качване:", error);
+    return NextResponse.json({ error: "Сървърна грешка при качване" }, { status: 500 });
+  }
+}
+--- END OF FILE: src/app/api/upload/route.ts ---
+
+--- START OF FILE: src/app/api/reports/route.ts ---
+import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  try {
+    const reports = await prisma.report.findMany({ orderBy: { createdAt: 'desc' } });
+    return NextResponse.json(reports);
+  } catch (error) {
+    return NextResponse.json({ error: "Грешка при четене" }, { status: 500 });
+  }
+}
+
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    // Взимаме само полетата, които съществуват в schema.prisma
+    const report = await prisma.report.create({
+      data: {
+        slug: body.slug,
+        carModel: body.carModel,
+        clientName: body.clientName,
+        jsonData: body.jsonData,
+        isPublished: body.isPublished || false
+      }
+    });
+    return NextResponse.json(report);
+  } catch (error: any) {
+    console.error("API POST ERROR:", error);
+    return NextResponse.json({ error: error.message || "Грешка при създаване" }, { status: 400 });
+  }
+}
+
+export async function PUT(request: Request) {
+  try {
+    const body = await request.json();
+    const { id, slug, carModel, clientName, jsonData, isPublished } = body;
+
+    const report = await prisma.report.update({
+      where: { id: id },
+      data: {
+        slug,
+        carModel,
+        clientName,
+        jsonData,
+        isPublished
+      }
+    });
+    return NextResponse.json(report);
+  } catch (error: any) {
+    console.error("API PUT ERROR:", error);
+    return NextResponse.json({ error: error.message || "Грешка при обновяване" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+    if (!id) return NextResponse.json({ error: "Липсва ID" }, { status: 400 });
+    
+    await prisma.report.delete({ where: { id } });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    return NextResponse.json({ error: "Грешка при изтриване" }, { status: 500 });
+  }
+}
+--- END OF FILE: src/app/api/reports/route.ts ---
 
 --- START OF FILE: src/app/report/page.tsx ---
 "use client"
@@ -2196,67 +2127,54 @@ function InfoCard({ icon, label, value }: { icon: React.ReactNode, label: string
 
 import { useState, useEffect, use } from "react"
 import { 
-  CheckCircle2, 
-  ShieldCheck, 
-  Gauge, 
-  Search,
-  Eye,
-  Cpu,
-  ChevronDown,
-  ChevronUp,
-  Zap,
-  Calendar,
-  Fingerprint,
-  Activity,
-  Fuel,
-  Settings2,
-  Disc,
-  CarFront,
-  AlertTriangle,
-  Info,
-  MapPin
+  CheckCircle2, ShieldCheck, Gauge, Search, Eye, Cpu, 
+  ChevronDown, ChevronUp, Zap, Calendar, Fingerprint, 
+  Activity, Fuel, Settings2, Disc, CarFront, AlertTriangle, 
+  Info, MapPin 
 } from "lucide-react"
 import GallerySection from "@/components/GallerySection"
+import { cloneElement } from "react"
 
 export default function PublicReport({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const [report, setReport] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/reports`)
-      .then(res => res.json())
+    fetch(`/api/reports/${slug}`)
+      .then(res => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
       .then(data => {
-        const found = data.find((r: any) => r.slug === slug);
-        if (found && found.isPublished) {
-          setReport({ ...found, data: JSON.parse(found.jsonData) });
-        }
+        setReport(data);
+        setLoading(false);
+      })
+      .catch(() => {
+        setError(true);
         setLoading(false);
       });
   }, [slug]);
 
   if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-      <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-      <div className="font-black text-slate-300 tracking-[0.3em] uppercase italic animate-pulse">FileVerified Анализ...</div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white font-sans">
+      <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <div className="font-black text-slate-300 tracking-[0.3em] uppercase">FileVerified Анализ...</div>
     </div>
   );
 
-  if (!report) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 font-black text-rose-500 text-2xl tracking-tighter">
-      ДОКЛАДЪТ НЕ Е НАМЕРЕН ИЛИ НЕ Е ПУБЛИКУВАН
+  if (error || !report) return (
+    <div className="min-h-screen flex items-center justify-center bg-slate-50 font-black text-rose-500 text-2xl tracking-tighter uppercase p-10 text-center">
+      Докладът не е намерен или не е публикуван за публичен достъп.
     </div>
   );
 
   const formattedImages = (report.data.images || []).map((img: string) => `/api/files?path=${img}`);
-
-  // Проверка за общия статус
   const isExcellent = report.data.finalVerdict?.toLowerCase().includes('отлич') || report.data.finalVerdict?.toLowerCase().includes('без забележ');
 
   return (
     <main className="min-h-screen bg-[#F1F5F9] pb-20 font-sans text-slate-900 selection:bg-blue-100">
-      
-      {/* PREMIUM HEADER */}
       <div className="bg-white border-b border-slate-200 px-6 py-12 md:py-20 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
             <ShieldCheck size={400} />
@@ -2264,22 +2182,19 @@ export default function PublicReport({ params }: { params: Promise<{ slug: strin
         
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-10 relative z-10">
           <div className="space-y-6">
-            <div className="flex items-center gap-3 text-blue-700 font-black mb-3 tracking-wide bg-blue-50 w-fit px-4 py-1.5 rounded-full border border-blue-100">
+            <div className="flex items-center gap-3 text-emerald-700 font-black mb-3 tracking-wide bg-emerald-50 w-fit px-4 py-1.5 rounded-full border border-emerald-100">
               <ShieldCheck className="w-5 h-5" />
               <span className="text-[10px] uppercase tracking-[0.2em]">Independent Inspection Report</span>
             </div>
             
-            <h1 className="text-5xl md:text-8xl font-black text-slate-900 leading-[0.85] tracking-tighter uppercase italic">
+            <h1 className="text-5xl md:text-8xl font-black text-slate-900 leading-[0.85] tracking-tighter uppercase">
               {report.carModel}
             </h1>
 
             <div className="flex flex-wrap items-center gap-y-4 gap-x-8 mt-6 text-slate-500 font-bold uppercase text-[11px] tracking-widest">
-              <span className="flex items-center gap-2">Инспекция за: <b className="text-slate-900">{report.clientName}</b></span>
+              <span className="flex items-center gap-2">Клиент: <b className="text-slate-900">{report.clientName}</b></span>
               <span className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-300"></span>
               <span className="flex items-center gap-2"><Fingerprint size={14}/> VIN: <b className="text-slate-900 font-mono tracking-normal">{report.data.vin || "---"}</b></span>
-              {report.data.location && (
-                 <span className="flex items-center gap-2"><MapPin size={14} className="text-rose-500"/> {report.data.location}</span>
-              )}
             </div>
           </div>
           
@@ -2298,8 +2213,6 @@ export default function PublicReport({ params }: { params: Promise<{ slug: strin
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-10 space-y-10 relative z-20">
-        
-        {/* КЛЮЧОВИ ТЕХНИЧЕСКИ ДАННИ */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           <StatCard icon={<Calendar />} label="Година" value={report.data.year} />
           <StatCard icon={<Gauge />} label="Пробег" value={`${report.data.mileage} км`} />
@@ -2310,24 +2223,18 @@ export default function PublicReport({ params }: { params: Promise<{ slug: strin
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8">
-          
-          {/* ЛЯВА КОЛОНА: ГАЛЕРИЯ И ЧЕКЛИСТОВЕ */}
           <div className="lg:col-span-2 space-y-10">
-            
-            {/* ГАЛЕРИЯ */}
             <div className="bg-white rounded-[3.5rem] border border-slate-200 p-2 shadow-2xl shadow-slate-200/50 overflow-hidden">
               <div className="p-8 font-black text-slate-900 border-b border-slate-50 flex items-center justify-between">
-                <span className="flex items-center gap-3 uppercase text-sm tracking-tighter italic">
-                  <Eye className="w-6 h-6 text-blue-600"/> Визуален Доклад ({formattedImages.length} снимки)
+                <span className="flex items-center gap-3 uppercase text-sm tracking-tighter">
+                  <Eye className="w-6 h-6 text-emerald-600"/> Визуален Доклад ({formattedImages.length} снимки)
                 </span>
-                <span className="text-[10px] bg-slate-100 px-3 py-1 rounded-full text-slate-400 font-black">4K HIGH RES</span>
               </div>
               <GallerySection images={formattedImages} />
             </div>
 
-            {/* ДЕТАЙЛНИ СЕКЦИИ */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SectionCard title="Екстериор и ЛКП" icon={<CarFront size={20} className="text-blue-600"/>}>
+              <SectionCard title="Екстериор и ЛКП" icon={<CarFront size={20} className="text-emerald-600"/>}>
                 <ExpandableCheckItem 
                   text="Измерване дебелина на лака" 
                   isOpenDefault={true}
@@ -2336,90 +2243,54 @@ export default function PublicReport({ params }: { params: Promise<{ slug: strin
                     value: `${value} μm`
                   }))}
                 />
-                <CheckItem text="Състояние на стъкла и оптика" status="ok" info={report.data.exteriorStatus} desc={report.data.exteriorNotes} />
+                <CheckItem text="Оптика и стъкла" status="ok" info={report.data.exteriorStatus} desc={report.data.exteriorNotes} />
               </SectionCard>
 
-              <SectionCard title="Интериор и Системи" icon={<Search size={20} className="text-emerald-600"/>}>
-                <CheckItem text="Проверка на модули и тапицерия" status="ok" info={report.data.interiorStatus} desc={report.data.interiorNotes} />
-                <CheckItem text="Климатична система и отопление" status="ok" />
-              </SectionCard>
-
-              <SectionCard title="Двигател и Кутия" icon={<Zap size={20} className="text-amber-500"/>}>
-                <CheckItem text="Работа на мотора и трансмисия" status="ok" info={report.data.engineStatus} desc={report.data.engineNotes} />
-                <CheckItem text="Ниво и състояние на флуиди" status="ok" />
-              </SectionCard>
-
-              <SectionCard title="Ходова част" icon={<Disc size={20} className="text-rose-500"/>}>
-                <CheckItem text="Спирачки и окачване" status="ok" info={report.data.suspensionStatus} desc={report.data.suspensionNotes} />
+              <SectionCard title="Интериор" icon={<Search size={20} className="text-emerald-600"/>}>
+                <CheckItem text="Салон и електроника" status="ok" info={report.data.interiorStatus} desc={report.data.interiorNotes} />
               </SectionCard>
             </div>
           </div>
 
-          {/* ДЯСНА КОЛОНА: ДИАГНОСТИКА И ЗАКЛЮЧЕНИЕ */}
           <div className="space-y-8">
-            
-            {/* OBD DIAGNOSTICS */}
-            <div className="bg-slate-900 text-white rounded-[3.5rem] p-10 shadow-2xl relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-8 opacity-10 rotate-12 group-hover:rotate-0 transition-transform duration-1000">
-                <Cpu size={120} />
-              </div>
-              <div className="relative z-10">
-                <h3 className="text-blue-400 font-black uppercase text-[10px] tracking-[0.3em] mb-8 flex items-center gap-2">
-                  <Cpu size={18} /> Компютърна Диагностика
-                </h3>
-                <div className={`text-sm font-black uppercase mb-4 px-4 py-2 rounded-xl inline-block ${report.data.ecuErrors ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
-                  {report.data.ecuErrors ? 'Открити грешки' : 'Няма активни грешки'}
-                </div>
-                <div className="bg-white/5 border border-white/10 p-6 rounded-2xl italic text-slate-300 text-sm leading-relaxed font-medium">
-                  {report.data.diagnostics || "Всички системи са сканирани успешно. Няма записани кодове за грешки в основните модули (Engine, Transmission, ABS, Airbag)."}
-                </div>
+            <div className="bg-white rounded-[3.5rem] p-10 shadow-xl border border-slate-100">
+              <h3 className="text-emerald-600 font-black uppercase text-[10px] tracking-[0.3em] mb-8 flex items-center gap-2">
+                <Cpu size={18} /> Диагностика
+              </h3>
+              <div className="bg-slate-50 border border-slate-100 p-6 rounded-2xl text-slate-600 text-sm font-medium">
+                {report.data.diagnostics}
               </div>
             </div>
 
-            {/* FINAL VERDICT CARD */}
-            <div className="bg-white rounded-[3.5rem] p-10 border border-slate-200 shadow-xl relative">
-              <div className="absolute -top-4 -right-4 bg-blue-600 text-white p-4 rounded-3xl shadow-lg rotate-12">
+            <div className="bg-white rounded-[3.5rem] p-10 border border-emerald-100 shadow-2xl shadow-emerald-100/50 relative">
+              <div className="absolute -top-4 -right-4 bg-emerald-600 text-white p-4 rounded-3xl shadow-lg rotate-12">
                 <ShieldCheck size={24} />
               </div>
-              <h3 className="text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] mb-8 flex items-center gap-2">
-                <Info size={16} /> Експертна присъда
-              </h3>
-              <p className="text-slate-900 font-black text-2xl leading-tight italic tracking-tighter mb-10">
+              <h3 className="text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] mb-8">Заключение</h3>
+              <p className="text-slate-900 font-black text-2xl leading-tight tracking-tighter mb-10">
                 "{report.data.finalVerdict}"
               </p>
-              
-              <div className="pt-10 border-t border-slate-100 flex items-center gap-5">
-                <div className="w-16 h-16 rounded-[1.5rem] bg-slate-900 flex items-center justify-center font-black text-2xl text-white shadow-xl">МФ</div>
-                <div>
-                  <div className="font-black text-xl text-slate-900 tracking-tighter leading-none">Мартин Филев</div>
-                  <div className="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">FileVerified Lead Inspector</div>
-                </div>
-              </div>
             </div>
 
-            {/* CALL TO ACTION */}
-            <a href="https://fileverified.eu" className="flex items-center justify-center w-full bg-slate-900 text-white py-8 rounded-[2.5rem] font-black text-xl transition-all hover:bg-blue-600 hover:scale-[1.02] shadow-2xl active:scale-95">
+            <a href="https://fileverified.eu" className="flex items-center justify-center w-full bg-slate-900 text-white py-8 rounded-[2.5rem] font-black text-xl transition-all hover:bg-emerald-600 hover:scale-[1.02] shadow-2xl active:scale-95 uppercase tracking-tighter">
               НОВА ИНСПЕКЦИЯ
             </a>
           </div>
         </div>
-
       </div>
     </main>
   )
 }
 
-// --- УНИКАЛНИ UI КОМПОНЕНТИ ЗА ПУБЛИЧНИЯ РЕПОРТ ---
-
-function StatCard({ icon, label, value, color = "text-blue-600" }: any) {
+function StatCard({ icon, label, value, color = "text-emerald-600" }: any) {
   return (
-    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center gap-4 hover:shadow-xl transition-all group">
-      <div className={`${color} bg-slate-50 p-3 rounded-2xl group-hover:scale-110 transition-transform`}>
+    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center gap-4 hover:shadow-xl transition-all">
+      <div className={`${color} bg-slate-50 p-3 rounded-2xl`}>
         {cloneElement(icon, { size: 20 })}
       </div>
       <div>
-        <div className="text-[9px] text-slate-400 uppercase font-black tracking-widest leading-none mb-1">{label}</div>
-        <div className="text-slate-900 font-black text-base md:text-lg leading-none tracking-tighter uppercase italic">{value || "---"}</div>
+        <div className="text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">{label}</div>
+        <div className="text-slate-900 font-black text-base uppercase">{value || "---"}</div>
       </div>
     </div>
   )
@@ -2427,12 +2298,12 @@ function StatCard({ icon, label, value, color = "text-blue-600" }: any) {
 
 function SectionCard({ title, icon, children }: any) {
   return (
-    <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+    <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-sm overflow-hidden">
       <div className="p-8 border-b border-slate-50 flex items-center gap-3 bg-slate-50/30">
         {icon}
         <span className="font-black uppercase text-[11px] tracking-[0.2em] text-slate-500">{title}</span>
       </div>
-      <div className="p-8 space-y-6 flex-1">{children}</div>
+      <div className="p-8 space-y-6">{children}</div>
     </div>
   )
 }
@@ -2442,12 +2313,12 @@ function CheckItem({ text, status, info, desc }: any) {
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <CheckCircle2 className="w-5 h-5 text-blue-500" />
+          <CheckCircle2 className="w-5 h-5 text-emerald-500" />
           <span className="text-slate-900 font-black text-sm tracking-tight">{text}</span>
         </div>
         {info && <span className="text-[9px] font-black bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded uppercase">{info}</span>}
       </div>
-      {desc && <p className="ml-8 text-[11px] text-slate-400 font-medium italic leading-relaxed">"{desc}"</p>}
+      {desc && <p className="ml-8 text-[11px] text-slate-400 font-medium leading-relaxed">"{desc}"</p>}
     </div>
   )
 }
@@ -2456,18 +2327,15 @@ function ExpandableCheckItem({ text, details, isOpenDefault = false }: any) {
   const [isOpen, setIsOpen] = useState(isOpenDefault);
   return (
     <div className="bg-slate-50 rounded-3xl border border-slate-100 overflow-hidden">
-      <div 
-        className="flex items-center justify-between p-5 cursor-pointer hover:bg-white transition-all"
-        onClick={() => setIsOpen(!isOpen)}
-      >
+      <div className="flex items-center justify-between p-5 cursor-pointer hover:bg-white transition-all" onClick={() => setIsOpen(!isOpen)}>
         <div className="flex items-center gap-3">
-          <Activity className="w-5 h-5 text-blue-500" />
+          <Activity className="w-5 h-5 text-emerald-500" />
           <span className="text-slate-900 font-black text-sm tracking-tight">{text}</span>
         </div>
         {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
       </div>
       {isOpen && (
-        <div className="p-6 pt-0 animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="p-6 pt-0 space-y-2">
           <div className="grid grid-cols-2 gap-3">
             {details.map((item: any, idx: number) => (
               <div key={idx} className="bg-white px-3 py-2 rounded-xl border border-slate-200/50 flex justify-between items-center">
@@ -2476,32 +2344,178 @@ function ExpandableCheckItem({ text, details, isOpenDefault = false }: any) {
               </div>
             ))}
           </div>
-          <div className="mt-4 p-3 bg-blue-100/30 rounded-xl text-[9px] text-blue-600 font-bold flex items-center gap-2">
-            <Info size={12} /> Фабрични стойности: 90 - 150 μm
-          </div>
         </div>
       )}
     </div>
   )
 }
-
-import { cloneElement } from "react";
 --- END OF FILE: src/app/report/[slug]/page.tsx ---
 
---- START OF FILE: src/app/robots.ts ---
-import { MetadataRoute } from 'next'
+--- START OF FILE: src/app/page.tsx ---
+import Link from "next/link"
 
-export default function robots(): MetadataRoute.Robots {
-  return {
-    rules: {
-      userAgent: '*',
-      allow: '/',
-      disallow: '/private/', 
-    },
-    sitemap: 'https://fileverified.eu/sitemap.xml',
-  }
+export default function HomePage() {
+  return (
+    <section className="space-y-20">
+      {/* HERO SECTION */}
+      <div className="grid gap-12 lg:grid-cols-2 lg:items-center px-6 pt-10">
+        <div className="space-y-6">
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 md:text-5xl">
+            Независима проверка на автомобил преди покупка.
+            <span className="block text-emerald-700">
+              Вижте реалното състояние, спестете си изненадите.
+            </span>
+          </h1>
+
+          <p className="text-lg text-slate-600 max-w-xl">
+            Купете следващия си автомобил с увереност. Ние проверяваме всичко вместо вас – от софтуерни грешки до дебелината на боята. Даваме ви обективната истина за всяка кола в София.
+          </p>
+
+          <div className="flex flex-wrap gap-4">
+            <Link
+              href="/book"
+              className="inline-flex items-center rounded-xl bg-emerald-600 px-6 py-3 font-semibold text-white hover:bg-emerald-700 transition transform hover:scale-105 active:scale-95 shadow-sm"
+            >
+              Запази оглед
+            </Link>
+
+            <Link
+              href="/services"
+              className="inline-flex items-center rounded-xl border px-6 py-3 font-semibold text-slate-900 hover:bg-slate-50 transition transform hover:scale-105 active:scale-95 shadow-sm"
+            >
+              Виж услугите
+            </Link>
+          </div>
+        </div>
+
+        <div className="relative">
+          <div className="aspect-[4/3] overflow-hidden rounded-3xl border shadow-sm">
+            <img
+              src="/images/hero-inspection.png"
+              alt="Професионален оглед на автомобил"
+              className="h-full w-full object-cover"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* TRUST CARDS */}
+      <div className="grid gap-6 md:grid-cols-3 px-6">
+        <TrustCard
+          title="Независим оглед"
+          text="Ние не сме автокъща и не продаваме коли. Нашата цел е да ви дадем 100% обективна и честна оценка за състоянието на избрания от вас автомобил."
+        />
+        <TrustCard
+          title="Реални факти"
+          text="Използваме професионални дебеломери за боя и диагностични уреди. Откриваме пребоядисвани детайли, активни грешки и следи от тежки ремонти."
+        />
+        <TrustCard
+          title="Ясна препоръка"
+          text="В края на огледа получавате детайлен отчет. Ще разберете дали колата си заслужава инвестицията или е по-добре да продължите търсенето."
+        />
+      </div>
+
+      {/* HOW IT WORKS */}
+      <div className="space-y-10 px-6">
+        <h2 className="text-3xl font-bold text-slate-900">
+          Как протича огледът
+        </h2>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          <StepCard
+            step="1"
+            title="Заявка"
+            text="Избираш пакет, дата и час и описваш автомобила."
+          />
+          <StepCard
+            step="2"
+            title="Оглед на място"
+            text="Проверка на реалното състояние — визуално, технически и с диагностика."
+          />
+          <StepCard
+            step="3"
+            title="Обобщение"
+            text="Получаваш ясна оценка и аргументирана препоръка."
+          />
+        </div>
+      </div>
+
+      {/* CTA SECTION */}
+      <div className="mx-6 rounded-3xl border bg-emerald-50 p-10 text-center space-y-6">
+        <h2 className="text-3xl font-bold text-slate-900">
+          Готов ли си да провериш автомобила?
+        </h2>
+        <p className="text-slate-700 max-w-2xl mx-auto">
+          Един професионален оглед може да ти спести хиляди левове и много
+          главоболия.
+        </p>
+        <div>
+          <Link
+            href="/book"
+            className="inline-flex items-center rounded-xl bg-emerald-600 px-8 py-4 font-semibold text-white hover:bg-emerald-700 transition transform hover:scale-105 active:scale-95 shadow-md"
+          >
+            Запази оглед
+          </Link>
+        </div>
+      </div>
+    </section>
+  )
 }
---- END OF FILE: src/app/robots.ts ---
+
+function TrustCard({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-2xl border border-black bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+      <div className="text-lg font-bold text-[#059669]">{title}</div>
+      <p className="mt-2 text-slate-600">{text}</p>
+    </div>
+  )
+}
+
+function StepCard({ step, title, text }: { step: string; title: string; text: string }) {
+  return (
+    <div className="rounded-2xl border bg-white p-6 shadow-sm space-y-3 transition-all hover:border-emerald-200">
+      <div className="flex items-center gap-3">
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-600 text-white font-bold">
+          {step}
+        </div>
+        <div className="text-lg font-semibold text-slate-900">{title}</div>
+      </div>
+      <p className="text-slate-600">{text}</p>
+    </div>
+  )
+}
+--- END OF FILE: src/app/page.tsx ---
+
+--- START OF FILE: src/app/globals.css ---
+@import "tailwindcss";
+
+/* ДОБАВИ ТЕЗИ ДВА РЕДА ТУК */
+@import "yet-another-react-lightbox/styles.css";
+@import "yet-another-react-lightbox/plugins/thumbnails.css";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a; /* slate-900 */
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Твоят съществуващ оувъррайд */
+html,
+body {
+  background: #f8fafc !important; /* slate-50 */
+}
+--- END OF FILE: src/app/globals.css ---
 
 --- START OF FILE: src/app/tpms/page.tsx ---
 import type { Metadata } from "next"
@@ -2616,67 +2630,6 @@ export default function TPMSPage() {
   )
 }
 --- END OF FILE: src/app/tpms/page.tsx ---
-
---- START OF FILE: src/app/terms/page.tsx ---
-import type { Metadata } from "next"
-import { Scale } from "lucide-react"
-import ContactForm from "@/components/ContactForm"
-
-export const metadata: Metadata = {
-  title: "Общи условия | FileVerified",
-  description: "Общи условия за ползване на услугите на FileVerified - независима проверка на автомобили.",
-}
-
-export default function TermsPage() {
-  return (
-    <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-4xl px-6 py-16">
-        <div className="flex items-center gap-3 mb-8 text-emerald-600 border-b pb-6">
-          <Scale className="w-8 h-8" />
-          <h1 className="text-3xl font-bold text-slate-900">Общи условия</h1>
-        </div>
-
-        <div className="space-y-12 text-slate-600 leading-relaxed">
-          <div className="space-y-8">
-            <section>
-              <h2 className="text-xl font-bold text-slate-900 mb-4">1. Предмет</h2>
-              <p>
-                Настоящите Общи условия уреждат отношенията между Мартин Филев, наричан по-долу „Изпълнител“, 
-                и потребителите на услугите, предлагани чрез уебсайта <strong>fileverified.eu</strong>.
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-bold text-slate-900 mb-4">2. Описание на услугите</h2>
-              <p>Изпълнителят предоставя независима експертна оценка на техническото състояние на употребявани автомобили, включваща диагностика, оглед и тест-драйв.</p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-bold text-slate-900 mb-4">3. Резервации</h2>
-              <p>
-                Заявка за оглед се счита за потвърдена само след личен контакт по телефон или писмено потвърждение от наша страна.
-              </p>
-            </section>
-          </div>
-
-          {/* КОНТАКТНА ФОРМА */}
-          <div className="mt-20 pt-12 border-t">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-slate-900">Имате въпроси?</h2>
-              <p className="text-slate-500">Ако не намирате отговор в общите ни условия, пишете ни директно.</p>
-            </div>
-            <ContactForm />
-          </div>
-
-          <div className="pt-8 text-sm text-slate-400">
-            Последна актуализация: {new Date().toLocaleDateString('bg-BG')}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
---- END OF FILE: src/app/terms/page.tsx ---
 
 --- START OF FILE: src/app/services/page.tsx ---
 const PACKAGES = [
@@ -2816,414 +2769,343 @@ export default function ServicesPage() {
 }
 --- END OF FILE: src/app/services/page.tsx ---
 
---- START OF FILE: src/app/layout_backup.tsx ---
+--- START OF FILE: src/components/MobileNav.tsx ---
+"use client"
 
---- END OF FILE: src/app/layout_backup.tsx ---
-
---- START OF FILE: src/app/layout.tsx ---
-import type { Metadata } from "next"
+import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import Link from "next/link"
-import Image from "next/image"
-import Script from "next/script"
-import { Facebook, Phone, MessageCircle, FileText, ShieldCheck, Mail, MapPin } from "lucide-react"
-import "./globals.css"
-import MobileNav from "@/components/MobileNav"
+import { usePathname } from "next/navigation"
+import { Menu, X } from "lucide-react"
 
-export const metadata: Metadata = {
-  title: "Проверка на автомобил преди покупка в София | FileVerified",
-  description:
-    "Независима професионална проверка на автомобил преди покупка. Компютърна диагностика, оглед на купе и тест драйв. Спестете си излишни разходи!",
-  keywords: ["проверка на кола", "оглед на автомобил София", "диагностика на кола", "автоексперт", "реални километри", "преглед преди покупка"],
-  metadataBase: new URL("https://fileverified.eu"),
-  alternates: {
-    canonical: "/",
-  },
-  icons: {
-    icon: [
-      { url: "/favicon.ico" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
-    ],
-    apple: [
-      { url: "/apple-touch-icon.png" },
-    ],
-  },
-  manifest: "/site.webmanifest",
-  openGraph: {
-    title: "FileVerified - Независим оглед на автомобили",
-    description: "Вижте реалното състояние на автомобила, преди да платите. Професионална диагностика в София.",
-    url: "https://fileverified.eu",
-    siteName: "FileVerified",
-    images: [
-      {
-        url: "/og-image.jpg", // Увери се, че имаш такова изображение в /public
-        width: 1200,
-        height: 630,
-        alt: "FileVerified Car Inspection",
-      },
-    ],
-    locale: "bg_BG",
-    type: "website",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "FileVerified - Проверка на автомобили",
-    description: "Независима проверка на кола преди покупка в София.",
-  },
-}
+export default function MobileNav() {
+  const [isOpen, setIsOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const pathname = usePathname()
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  const fbLink = "https://www.facebook.com/profile.php?id=61585477671669"
-  const whatsappLink = "https://wa.me/359888570037"
-  const viberLink = "viber://chat?number=%2B359888570037"
+  // Проверка дали сме в браузъра (клиентска част)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
-  return (
-    <html lang="bg" className="scroll-smooth">
-      <head>
-        <Script 
-          async 
-          src="https://www.googletagmanager.com/gtag/js?id=G-JTLYG6PTXR" 
-          strategy="afterInteractive"
-        />
-        <Script id="google-analytics" strategy="afterInteractive">
-          {`
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-JTLYG6PTXR');
-          `}
-        </Script>
-      </head>
-      <body className="bg-slate-50 text-slate-900 antialiased flex flex-col min-h-screen">
-        {/* HEADER */}
-        <header className="sticky top-0 z-50 border-b bg-white/95 backdrop-blur-sm">
-          <div className="mx-auto max-w-7xl px-6">
-            <div className="flex h-16 items-center justify-between gap-4">
-              <Link href="/" className="flex items-center transition-opacity hover:opacity-90">
-                <Image 
-                  src="/logo-green.png" 
-                  alt="FileVerified Logo" 
-                  width={180} 
-                  height={40} 
-                  className="h-8 w-auto"
-                  priority
-                />
-              </Link>
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'unset'
+    }
+  }, [isOpen])
 
-              <nav className="hidden items-center gap-6 md:flex">
-                <Link href="/" className="text-sm font-medium text-slate-700 hover:text-emerald-600 transition-colors">Начало</Link>
-                <Link href="/services" className="text-sm font-medium text-slate-700 hover:text-emerald-600 transition-colors">Проверка</Link>
-                <Link href="/diagnostics" className="text-sm font-medium text-slate-700 hover:text-emerald-600 transition-colors">Диагностика</Link>
-                <Link href="/tpms" className="text-sm font-medium text-slate-700 hover:text-emerald-600 transition-colors">TPMS</Link>
-                
-                <Link href="/report" className="flex items-center gap-1.5 text-sm font-bold text-emerald-600 hover:bg-emerald-100 bg-emerald-50 px-3 py-1.5 rounded-lg transition-all">
-                  <FileText className="w-4 h-4" /> Примерен доклад
-                </Link>
+  useEffect(() => {
+    setIsOpen(false)
+  }, [pathname])
 
-                <Link href="/faq" className="text-sm font-medium text-slate-700 hover:text-emerald-600 transition-colors">FAQ</Link>
-
-                <a href={fbLink} target="_blank" rel="noopener noreferrer" aria-label="Facebook Page" className="ml-2 text-slate-400 hover:text-[#1877F2] transition-colors">
-                  <Facebook className="h-5 w-5 fill-current" />
-                </a>
-
-                <Link href="/book" className="inline-flex items-center rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700 transition shadow-md shadow-emerald-100 active:scale-95">
-                  Запази оглед
-                </Link>
-              </nav>
-
-              <MobileNav />
-            </div>
-          </div>
-        </header>
-
-        {/* ANNOUNCEMENT BANNER */}
-        <div className="border-b border-amber-200 bg-amber-50/50">
-          <div className="mx-auto max-w-7xl px-6 py-2 text-xs md:text-sm text-amber-800 flex items-center justify-center gap-2">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-            </span>
-            Сайтът е в процес на разработка. Очаквайте скоро пълната функционалност!
-          </div>
+  const menuContent = (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 99999,
+        display: isOpen ? 'block' : 'none',
+      }}
+    >
+      {/* Плътен фон за застраховка */}
+      <div 
+        className="absolute inset-0 bg-white"
+        style={{ opacity: 0.95, backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)' }}
+      />
+      
+      <div className="relative flex flex-col h-full w-full shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 h-20 border-b border-slate-100">
+          <span className="font-bold text-lg text-slate-900">МЕНЮ</span>
+          <button onClick={() => setIsOpen(false)} className="p-2 bg-slate-100 rounded-full">
+            <X className="h-6 w-6 text-slate-900" />
+          </button>
         </div>
 
-        {/* MAIN CONTENT */}
-        <main className="flex-grow mx-auto w-full max-w-7xl px-6 py-10">
-          {children}
-        </main>
-
-        {/* FOOTER */}
-        <footer className="border-t bg-white">
-          <div className="mx-auto max-w-7xl px-6 py-12">
-            <div className="grid gap-12 md:grid-cols-4">
-              <div className="md:col-span-1 space-y-6">
-                <Link href="/" className="inline-flex items-center">
-                  <Image src="/logo-green.png" alt="FileVerified" width={160} height={36} className="h-8 w-auto" />
-                </Link>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Професионална помощ при избор на употребяван автомобил. <br />
-                  Вашата сигурност е наш приоритет.
-                </p>
-                <div className="flex items-center gap-4">
-                  <a href={fbLink} target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="text-slate-400 hover:text-[#1877F2] transition-all transform hover:scale-110"><Facebook className="h-6 w-6 fill-current" /></a>
-                  <a href={whatsappLink} target="_blank" rel="noopener noreferrer" aria-label="WhatsApp" className="text-slate-400 hover:text-[#25D366] transition-all transform hover:scale-110"><MessageCircle className="h-6 w-6 fill-current" /></a>
-                  <a href={viberLink} aria-label="Viber" className="text-slate-400 hover:text-[#7360F2] transition-all transform hover:scale-110"><Phone className="h-6 w-6" /></a>
-                </div>
-              </div>
-
-              <div>
-                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-[0.2em] mb-6">Услуги</h3>
-                <ul className="space-y-3 text-sm">
-                  <li><Link href="/services" className="text-slate-600 hover:text-emerald-600 transition-colors">Оглед на място</Link></li>
-                  <li><Link href="/diagnostics" className="text-slate-600 hover:text-emerald-600 transition-colors">Компютърна диагностика</Link></li>
-                  <li><Link href="/tpms" className="text-slate-600 hover:text-emerald-600 transition-colors">Проверка на TPMS</Link></li>
-                  <li><Link href="/report" className="text-emerald-600 font-bold hover:underline">Примерен доклад</Link></li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-[0.2em] mb-6">Полезно</h3>
-                <ul className="space-y-3 text-sm">
-                  <li><Link href="/faq" className="text-slate-600 hover:text-emerald-600 transition-colors">Често задавани въпроси</Link></li>
-                  <li><Link href="/terms" className="text-slate-600 hover:text-emerald-600 transition-colors text-xs">Общи условия</Link></li>
-                  <li><Link href="/privacy" className="text-slate-600 hover:text-emerald-600 transition-colors text-xs">Поверителност</Link></li>
-                </ul>
-              </div>
-
-              <div>
-                <h3 className="font-bold text-slate-900 text-xs uppercase tracking-[0.2em] mb-6">Контакт</h3>
-                <ul className="space-y-4 text-sm">
-                  <li className="flex items-start gap-3 text-slate-600">
-                    <MapPin className="w-5 h-5 text-emerald-600 shrink-0" />
-                    <span>гр. София и околността</span>
-                  </li>
-                  <li>
-                    <a href="tel:0888570037" className="flex items-center gap-3 hover:text-emerald-600 transition-colors font-bold text-slate-900 group">
-                      <Phone className="w-5 h-5 text-emerald-600 group-hover:animate-bounce" />
-                      0888 57 00 37
-                    </a>
-                  </li>
-                  <li>
-                    <a href="mailto:info@fileverified.eu" className="flex items-center gap-3 hover:text-emerald-600 transition-colors text-slate-600">
-                      <Mail className="w-5 h-5 text-emerald-600" />
-                      info@fileverified.eu
-                    </a>
-                  </li>
-                </ul>
-              </div>
-            </div>
-
-            <div className="mt-12 border-t pt-8 flex flex-col md:flex-row justify-between items-center gap-6">
-              <p className="text-[10px] text-slate-400 uppercase tracking-widest">
-                © {new Date().getFullYear()} FileVerified.eu. Всички права запазени.
-              </p>
-              <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 rounded-full border border-slate-100">
-                <ShieldCheck className="w-4 h-4 text-emerald-600" />
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">
-                  Independent Car Inspection
-                </span>
-              </div>
-            </div>
-          </div>
-        </footer>
-      </body>
-    </html>
-  )
-}
---- END OF FILE: src/app/layout.tsx ---
-
---- START OF FILE: src/app/diagnostics/page.tsx ---
-import Link from "next/link"
-
-export const metadata = {
-  title: "Компютърна диагностика | FileVerified",
-  description:
-    "Пълна компютърна диагностика на автомобил — четене на грешки, live data, тестове и ясно обяснение. София.",
-}
-
-export default function DiagnosticsPage() {
-  return (
-    <section className="space-y-10">
-      {/* Hero */}
-      <div className="rounded-3xl border bg-white p-8 shadow-sm">
-        <div className="space-y-3">
-          <div className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-            Диагностика • OBD • Модули
-          </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-slate-900">
-            Пълна компютърна диагностика
-          </h1>
-          <p className="text-slate-600 text-lg max-w-3xl">
-            Четем грешки от управляващите модули, проверяваме live данни и
-            статуса на системите. Най-важното: получаваш ясно обяснение кое е
-            реален проблем, кое е „старо“ и кое е симптом.
-          </p>
-
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        {/* Links */}
+        <nav className="flex flex-col p-8 gap-1 overflow-y-auto">
+          {[
+            { name: "НАЧАЛО", href: "/" },
+            { name: "ПРОВЕРКА", href: "/services" },
+            { name: "ДИАГНОСТИКА", href: "/diagnostics" },
+            { name: "TPMS", href: "/tpms" },
+            { name: "КОНТАКТИ", href: "/contact" },
+            { name: "FAQ", href: "/faq" },
+          ].map((item) => (
             <Link
-              href="/book"
-              className="inline-flex items-center justify-center rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white hover:bg-emerald-700 transition"
+              key={item.href}
+              href={item.href}
+              className={`py-4 text-xl font-bold border-b border-slate-50 ${
+                pathname === item.href ? "text-emerald-600" : "text-slate-900"
+              }`}
             >
-              Запази оглед
+              {item.name}
             </Link>
-            <div className="text-sm text-slate-500">
-              Онлайн запазването е временно ограничено — потвърждението е по
-              телефон.
+          ))}
+          
+          <div className="mt-8 flex flex-col gap-4">
+            <Link 
+              href="/book" 
+              className="w-full text-center rounded-xl bg-emerald-600 py-5 text-lg font-black text-white shadow-lg"
+            >
+              ЗАПАЗИ ОГЛЕД
+            </Link>
+
+            <div className="grid grid-cols-2 gap-3">
+                <Link 
+                    href="/portal" 
+                    className="w-full text-center rounded-xl bg-slate-100 py-4 text-xs font-black text-slate-900 uppercase tracking-widest"
+                >
+                    ПОРТАЛ
+                </Link>
+                <Link 
+                    href="/admin" 
+                    className="w-full text-center rounded-xl bg-slate-900 py-4 text-xs font-black text-white uppercase tracking-widest"
+                >
+                    АДМИН
+                </Link>
             </div>
           </div>
+        </nav>
+      </div>
+    </div>
+  )
+
+  return (
+    <div className="md:hidden">
+      <button onClick={() => setIsOpen(true)} className="p-2 text-slate-900">
+        <Menu className="h-6 w-6" />
+      </button>
+
+      {/* Рендираме менюто директно в body, за да не се влияе от хедъра */}
+      {mounted && createPortal(menuContent, document.body)}
+    </div>
+  )
+}
+--- END OF FILE: src/components/MobileNav.tsx ---
+
+--- START OF FILE: src/components/GallerySection.tsx ---
+"use client";
+
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import Lightbox from "yet-another-react-lightbox";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import "yet-another-react-lightbox/styles.css";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+import { Maximize2, ImageIcon } from 'lucide-react';
+
+interface GalleryProps {
+  images?: string[];
+}
+
+export default function GallerySection({ images = [] }: GalleryProps) {
+  const [index, setIndex] = useState(-1);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || images.length === 0) return null;
+
+  const visibleImages = images.slice(0, 5);
+  const remainingCount = images.length - 5;
+
+  return (
+    <div className="w-full bg-white p-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {visibleImages.map((src, i) => {
+          const isLastVisible = i === 4 && remainingCount > 0;
+
+          return (
+            <div 
+              key={i}
+              className="relative aspect-[4/3] cursor-pointer group overflow-hidden rounded-xl bg-gray-100 border border-slate-200 shadow-sm"
+              onClick={() => setIndex(i)}
+            >
+              <Image
+                src={src}
+                alt={`Инспекция детайл ${i + 1}`}
+                fill
+                unoptimized // ДОБАВЕНО: за да работят снимките през API-то
+                className={`object-cover transition duration-300 group-hover:scale-110 ${isLastVisible ? 'blur-[2px] brightness-50' : ''}`}
+                sizes="(max-w-768px) 50vw, 20vw"
+              />
+              
+              {!isLastVisible && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/30">
+                  <Maximize2 className="text-white w-6 h-6" />
+                </div>
+              )}
+
+              {isLastVisible && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-white bg-black/40 group-hover:bg-black/20 transition-colors">
+                  <span className="text-2xl font-black">+{remainingCount}</span>
+                  <span className="text-[10px] uppercase font-bold tracking-widest">снимки</span>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {remainingCount > 0 && (
+        <div className="mt-4 flex justify-center">
+          <button 
+            onClick={() => setIndex(0)}
+            className="flex items-center gap-2 px-6 py-2 border-2 border-slate-200 rounded-xl text-slate-600 font-bold hover:bg-slate-50 hover:border-slate-300 transition-all text-sm uppercase tracking-tighter"
+          >
+            <ImageIcon className="w-4 h-4" />
+            ВИЖ ВСИЧКИ {images.length} СНИМКИ
+          </button>
         </div>
+      )}
+
+      <Lightbox
+        index={index}
+        open={index >= 0}
+        close={() => setIndex(-1)}
+        slides={images.map(src => ({ src }))}
+        plugins={[Zoom, Thumbnails]}
+      />
+    </div>
+  );
+}
+--- END OF FILE: src/components/GallerySection.tsx ---
+
+--- START OF FILE: src/components/ContactForm.tsx ---
+"use client"
+
+import { useState } from "react"
+import { Send, CheckCircle2, Loader2, AlertCircle } from "lucide-react"
+
+export default function ContactForm() {
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    setStatus("loading")
+
+    const formData = new FormData(e.currentTarget)
+    const data = {
+      name: formData.get("name"),
+      phone: formData.get("phone"),
+      message: formData.get("message"),
+    }
+
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      })
+
+      if (response.ok) {
+        setStatus("success")
+      } else {
+        setStatus("error")
+      }
+    } catch (error) {
+      console.error("Form submission error:", error)
+      setStatus("error")
+    }
+  }
+
+  if (status === "success") {
+    return (
+      <div className="bg-emerald-50 border border-emerald-100 p-8 rounded-2xl text-center animate-in fade-in zoom-in duration-300">
+        <div className="flex justify-center mb-4 text-emerald-600">
+          <CheckCircle2 className="w-12 h-12" />
+        </div>
+        <h3 className="text-xl font-bold text-slate-900 mb-2">Запитването е изпратено!</h3>
+        <p className="text-slate-600">Благодарим Ви, ще се свържем с Вас съвсем скоро.</p>
+        <button 
+          onClick={() => setStatus("idle")}
+          className="mt-6 text-emerald-600 font-semibold hover:text-emerald-700 transition-colors"
+        >
+          Изпрати ново съобщение
+        </button>
       </div>
+    )
+  }
 
-      {/* What you get */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card title="Какво проверяваме">
-          ECU (двигател), трансмисия, ABS/ESP, airbag, климатроник, комфорт,
-          body/BCM, табло, TPMS (ако има), както и други модули според
-          автомобила.
-        </Card>
-
-        <Card title="Какво получаваш">
-          Списък на грешките, статус (активна/историческа), ключови live данни и
-          насоки за следващи стъпки: ремонт, тест, или наблюдение.
-        </Card>
-
-        <Card title="Защо е важно">
-          Много „светнали лампи“ са симптом. Диагностиката помага да не сменяш
-          части на сляпо и да разбереш реалната причина.
-        </Card>
-      </div>
-
-      {/* Included */}
-      <div className="rounded-3xl border bg-white p-8 shadow-sm space-y-6">
-        <h2 className="text-2xl font-bold text-slate-900">
-          Какво включва услугата
-        </h2>
-
+  return (
+    <div className="bg-slate-50 border border-slate-100 p-8 rounded-2xl">
+      <h3 className="text-xl font-bold text-slate-900 mb-6">Бързо запитване</h3>
+      
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid gap-4 md:grid-cols-2">
-          <Bullet
-            title="Сканиране на модули"
-            text="Четене на грешки от наличните системи според оборудването."
-          />
-          <Bullet
-            title="Live data"
-            text="Проверка на ключови параметри в реално време (температури, сензори, налягания и др.)."
-          />
-          <Bullet
-            title="Статус и логика"
-            text="Разграничаваме активни от исторически грешки и търсим причинно-следствени връзки."
-          />
-          <Bullet
-            title="Изчистване (при смисъл)"
-            text="Изчистваме само когато има логика (след тест/проверка), не „за да изгасне лампата“."
-          />
-        </div>
-
-        <div className="rounded-2xl bg-amber-50 p-5 text-sm text-amber-900">
-          <div className="font-semibold">Важно</div>
-          <div className="mt-1 text-amber-900/80">
-            Диагностиката не е „магия“ — при някои проблеми се изискват
-            допълнителни тестове (механични проверки, дим тест, измервания и
-            т.н.). Целта е да стесним причината и да избегнем излишни ремонти.
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Вашето Име</label>
+            <input 
+              name="name"
+              required 
+              type="text" 
+              placeholder="Име и фамилия"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all bg-white"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Телефон</label>
+            <input 
+              name="phone"
+              required 
+              type="tel" 
+              placeholder="0888 000 000"
+              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all bg-white"
+            />
           </div>
         </div>
-      </div>
+        
+        <div className="space-y-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Какво Ви интересува?</label>
+          <textarea 
+            name="message"
+            required
+            rows={4}
+            placeholder="Опишете накратко как можем да Ви помогнем..."
+            className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all resize-none bg-white"
+          ></textarea>
+        </div>
 
-      {/* When */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card title="Кога има смисъл">
-          Светнала лампа, придърпване, загуба на мощност, повишен разход,
-          неправилно превключване, проблеми с ABS/ESP, грешки след ремонт.
-        </Card>
-        <Card title="При покупка">
-          Супер полезно е като част от проверка преди покупка — виждаме какво
-          е пипано/изчиствано и дали има активни проблеми.
-        </Card>
-        <Card title="След обслужване">
-          Ако е правен ремонт/обслужване — диагностиката потвърждава дали
-          всичко е наред и няма остатъчни грешки.
-        </Card>
-      </div>
-    </section>
-  )
-}
+        <button 
+          disabled={status === "loading"}
+          type="submit"
+          className="w-full flex items-center justify-center gap-2 bg-emerald-600 text-white font-bold py-4 rounded-xl hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-200 active:scale-[0.98] disabled:opacity-70"
+        >
+          {status === "loading" ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <Send className="w-4 h-4" />
+          )}
+          {status === "loading" ? "Изпращане..." : "Изпрати запитване"}
+        </button>
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="rounded-3xl border bg-white p-6 shadow-sm">
-      <div className="text-lg font-bold text-slate-900">{title}</div>
-      <div className="mt-2 text-sm leading-6 text-slate-600">{children}</div>
+        {status === "error" && (
+          <div className="flex items-center gap-2 text-red-600 text-sm justify-center mt-2">
+            <AlertCircle className="w-4 h-4" />
+            Грешка при изпращането. Моля, проверете връзката си.
+          </div>
+        )}
+      </form>
     </div>
   )
 }
+--- END OF FILE: src/components/ContactForm.tsx ---
 
-function Bullet({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="rounded-2xl border bg-white p-5">
-      <div className="font-semibold text-slate-900">{title}</div>
-      <div className="mt-1 text-sm text-slate-600">{text}</div>
-    </div>
-  )
-}
---- END OF FILE: src/app/diagnostics/page.tsx ---
+--- START OF FILE: src/lib/prisma.ts ---
+import { PrismaClient } from '@prisma/client';
 
---- START OF FILE: src/app/privacy/page.tsx ---
-import type { Metadata } from "next"
-import { Lock, ShieldCheck } from "lucide-react"
-import ContactForm from "@/components/ContactForm"
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
-export const metadata: Metadata = {
-  title: "Поверителност | FileVerified",
-  description: "Политика за поверителност и защита на личните данни на FileVerified.",
-}
+export const prisma = globalForPrisma.prisma || new PrismaClient();
 
-export default function PrivacyPage() {
-  return (
-    <div className="min-h-screen bg-white">
-      <div className="mx-auto max-w-4xl px-6 py-16">
-        <div className="flex items-center gap-3 mb-8 text-emerald-600 border-b pb-6">
-          <Lock className="w-8 h-8" />
-          <h1 className="text-3xl font-bold text-slate-900">Политика за поверителност</h1>
-        </div>
-
-        <div className="space-y-12 text-slate-600 leading-relaxed">
-          <div className="space-y-8">
-            <section>
-              <h2 className="text-xl font-bold text-slate-900 mb-4">1. Лични данни</h2>
-              <p>Събираме Вашите имена, телефон и имейл единствено с цел изпълнение на услугата по оглед на автомобил.</p>
-            </section>
-
-            <section>
-              <h2 className="text-xl font-bold text-slate-900 mb-4">2. Бисквитки</h2>
-              <p>Използваме Google Analytics, за да подобряваме работата на сайта. Данните са анонимни.</p>
-            </section>
-
-            <section className="bg-emerald-50 p-6 rounded-xl border border-emerald-100 flex items-start gap-4 text-emerald-800">
-              <ShieldCheck className="w-6 h-6 shrink-0 mt-1" />
-              <p className="text-sm font-medium">Никога не споделяме данните Ви с трети лица (автокъщи, продавачи) без Вашето изрично съгласие.</p>
-            </section>
-          </div>
-
-          {/* КОНТАКТНА ФОРМА */}
-          <div className="mt-20 pt-12 border-t">
-            <div className="mb-8">
-              <h2 className="text-2xl font-bold text-slate-900">Вашите права</h2>
-              <p className="text-slate-500">По всяко време можете да поискате изтриване на Вашите данни от нашата база чрез формата по-долу.</p>
-            </div>
-            <ContactForm />
-          </div>
-
-          <div className="pt-8 text-sm text-slate-400">
-            Последна актуализация: {new Date().toLocaleDateString('bg-BG')}
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
---- END OF FILE: src/app/privacy/page.tsx ---
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
+--- END OF FILE: src/lib/prisma.ts ---
 
 --- START OF FILE: src/lib/bookings.ts ---
 import { prisma } from "./prisma";
@@ -3264,16 +3146,6 @@ export async function updateBookingStatus(id: string, status: BookingStatus) {
   });
 }
 --- END OF FILE: src/lib/bookings.ts ---
-
---- START OF FILE: src/lib/prisma.ts ---
-import { PrismaClient } from '@prisma/client';
-
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
-
-export const prisma = globalForPrisma.prisma || new PrismaClient();
-
-if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
---- END OF FILE: src/lib/prisma.ts ---
 
 --- START OF FILE: prisma/schema.prisma ---
 generator client {
@@ -3339,46 +3211,6 @@ const nextConfig: NextConfig = {
 
 export default nextConfig;
 --- END OF CONFIG: next.config.ts ---
-
---- START OF CONFIG: compose.yml ---
-services:
-  db:
-    image: postgres:16-alpine
-    container_name: fileverified-db
-    restart: always
-    environment:
-      POSTGRES_USER: fileverified
-      POSTGRES_PASSWORD: strongpassword123
-      POSTGRES_DB: fileverified
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U fileverified -d fileverified"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  web:
-    build: .
-    container_name: fileverified-web
-    restart: always
-    ports:
-      - "80:3000"
-    environment:
-      DATABASE_URL: "postgresql://fileverified:strongpassword123@db:5432/fileverified?schema=public"
-      NEXTAUTH_URL: "https://fileverified.eu"
-      RESEND_API_KEY: "re_8YkvujP5_7Az6LJzp19eLPvcP3Jx7cdjL"
-      ADMIN_PASSWORD: "Brumb@r1303"
-      NODE_ENV: "production"
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./public/uploads:/app/public/uploads
-
-volumes:
-  postgres_data:
---- END OF CONFIG: compose.yml ---
 
 --- START OF CONFIG: Dockerfile ---
 FROM node:22-slim AS builder
