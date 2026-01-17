@@ -1,5 +1,348 @@
-FILEVERIFIED PROJECT SNAPSHOT - Sat Jan 17 11:58:08 EET 2026
+FILEVERIFIED PROJECT SNAPSHOT - Sat Jan 17 21:53:49 EET 2026
 ========================================
+
+--- START OF FILE: compose.local.yml ---
+services:
+  db-local:
+    image: postgres:16-alpine
+    container_name: fileverified-db-local
+    restart: always
+    environment:
+      POSTGRES_USER: fileverified_dev
+      POSTGRES_PASSWORD: local_password_123
+      POSTGRES_DB: fileverified_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_local_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fileverified_dev -d fileverified_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web-local:
+    build: 
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: fileverified-web-local
+    restart: always
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: "postgresql://fileverified_dev:local_password_123@db-local:5432/fileverified_dev?schema=public"
+      RESEND_API_KEY: "re_8YkvujP5_7Az6LJzp19eLPvcP3Jx7cdjL"
+      ADMIN_PASSWORD: "Brumb@r1303"
+      NODE_ENV: "development"
+    depends_on:
+      db-local:
+        condition: service_healthy
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - ./public/uploads:/app/public/uploads
+
+volumes:
+  postgres_local_data:
+--- END OF FILE: compose.local.yml ---
+
+--- START OF FILE: Dockerfile ---
+FROM node:22-slim AS builder
+WORKDIR /app
+
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
+
+COPY package.json ./
+RUN npm install
+
+COPY prisma ./prisma/
+COPY . .
+
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build
+
+FROM node:22-slim AS runner
+WORKDIR /app
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
+
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
+COPY --from=builder /app/prisma ./prisma
+
+# СЪЗДАВАНЕ НА ПАПКАТА И ПРАВА ЗА ЗАПИС НА СЪРВЪРА
+RUN mkdir -p public/uploads && chmod -R 777 public/uploads
+
+EXPOSE 3000
+ENV PORT=3000
+ENV HOSTNAME="0.0.0.0"
+
+CMD ["node", "server.js"]
+--- END OF FILE: Dockerfile ---
+
+--- START OF FILE: prisma/schema.prisma ---
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Report {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  carModel       String
+  clientName     String
+  inspectionDate DateTime @default(now())
+  jsonData       String   @db.Text
+  isPublished    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([slug])
+}
+
+model Booking {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  status    String   @default("new")
+  pkgName   String
+  date      String
+  time      String
+  fullName  String
+  phone     String
+  email     String?
+  makeModel String
+  year      String?
+  vin       String?
+  notes     String?
+}
+--- END OF FILE: prisma/schema.prisma ---
+
+--- START OF FILE: snapshot.sh ---
+#!/bin/bash
+# snapshot.sh - Генерира пълен текстов контекст за AI (Gemini)
+
+OUTPUT="project_snapshot.txt"
+
+echo "FILEVERIFIED PROJECT SNAPSHOT - $(date)" > $OUTPUT
+echo "========================================" >> $OUTPUT
+
+# Дефинираме папките и файловите разширения, които ни интересуват
+# Изключваме node_modules, .next, .git и други системни папки
+find src prisma -type f \( -name "*.tsx" -o -name "*.ts" -o -name "*.prisma" -o -name "*.css" \) \
+    ! -path "*/node_modules/*" \
+    ! -path "*/.next/*" \
+    ! -path "*/.git/*" | while read -r f; do
+    echo "" >> $OUTPUT
+    echo "--- START OF FILE: $f ---" >> $OUTPUT
+    cat "$f" >> $OUTPUT
+    echo "" >> $OUTPUT
+    echo "--- END OF FILE: $f ---" >> $OUTPUT
+done
+
+# Добавяме и основните конфигурационни файлове от корена
+CONFIG_FILES=("next.config.ts" "compose.yml" "Dockerfile" "package.json" "tailwind.config.ts" "prisma/schema.prisma")
+
+for cfg in "${CONFIG_FILES[@]}"; do
+    if [ -f "$cfg" ]; then
+        echo "" >> $OUTPUT
+        echo "--- START OF CONFIG: $cfg ---" >> $OUTPUT
+        cat "$cfg" >> $OUTPUT
+        echo "" >> $OUTPUT
+        echo "--- END OF CONFIG: $cfg ---" >> $OUTPUT
+    fi
+done
+
+echo "✅ Snapshot е генериран успешно в $OUTPUT"
+--- END OF FILE: snapshot.sh ---
+
+--- START OF FILE: push.sh ---
+#!/bin/bash
+# push.sh - Автоматизирано качване със Snapshot
+
+# 1. Генерираме новия снапшот
+echo "🚀 Стартирам генериране на snapshot..."
+chmod +x snapshot.sh
+./snapshot.sh
+
+# 2. Добавяме всички промени към Git
+echo "📦 Индексирам промените..."
+git add .
+
+# 3. Commit-ваме (ако не подадеш съобщение, използва автоматично с дата)
+MSG=${1:-"Update: $(date +'%Y-%m-%d %H:%M:%S') with project snapshot"}
+git commit -m "$MSG"
+
+# 4. Push към GitHub
+echo "⬆️ Изпращам към GitHub..."
+git push origin main
+
+echo "✨ Всичко е качено! Можеш да ми дадеш линка към project_snapshot.txt"
+--- END OF FILE: push.sh ---
+
+--- START OF FILE: next-env.d.ts ---
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+import "./.next/dev/types/routes.d.ts";
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+
+--- END OF FILE: next-env.d.ts ---
+
+--- START OF FILE: project_snapshot.sh ---
+#!/bin/bash
+
+# Име на изходния файл
+OUTPUT="project_snapshot.txt"
+
+# Начало на файла с дата и час
+echo "FILEVERIFIED PROJECT SNAPSHOT - $(date)" > $OUTPUT
+echo "========================================" >> $OUTPUT
+
+# Списък с файловете, които искаме да включим
+# Изключваме node_modules, .next, .git и снимките в uploads
+find . -type f \
+  -not -path '*/.*' \
+  -not -path './node_modules/*' \
+  -not -path './.next/*' \
+  -not -path './public/uploads/*' \
+  -not -path './package-lock.json' \
+  \( -name "*.ts" -o -name "*.tsx" -o -name "*.prisma" -o -name "Dockerfile*" -o -name "*.yml" -o -name "*.sh" -o -name "*.css" -o -name "package.json" -o -name "next.config.*" \) \
+  | while read -r file; do
+    echo "" >> $OUTPUT
+    echo "--- START OF FILE: ${file#./} ---" >> $OUTPUT
+    cat "$file" >> $OUTPUT
+    echo "" >> $OUTPUT
+    echo "--- END OF FILE: ${file#./} ---" >> $OUTPUT
+  done
+
+echo "✅ Готово! Файлът $OUTPUT е генериран успешно."
+--- END OF FILE: project_snapshot.sh ---
+
+--- START OF FILE: Dockerfile.dev ---
+FROM node:22-slim
+WORKDIR /app
+
+# Инсталираме зависимости за Prisma и инструменти
+RUN apt-get update -y && apt-get install -y openssl ca-certificates
+
+COPY package.json ./
+RUN npm install
+
+# Копираме Prisma и генерираме клиента
+COPY prisma ./prisma/
+RUN npx prisma generate
+
+# Създаваме папката за качване и даваме пълни права (за локални тестове)
+RUN mkdir -p public/uploads && chmod -R 777 public/uploads
+
+EXPOSE 3000
+
+# Стартираме в dev режим
+CMD ["npm", "run", "dev"]
+--- END OF FILE: Dockerfile.dev ---
+
+--- START OF FILE: package.json ---
+{
+  "name": "fileverified",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "npx prisma generate && next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@prisma/client": "6.2.1",
+    "prisma": "6.2.1",
+    "lucide-react": "^0.562.0",
+    "next": "16.1.0",
+    "pg": "^8.13.1",
+    "react": "19.0.0",
+    "react-dom": "19.0.0",
+    "resend": "^6.6.0",
+    "yet-another-react-lightbox": "^3.28.0",
+    "bcryptjs": "^2.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@types/pg": "^8.11.10",
+    "@types/bcryptjs": "^2.4.6",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "16.1.0",
+    "postcss": "^8.4.31",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}
+--- END OF FILE: package.json ---
+
+--- START OF FILE: push1.sh ---
+#!/bin/bash
+
+# 1. Добавяне на .gitignore ако случайно липсва за uploads
+if ! grep -q "public/uploads/*" .gitignore; then
+  echo "⚠️ Добавям public/uploads в .gitignore..."
+  echo "" >> .gitignore
+  echo "# Уникални снимки от огледи" >> .gitignore
+  echo "public/uploads/*" >> .gitignore
+  echo "!public/uploads/.gitkeep" >> .gitignore
+fi
+
+# 2. Проверка за промени
+echo "🔍 Проверка на промените..."
+git status
+
+# 3. Питане за коментар
+echo "📝 Въведи кратко описание на промените (commit message):"
+read msg
+
+if [ -z "$msg" ]; then
+  msg="Update: $(date +'%Y-%m-%d %H:%M')"
+fi
+
+# 4. Изпълнение на Git команди
+git add .
+git commit -m "$msg"
+git push origin main
+
+echo "✅ Кодът е в GitHub!"
+--- END OF FILE: push1.sh ---
+
+--- START OF FILE: next.config.ts ---
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  output: 'standalone', 
+  images: {
+    unoptimized: true, 
+    remotePatterns: [
+      {
+        protocol: "http",
+        hostname: "localhost",
+      },
+    ],
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "20mb", 
+    },
+  },
+};
+
+export default nextConfig;
+--- END OF FILE: next.config.ts ---
 
 --- START OF FILE: src/app/robots.ts ---
 import { MetadataRoute } from 'next'
@@ -1616,20 +1959,26 @@ export async function PATCH(request: Request) {
 import { NextRequest, NextResponse } from 'next/server';
 import { readFile } from 'fs/promises';
 import path from 'path';
+import { existsSync } from 'fs';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const filePath = searchParams.get('path'); // Очакваме нещо като /uploads/audi/file.jpg
+  let filePath = searchParams.get('path'); 
 
   if (!filePath) return new NextResponse('Path missing', { status: 400 });
 
   try {
-    // Взимаме файла от реалната папка на диска
-    const absolutePath = path.join(process.cwd(), 'public', filePath);
-    const fileBuffer = await readFile(absolutePath);
+    // Премахваме водеща наклонена черта, ако има такава, за да не объркаме path.join
+    const cleanPath = filePath.startsWith('/') ? filePath.slice(1) : filePath;
+    const absolutePath = path.join(process.cwd(), 'public', cleanPath);
 
-    // Определяме типа на файла (jpg или png)
-    const ext = path.extname(filePath).toLowerCase();
+    if (!existsSync(absolutePath)) {
+      console.error(`Файлът не е намерен на диска: ${absolutePath}`);
+      return new NextResponse('File not found', { status: 404 });
+    }
+
+    const fileBuffer = await readFile(absolutePath);
+    const ext = path.extname(cleanPath).toLowerCase();
     const contentType = ext === '.png' ? 'image/png' : 'image/jpeg';
 
     return new NextResponse(fileBuffer, {
@@ -1639,7 +1988,8 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    return new NextResponse('File not found', { status: 404 });
+    console.error("Грешка при четене на файл:", error);
+    return new NextResponse('Error reading file', { status: 500 });
   }
 }
 --- END OF FILE: src/app/api/files/route.ts ---
@@ -1738,8 +2088,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Липсва slug или файлове" }, { status: 400 });
     }
 
+    // Пътят до папката на диска
     const uploadDir = join(process.cwd(), "public", "uploads", slug);
     
+    // Създаваме папката, ако не съществува
     if (!existsSync(uploadDir)) {
       await mkdir(uploadDir, { recursive: true });
     }
@@ -1749,11 +2101,15 @@ export async function POST(req: NextRequest) {
     for (const file of files) {
       const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
-      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
-      const path = join(uploadDir, fileName);
       
-      await writeFile(path, buffer);
-      savedPaths.push(`${slug}/${fileName}`);
+      // Почистваме името на файла от интервали
+      const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
+      const pathOnDisk = join(uploadDir, fileName);
+      
+      await writeFile(pathOnDisk, buffer);
+      
+      // ВАЖНО: Записваме пътя с 'uploads/', за да съвпада с очакванията на api/files
+      savedPaths.push(`uploads/${slug}/${fileName}`);
     }
 
     return NextResponse.json({ paths: savedPaths });
@@ -1832,6 +2188,40 @@ export async function DELETE(request: Request) {
   }
 }
 --- END OF FILE: src/app/api/reports/route.ts ---
+
+--- START OF FILE: src/app/api/reports/[slug]/route.ts ---
+import { prisma } from "@/lib/prisma";
+import { NextResponse } from "next/server";
+
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ slug: string }> }
+) {
+  try {
+    const { slug } = await params;
+
+    const report = await prisma.report.findFirst({
+      where: { 
+        slug: slug,
+        isPublished: true 
+      }
+    });
+
+    if (!report) {
+      return NextResponse.json({ error: "Report not found" }, { status: 404 });
+    }
+
+    // Връщаме обекта, като парсваме jsonData директно тук
+    return NextResponse.json({
+      ...report,
+      data: JSON.parse(report.jsonData)
+    });
+  } catch (error) {
+    console.error("API Error:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
+--- END OF FILE: src/app/api/reports/[slug]/route.ts ---
 
 --- START OF FILE: src/app/report/page.tsx ---
 "use client"
@@ -2127,10 +2517,25 @@ function InfoCard({ icon, label, value }: { icon: React.ReactNode, label: string
 
 import { useState, useEffect, use } from "react"
 import { 
-  CheckCircle2, ShieldCheck, Gauge, Search, Eye, Cpu, 
-  ChevronDown, ChevronUp, Zap, Calendar, Fingerprint, 
-  Activity, Fuel, Settings2, Disc, CarFront, AlertTriangle, 
-  Info, MapPin 
+  CheckCircle2, 
+  ShieldCheck, 
+  Gauge, 
+  Search,
+  Eye,
+  Cpu,
+  ChevronDown,
+  ChevronUp,
+  Zap,
+  Calendar,
+  Fingerprint,
+  Activity,
+  Fuel,
+  Settings2,
+  Disc,
+  CarFront,
+  AlertTriangle,
+  Info,
+  MapPin
 } from "lucide-react"
 import GallerySection from "@/components/GallerySection"
 import { cloneElement } from "react"
@@ -2158,15 +2563,20 @@ export default function PublicReport({ params }: { params: Promise<{ slug: strin
   }, [slug]);
 
   if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white font-sans">
-      <div className="w-16 h-16 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-      <div className="font-black text-slate-300 tracking-[0.3em] uppercase">FileVerified Анализ...</div>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+      <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+      <div className="font-black text-slate-300 tracking-[0.3em] uppercase italic animate-pulse">FileVerified Анализ...</div>
     </div>
   );
 
   if (error || !report) return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 font-black text-rose-500 text-2xl tracking-tighter uppercase p-10 text-center">
-      Докладът не е намерен или не е публикуван за публичен достъп.
+    <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50 p-6 text-center">
+        <AlertTriangle size={64} className="text-rose-500 mb-4" />
+        <h1 className="text-2xl font-black text-rose-500 uppercase tracking-tighter">
+            Докладът не е намерен или не е публикуван за публичен достъп.
+        </h1>
+        <p className="text-slate-500 mt-2 font-bold">Свържете се с администратор, ако смятате, че това е грешка.</p>
+        <a href="/" className="mt-8 bg-slate-900 text-white px-8 py-4 rounded-2xl font-black uppercase text-xs tracking-widest">Към началото</a>
     </div>
   );
 
@@ -2176,37 +2586,26 @@ export default function PublicReport({ params }: { params: Promise<{ slug: strin
   return (
     <main className="min-h-screen bg-[#F1F5F9] pb-20 font-sans text-slate-900 selection:bg-blue-100">
       <div className="bg-white border-b border-slate-200 px-6 py-12 md:py-20 shadow-sm relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none">
-            <ShieldCheck size={400} />
-        </div>
-        
+        <div className="absolute top-0 right-0 p-10 opacity-[0.03] pointer-events-none"><ShieldCheck size={400} /></div>
         <div className="max-w-7xl mx-auto flex flex-col lg:flex-row lg:items-end justify-between gap-10 relative z-10">
           <div className="space-y-6">
-            <div className="flex items-center gap-3 text-emerald-700 font-black mb-3 tracking-wide bg-emerald-50 w-fit px-4 py-1.5 rounded-full border border-emerald-100">
-              <ShieldCheck className="w-5 h-5" />
-              <span className="text-[10px] uppercase tracking-[0.2em]">Independent Inspection Report</span>
+            <div className="flex items-center gap-3 text-blue-700 font-black mb-3 tracking-wide bg-blue-50 w-fit px-4 py-1.5 rounded-full border border-blue-100">
+              <ShieldCheck className="w-5 h-5" /><span className="text-[10px] uppercase tracking-[0.2em]">Independent Inspection Report</span>
             </div>
-            
-            <h1 className="text-5xl md:text-8xl font-black text-slate-900 leading-[0.85] tracking-tighter uppercase">
-              {report.carModel}
-            </h1>
-
+            <h1 className="text-5xl md:text-8xl font-black text-slate-900 leading-[0.85] tracking-tighter uppercase italic">{report.carModel}</h1>
             <div className="flex flex-wrap items-center gap-y-4 gap-x-8 mt-6 text-slate-500 font-bold uppercase text-[11px] tracking-widest">
-              <span className="flex items-center gap-2">Клиент: <b className="text-slate-900">{report.clientName}</b></span>
+              <span>Инспекция за: <b className="text-slate-900">{report.clientName}</b></span>
               <span className="hidden md:block w-1.5 h-1.5 rounded-full bg-slate-300"></span>
               <span className="flex items-center gap-2"><Fingerprint size={14}/> VIN: <b className="text-slate-900 font-mono tracking-normal">{report.data.vin || "---"}</b></span>
             </div>
           </div>
-          
-          <div className={`rounded-[3rem] p-10 flex items-center gap-6 shadow-2xl border-2 transition-all ${isExcellent ? 'bg-emerald-50 border-emerald-200 shadow-emerald-100' : 'bg-amber-50 border-amber-200 shadow-amber-100'}`}>
+          <div className={`rounded-[3rem] p-10 flex items-center gap-6 shadow-2xl border-2 ${isExcellent ? 'bg-emerald-50 border-emerald-200' : 'bg-amber-50 border-amber-200'}`}>
             <div className={`p-4 rounded-2xl ${isExcellent ? 'bg-emerald-500' : 'bg-amber-500'} text-white shadow-lg`}>
               {isExcellent ? <CheckCircle2 className="w-12 h-12" /> : <AlertTriangle className="w-12 h-12" />}
             </div>
             <div>
               <div className={`text-[10px] font-black uppercase tracking-[0.2em] mb-1 ${isExcellent ? 'text-emerald-700' : 'text-amber-700'}`}>Технически Статус</div>
-              <div className={`text-3xl font-black uppercase leading-none tracking-tighter ${isExcellent ? 'text-emerald-900' : 'text-amber-900'}`}>
-                {isExcellent ? 'ПРОВЕРЕН' : 'СЪС ЗАБЕЛЕЖКИ'}
-              </div>
+              <div className={`text-3xl font-black uppercase leading-none tracking-tighter ${isExcellent ? 'text-emerald-900' : 'text-amber-900'}`}>{isExcellent ? 'ПРОВЕРЕН' : 'СЪС ЗАБЕЛЕЖКИ'}</div>
             </div>
           </div>
         </div>
@@ -2224,55 +2623,50 @@ export default function PublicReport({ params }: { params: Promise<{ slug: strin
 
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-10">
-            <div className="bg-white rounded-[3.5rem] border border-slate-200 p-2 shadow-2xl shadow-slate-200/50 overflow-hidden">
+            <div className="bg-white rounded-[3.5rem] border border-slate-200 p-2 shadow-2xl overflow-hidden">
               <div className="p-8 font-black text-slate-900 border-b border-slate-50 flex items-center justify-between">
-                <span className="flex items-center gap-3 uppercase text-sm tracking-tighter">
-                  <Eye className="w-6 h-6 text-emerald-600"/> Визуален Доклад ({formattedImages.length} снимки)
-                </span>
+                <span className="flex items-center gap-3 uppercase text-sm tracking-tighter italic"><Eye className="w-6 h-6 text-blue-600"/> Визуален Доклад ({formattedImages.length} снимки)</span>
               </div>
               <GallerySection images={formattedImages} />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <SectionCard title="Екстериор и ЛКП" icon={<CarFront size={20} className="text-emerald-600"/>}>
-                <ExpandableCheckItem 
-                  text="Измерване дебелина на лака" 
-                  isOpenDefault={true}
-                  details={Object.entries(report.data.paintData || {}).map(([label, value]) => ({
-                    label,
-                    value: `${value} μm`
-                  }))}
-                />
-                <CheckItem text="Оптика и стъкла" status="ok" info={report.data.exteriorStatus} desc={report.data.exteriorNotes} />
+              <SectionCard title="Екстериор и ЛКП" icon={<CarFront size={20} className="text-blue-600"/>}>
+                <ExpandableCheckItem text="Измерване дебелина на лака" isOpenDefault={true} details={Object.entries(report.data.paintData || {}).map(([label, value]) => ({ label, value: `${value} μm` }))} />
+                <CheckItem text="Оптика и купе" status="ok" info={report.data.exteriorStatus} desc={report.data.exteriorNotes} />
               </SectionCard>
-
               <SectionCard title="Интериор" icon={<Search size={20} className="text-emerald-600"/>}>
-                <CheckItem text="Салон и електроника" status="ok" info={report.data.interiorStatus} desc={report.data.interiorNotes} />
+                <CheckItem text="Салон и системи" status="ok" info={report.data.interiorStatus} desc={report.data.interiorNotes} />
               </SectionCard>
             </div>
           </div>
 
           <div className="space-y-8">
-            <div className="bg-white rounded-[3.5rem] p-10 shadow-xl border border-slate-100">
-              <h3 className="text-emerald-600 font-black uppercase text-[10px] tracking-[0.3em] mb-8 flex items-center gap-2">
-                <Cpu size={18} /> Диагностика
-              </h3>
-              <div className="bg-slate-50 border border-slate-100 p-6 rounded-2xl text-slate-600 text-sm font-medium">
-                {report.data.diagnostics}
+            {/* ПРОМЕНЕНА СЕКЦИЯ: ДИАГНОСТИКА (ВЕЧЕ Е БЯЛА) */}
+            <div className="bg-white rounded-[3.5rem] border border-slate-200 p-10 shadow-xl relative overflow-hidden group">
+              <div className="absolute top-0 right-0 p-8 text-slate-100 rotate-12 group-hover:rotate-0 transition-transform duration-1000"><Cpu size={120} /></div>
+              <div className="relative z-10">
+                <h3 className="text-slate-500 font-black uppercase text-[10px] tracking-[0.3em] mb-8 flex items-center gap-2"><Cpu size={18} className="text-blue-600" /> Компютърна Диагностика</h3>
+                <div className={`text-sm font-black uppercase mb-4 px-4 py-2 rounded-xl inline-block ${report.data.ecuErrors ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'}`}>{report.data.ecuErrors ? 'Открити грешки' : 'Няма активни грешки'}</div>
+                <div className="bg-slate-50 border border-slate-100 p-6 rounded-2xl italic text-slate-700 text-sm leading-relaxed font-medium">{report.data.diagnostics || "Системите са сканирани успешно."}</div>
               </div>
             </div>
 
-            <div className="bg-white rounded-[3.5rem] p-10 border border-emerald-100 shadow-2xl shadow-emerald-100/50 relative">
-              <div className="absolute -top-4 -right-4 bg-emerald-600 text-white p-4 rounded-3xl shadow-lg rotate-12">
-                <ShieldCheck size={24} />
+            <div className="bg-white rounded-[3.5rem] p-10 border border-slate-200 shadow-xl relative">
+              <div className="absolute -top-4 -right-4 bg-blue-600 text-white p-4 rounded-3xl shadow-lg rotate-12"><ShieldCheck size={24} /></div>
+              <h3 className="text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] mb-8 flex items-center gap-2"><Info size={16} /> Експертна присъда</h3>
+              <p className="text-slate-900 font-black text-2xl leading-tight italic tracking-tighter mb-10">"{report.data.finalVerdict}"</p>
+              <div className="pt-10 border-t border-slate-100 flex items-center gap-5">
+                <div className="w-16 h-16 rounded-[1.5rem] bg-slate-900 flex items-center justify-center font-black text-2xl text-white">МФ</div>
+                <div>
+                  <div className="font-black text-xl text-slate-900 tracking-tighter leading-none">Мартин Филев</div>
+                  <div className="text-[10px] text-blue-600 font-black uppercase tracking-widest mt-1">FileVerified Lead Inspector</div>
+                </div>
               </div>
-              <h3 className="text-slate-400 font-black uppercase text-[10px] tracking-[0.3em] mb-8">Заключение</h3>
-              <p className="text-slate-900 font-black text-2xl leading-tight tracking-tighter mb-10">
-                "{report.data.finalVerdict}"
-              </p>
             </div>
 
-            <a href="https://fileverified.eu" className="flex items-center justify-center w-full bg-slate-900 text-white py-8 rounded-[2.5rem] font-black text-xl transition-all hover:bg-emerald-600 hover:scale-[1.02] shadow-2xl active:scale-95 uppercase tracking-tighter">
+             {/* Бутонът остава тъмен за акцент, кажи ако искаш и него светъл */}
+            <a href="https://fileverified.eu" className="flex items-center justify-center w-full bg-slate-900 text-white py-8 rounded-[2.5rem] font-black text-xl transition-all hover:bg-blue-600 hover:scale-[1.02] shadow-2xl active:scale-95">
               НОВА ИНСПЕКЦИЯ
             </a>
           </div>
@@ -2282,15 +2676,13 @@ export default function PublicReport({ params }: { params: Promise<{ slug: strin
   )
 }
 
-function StatCard({ icon, label, value, color = "text-emerald-600" }: any) {
+function StatCard({ icon, label, value, color = "text-blue-600" }: any) {
   return (
-    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center gap-4 hover:shadow-xl transition-all">
-      <div className={`${color} bg-slate-50 p-3 rounded-2xl`}>
-        {cloneElement(icon, { size: 20 })}
-      </div>
+    <div className="bg-white p-6 rounded-[2.5rem] border border-slate-200 shadow-sm flex items-center gap-4 group">
+      <div className={`${color} bg-slate-50 p-3 rounded-2xl group-hover:scale-110 transition-transform`}>{cloneElement(icon, { size: 20 })}</div>
       <div>
         <div className="text-[9px] text-slate-400 uppercase font-black tracking-widest mb-1">{label}</div>
-        <div className="text-slate-900 font-black text-base uppercase">{value || "---"}</div>
+        <div className="text-slate-900 font-black text-base md:text-lg leading-none tracking-tighter uppercase italic">{value || "---"}</div>
       </div>
     </div>
   )
@@ -2298,27 +2690,23 @@ function StatCard({ icon, label, value, color = "text-emerald-600" }: any) {
 
 function SectionCard({ title, icon, children }: any) {
   return (
-    <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-sm overflow-hidden">
-      <div className="p-8 border-b border-slate-50 flex items-center gap-3 bg-slate-50/30">
-        {icon}
+    <div className="bg-white rounded-[3.5rem] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+      <div className="p-8 border-b border-slate-50 flex items-center gap-3 bg-slate-50/30">{icon}
         <span className="font-black uppercase text-[11px] tracking-[0.2em] text-slate-500">{title}</span>
       </div>
-      <div className="p-8 space-y-6">{children}</div>
+      <div className="p-8 space-y-6 flex-1">{children}</div>
     </div>
   )
 }
 
-function CheckItem({ text, status, info, desc }: any) {
+function CheckItem({ text, info, desc }: any) {
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-          <span className="text-slate-900 font-black text-sm tracking-tight">{text}</span>
-        </div>
+        <div className="flex items-center gap-3"><CheckCircle2 className="w-5 h-5 text-blue-500" /><span className="text-slate-900 font-black text-sm tracking-tight">{text}</span></div>
         {info && <span className="text-[9px] font-black bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded uppercase">{info}</span>}
       </div>
-      {desc && <p className="ml-8 text-[11px] text-slate-400 font-medium leading-relaxed">"{desc}"</p>}
+      {desc && <p className="ml-8 text-[11px] text-slate-400 font-medium italic leading-relaxed">"{desc}"</p>}
     </div>
   )
 }
@@ -2328,14 +2716,11 @@ function ExpandableCheckItem({ text, details, isOpenDefault = false }: any) {
   return (
     <div className="bg-slate-50 rounded-3xl border border-slate-100 overflow-hidden">
       <div className="flex items-center justify-between p-5 cursor-pointer hover:bg-white transition-all" onClick={() => setIsOpen(!isOpen)}>
-        <div className="flex items-center gap-3">
-          <Activity className="w-5 h-5 text-emerald-500" />
-          <span className="text-slate-900 font-black text-sm tracking-tight">{text}</span>
-        </div>
+        <div className="flex items-center gap-3"><Activity className="w-5 h-5 text-blue-500" /><span className="text-slate-900 font-black text-sm tracking-tight">{text}</span></div>
         {isOpen ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
       </div>
       {isOpen && (
-        <div className="p-6 pt-0 space-y-2">
+        <div className="p-6 pt-0 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="grid grid-cols-2 gap-3">
             {details.map((item: any, idx: number) => (
               <div key={idx} className="bg-white px-3 py-2 rounded-xl border border-slate-200/50 flex justify-between items-center">
@@ -3146,189 +3531,3 @@ export async function updateBookingStatus(id: string, status: BookingStatus) {
   });
 }
 --- END OF FILE: src/lib/bookings.ts ---
-
---- START OF FILE: prisma/schema.prisma ---
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model Report {
-  id             String   @id @default(cuid())
-  slug           String   @unique
-  carModel       String
-  clientName     String
-  inspectionDate DateTime @default(now())
-  jsonData       String   @db.Text
-  isPublished    Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@index([slug])
-}
-
-model Booking {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  status    String   @default("new")
-  pkgName   String
-  date      String
-  time      String
-  fullName  String
-  phone     String
-  email     String?
-  makeModel String
-  year      String?
-  vin       String?
-  notes     String?
-}
---- END OF FILE: prisma/schema.prisma ---
-
---- START OF CONFIG: next.config.ts ---
-import type { NextConfig } from "next";
-
-const nextConfig: NextConfig = {
-  output: 'standalone', 
-  images: {
-    unoptimized: true, 
-    remotePatterns: [
-      {
-        protocol: "http",
-        hostname: "localhost",
-      },
-    ],
-  },
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "20mb", 
-    },
-  },
-};
-
-export default nextConfig;
---- END OF CONFIG: next.config.ts ---
-
---- START OF CONFIG: Dockerfile ---
-FROM node:22-slim AS builder
-WORKDIR /app
-
-RUN apt-get update -y && apt-get install -y openssl ca-certificates
-
-# Копираме package.json за инсталация
-COPY package.json ./
-RUN npm install
-
-# Копираме Prisma
-COPY prisma ./prisma/
-
-# Копираме всичко останало
-COPY . .
-
-# Билдваме (това автоматично пуска npx prisma generate)
-ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm run build
-
-FROM node:22-slim AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN apt-get update -y && apt-get install -y openssl ca-certificates
-
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.next/standalone ./
-COPY --from=builder /app/.next/static ./.next/static
-COPY --from=builder /app/prisma ./prisma
-
-RUN mkdir -p public/uploads && chmod -R 777 public/uploads
-
-EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-CMD ["node", "server.js"]
---- END OF CONFIG: Dockerfile ---
-
---- START OF CONFIG: package.json ---
-{
-  "name": "fileverified",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "npx prisma generate && next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
-  "dependencies": {
-    "@prisma/client": "6.2.1",
-    "prisma": "6.2.1",
-    "lucide-react": "^0.562.0",
-    "next": "16.1.0",
-    "pg": "^8.13.1",
-    "react": "19.0.0",
-    "react-dom": "19.0.0",
-    "resend": "^6.6.0",
-    "yet-another-react-lightbox": "^3.28.0",
-    "bcryptjs": "^2.4.3"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.0",
-    "@types/node": "^22.0.0",
-    "@types/react": "^19.0.0",
-    "@types/react-dom": "^19.0.0",
-    "@types/pg": "^8.11.10",
-    "@types/bcryptjs": "^2.4.6",
-    "eslint": "^9.0.0",
-    "eslint-config-next": "16.1.0",
-    "postcss": "^8.4.31",
-    "tailwindcss": "^4.0.0",
-    "typescript": "^5.0.0"
-  }
-}
---- END OF CONFIG: package.json ---
-
---- START OF CONFIG: prisma/schema.prisma ---
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-model Report {
-  id             String   @id @default(cuid())
-  slug           String   @unique
-  carModel       String
-  clientName     String
-  inspectionDate DateTime @default(now())
-  jsonData       String   @db.Text
-  isPublished    Boolean  @default(false)
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-
-  @@index([slug])
-}
-
-model Booking {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  status    String   @default("new")
-  pkgName   String
-  date      String
-  time      String
-  fullName  String
-  phone     String
-  email     String?
-  makeModel String
-  year      String?
-  vin       String?
-  notes     String?
-}
---- END OF CONFIG: prisma/schema.prisma ---

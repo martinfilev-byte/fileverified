@@ -1,11 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { 
   Loader2, Save, Plus, Edit3, Trash2, ChevronLeft, 
   Eye, ImageIcon, X, Upload, CarFront, Cpu, 
   Activity, Gauge, Zap, ShieldCheck, User,
-  Disc, Fuel, Search, Layers, Info
+  Disc, Search, Layers, LogOut, RefreshCcw, ClipboardList, FileSearch 
 } from "lucide-react";
 
 interface ReportData {
@@ -42,6 +44,7 @@ export default function AdminReports() {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
+  const pathname = usePathname();
 
   const emptyData: ReportData = {
     vin: "", year: "", mileage: "", engine: "", hp: "",
@@ -71,23 +74,24 @@ export default function AdminReports() {
   const fetchReports = async () => {
     try {
       const res = await fetch("/api/reports");
+      if (res.status === 401) { window.location.href = "/admin/login"; return; }
       const data = await res.json();
       setReports(Array.isArray(data) ? data : []);
     } catch (e) { console.error(e); }
   };
 
+  const logout = async () => {
+    await fetch("/api/admin/logout", { method: "POST" });
+    window.location.href = "/admin/login";
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.length) return;
-    if (!editingReport.slug) {
-      alert("ГРЕШКА: Първо напишете Линк (slug) горе!");
-      return;
-    }
-    
+    if (!editingReport.slug) { alert("ГРЕШКА: Първо напишете Линк (slug) горе!"); return; }
     setUploading(true);
     const formData = new FormData();
     formData.append("slug", editingReport.slug); 
     Array.from(e.target.files).forEach(file => formData.append("files", file));
-
     try {
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
@@ -120,23 +124,55 @@ export default function AdminReports() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-10 font-sans text-slate-900">
-      <div className="max-w-[1400px] mx-auto">
+    <div className="min-h-screen bg-[#F8FAFC] pb-20 font-sans text-slate-900">
+      <div className="max-w-[1400px] mx-auto space-y-8">
         
+        {/* НАВИГАЦИЯ (СЪЩАТА КАТО В BOOKINGS) */}
+        {!editingReport && (
+          <div className="bg-white rounded-[2rem] p-2 border border-slate-200 shadow-sm flex items-center gap-2 max-w-fit mb-10">
+            <Link 
+              href="/admin" 
+              className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
+                pathname === '/admin' 
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' 
+                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <ClipboardList size={16} /> Заявки
+            </Link>
+            <Link 
+              href="/admin/reports" 
+              className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-black text-xs uppercase tracking-widest transition-all ${
+                pathname === '/admin/reports' 
+                ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-200' 
+                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              <FileSearch size={16} /> Инспекции (Репорти)
+            </Link>
+          </div>
+        )}
+
+        {/* HEADER */}
         {!editingReport ? (
-          <div className="flex flex-col md:flex-row justify-between items-center gap-6 mb-12 mt-10">
+          <div className="flex flex-col lg:flex-row justify-between items-center gap-6 mb-12">
             <div>
-              <h1 className="text-5xl font-black tracking-tighter uppercase">Инспекции</h1>
+              <h1 className="text-5xl font-black tracking-tighter uppercase italic">Инспекции</h1>
               <p className="text-slate-400 font-bold mt-2 uppercase text-[10px] tracking-[0.3em]">FileVerified Admin Terminal</p>
             </div>
-            <button onClick={() => setEditingReport({ slug: "", carModel: "", clientName: "", data: { ...emptyData }, isPublished: false })} 
-              className="w-full md:w-auto bg-emerald-600 text-white px-12 py-6 rounded-3xl font-black flex items-center justify-center gap-3 shadow-2xl shadow-emerald-200 hover:scale-[1.02] transition-all uppercase">
-              <Plus size={28} /> Нов Репорт
-            </button>
+            
+            <div className="flex items-center gap-4 w-full lg:w-auto">
+              <button onClick={() => setEditingReport({ slug: "", carModel: "", clientName: "", data: { ...emptyData }, isPublished: false })} 
+                className="flex-1 lg:flex-none bg-emerald-600 text-white px-10 py-4 rounded-2xl font-black flex items-center justify-center gap-3 shadow-xl hover:bg-emerald-700 transition-all uppercase text-sm">
+                <Plus size={20} /> Нов Репорт
+              </button>
+              <button onClick={logout} className="p-4 bg-rose-50 text-rose-600 rounded-2xl border border-rose-100 hover:bg-rose-100 transition-all shadow-sm">
+                <LogOut size={20} />
+              </button>
+            </div>
           </div>
         ) : (
           <div className="bg-white rounded-[3rem] shadow-2xl border border-slate-100 overflow-hidden mb-20">
-             
              <div className="p-8 border-b bg-slate-50 flex justify-between items-center">
                 <button onClick={() => setEditingReport(null)} className="font-black text-slate-400 hover:text-emerald-600 flex items-center gap-2 uppercase text-[10px] tracking-widest transition-colors">
                   <ChevronLeft size={20}/> Отказ
@@ -148,7 +184,6 @@ export default function AdminReports() {
             </div>
 
             <div className="p-8 md:p-16 space-y-16">
-              
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <InputGroup label="Марка и Модел" icon={<CarFront size={18}/>}>
                   <input className="w-full p-5 bg-slate-50 rounded-2xl outline-none font-black text-xl border-2 border-transparent focus:border-emerald-500 transition-all shadow-inner" placeholder="Audi RS6 C8" value={editingReport.carModel} onChange={(e) => setEditingReport({...editingReport, carModel: e.target.value})} />
@@ -161,7 +196,6 @@ export default function AdminReports() {
                 </InputGroup>
               </div>
 
-              {/* ОСНОВНИ ДАННИ - ВЕЧЕ НА СВЕТЪЛ ФОН */}
               <div className="bg-white rounded-[3rem] p-10 grid grid-cols-2 lg:grid-cols-4 gap-8 border border-slate-100 shadow-sm">
                   <LightInput label="VIN Номер" value={editingReport.data.vin} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, vin: v.toUpperCase()}})} />
                   <LightInput label="Година" value={editingReport.data.year} onChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, year: v}})} />
@@ -203,7 +237,6 @@ export default function AdminReports() {
                 <StatusCard label="Окачване" icon={<Disc />} status={editingReport.data.suspensionStatus} onStatusChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, suspensionStatus: v}})} notes={editingReport.data.suspensionNotes} onNotesChange={(v: string) => setEditingReport({...editingReport, data: {...editingReport.data, suspensionNotes: v}})} />
               </div>
 
-              {/* ДИАГНОСТИКА - ВЕЧЕ НА СВЕТЪЛ ФОН */}
               <div className="bg-white border-2 border-slate-100 rounded-[3rem] p-10 space-y-6">
                   <div className="flex justify-between items-center">
                     <h3 className="font-black uppercase text-xs tracking-widest text-emerald-600 flex items-center gap-2"><Cpu /> Компютърна Диагностика</h3>
@@ -222,12 +255,9 @@ export default function AdminReports() {
 
               <section className={`p-10 rounded-[4rem] border-4 transition-all ${!editingReport.slug ? 'bg-slate-50 border-slate-100 opacity-50' : 'bg-white border-dashed border-emerald-100'}`}>
                 <div className="flex flex-col lg:flex-row justify-between items-center gap-8 mb-12">
-                  <div>
-                    <h3 className="text-slate-900 font-black text-2xl uppercase tracking-tighter flex items-center gap-3"><ImageIcon className="text-emerald-600" size={32}/> Фотодоклад ({editingReport.data.images?.length || 0})</h3>
-                  </div>
+                  <h3 className="text-slate-900 font-black text-2xl uppercase tracking-tighter flex items-center gap-3"><ImageIcon className="text-emerald-600" size={32}/> Фотодоклад ({editingReport.data.images?.length || 0})</h3>
                   <label className={`w-full lg:w-auto px-16 py-8 rounded-[2.5rem] font-black text-xl flex items-center justify-center gap-4 transition-all shadow-2xl ${!editingReport.slug ? 'bg-slate-300 cursor-not-allowed' : 'bg-emerald-600 text-white cursor-pointer hover:bg-slate-800'}`}>
-                    {uploading ? <Loader2 className="animate-spin" size={32}/> : <Upload size={32}/>}
-                    КАЧИ СНИМКИ
+                    {uploading ? <Loader2 className="animate-spin" size={32}/> : <Upload size={32}/>} КАЧИ СНИМКИ
                     <input type="file" multiple className="hidden" accept="image/*" onChange={handleFileUpload} disabled={uploading || !editingReport.slug} />
                   </label>
                 </div>
@@ -255,19 +285,19 @@ export default function AdminReports() {
                   {loading ? <Loader2 className="animate-spin" size={40} /> : <Save size={40} />} Генерирай Отчет
                 </button>
               </div>
-
               {error && <div className="p-8 bg-red-50 text-red-600 rounded-[2.5rem] border-4 border-red-100 font-black text-center uppercase text-lg">{error}</div>}
             </div>
           </div>
         )}
 
+        {/* СПИСЪК С РЕПОРТИ */}
         {!editingReport && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-10">
             {reports.map((r: any) => (
               <div key={r.id} className="bg-white p-10 rounded-[3.5rem] border-2 border-slate-100 shadow-xl flex flex-col justify-between group hover:border-emerald-500 transition-all">
                 <div className="flex justify-between items-start mb-10">
                   <div>
-                    <h3 className="text-3xl font-black tracking-tighter uppercase text-slate-900">{r.carModel}</h3>
+                    <h3 className="text-3xl font-black tracking-tighter uppercase text-slate-900 leading-none">{r.carModel}</h3>
                     <p className="text-slate-400 font-black uppercase text-[10px] tracking-widest mt-2">{r.clientName}</p>
                   </div>
                   <span className={`text-[10px] px-4 py-2 rounded-full font-black uppercase tracking-[0.2em] ${r.isPublished ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
@@ -288,14 +318,8 @@ export default function AdminReports() {
   );
 }
 
-// --- UI HELPERS ---
-
-interface InputGroupProps {
-  label: string;
-  icon: React.ReactNode;
-  children: React.ReactNode;
-}
-function InputGroup({ label, icon, children }: InputGroupProps) {
+// --- UI HELPERS (LIGHT ONLY) ---
+function InputGroup({ label, icon, children }: any) {
   return (
     <div className="space-y-3">
       <label className="text-[11px] font-black uppercase tracking-[0.3em] text-slate-400 ml-4 flex items-center gap-2">
@@ -306,12 +330,7 @@ function InputGroup({ label, icon, children }: InputGroupProps) {
   );
 }
 
-interface LightInputProps {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}
-function LightInput({ label, value, onChange }: LightInputProps) {
+function LightInput({ label, value, onChange }: any) {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{label}</label>
@@ -324,13 +343,7 @@ function LightInput({ label, value, onChange }: LightInputProps) {
   );
 }
 
-interface SelectInputProps {
-  label: string;
-  value: string;
-  options: string[];
-  onChange: (v: string) => void;
-}
-function SelectInput({ label, value, options, onChange }: SelectInputProps) {
+function SelectInput({ label, value, options, onChange }: any) {
   return (
     <div className="flex flex-col gap-2">
       <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-2">{label}</label>
@@ -345,22 +358,13 @@ function SelectInput({ label, value, options, onChange }: SelectInputProps) {
   );
 }
 
-interface StatusCardProps {
-  label: string;
-  icon: React.ReactNode;
-  status: string;
-  onStatusChange: (v: string) => void;
-  notes: string;
-  onNotesChange: (v: string) => void;
-}
-function StatusCard({ label, icon, status, onStatusChange, notes, onNotesChange }: StatusCardProps) {
+function StatusCard({ label, icon, status, onStatusChange, notes, onNotesChange }: any) {
   const getStatusColor = (s: string) => {
     if (s === "Отличен") return "bg-emerald-500";
     if (s === "Добър") return "bg-blue-500";
     if (s === "Забележки") return "bg-amber-500";
     return "bg-rose-500";
   };
-
   return (
     <div className="bg-white p-10 rounded-[3rem] border-2 border-slate-100 space-y-6 shadow-sm group hover:shadow-xl transition-all duration-500">
       <div className="flex justify-between items-center">
