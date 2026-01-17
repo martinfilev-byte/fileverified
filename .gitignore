@@ -41,3 +41,5 @@ yarn-error.log*
 next-env.d.ts
 compose.yml
 compose.yml
+public/uploads/*
+!public/uploads/.gitkeep
